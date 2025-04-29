@@ -1,6 +1,7 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js";
 import { getDatabase, ref, get, update } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-database.js";
 
+// Configuração Firebase
 const firebaseConfig = {
   apiKey: "AIzaSyBN-bmzgrlzjmrKMmuClZ8LVll-vJyx-aE",
   authDomain: "controleestoquelepan.firebaseapp.com",
@@ -14,6 +15,7 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 
+// Obter ID do evento
 const id = new URLSearchParams(window.location.search).get("id");
 
 if (!id) {
@@ -23,18 +25,19 @@ if (!id) {
 
 const refEvento = ref(db, `eventos/${id}`);
 
+// Buscar dados do evento
 get(refEvento).then(snapshot => {
   if (!snapshot.exists()) {
-    alert("Evento não existe.");
+    alert("Evento não encontrado.");
     return;
   }
 
   const evento = snapshot.val();
 
   document.getElementById("eventoInfo").innerHTML = `
-    <p><strong>Nome:</strong> ${evento.nome}</p>
-    <p><strong>Data:</strong> ${evento.data}</p>
-    <p><strong>Responsável:</strong> ${evento.responsavel}</p>
+    <p><strong>Nome:</strong> ${evento.nome || "N/A"}</p>
+    <p><strong>Data:</strong> ${evento.data || "N/A"}</p>
+    <p><strong>Responsável:</strong> ${evento.responsavel || "N/A"}</p>
   `;
 
   const container = document.getElementById("itens");
@@ -45,17 +48,19 @@ get(refEvento).then(snapshot => {
       const div = document.createElement("div");
       div.className = "item";
       div.innerHTML = `
-        <p><strong>${item.nomeItem}</strong> (Enviado: ${item.quantidadeEnviada})</p>
-        <label>Assado: <input type="number" id="assado-${index}" value="${item.assado || 0}"></label><br>
-        <label>Congelado: <input type="number" id="congelado-${index}" value="${item.congelado || 0}"></label><br>
-        <label>Perdido: <input type="number" id="perdido-${index}" value="${item.perdido || 0}"></label>
+        <h4>${item.nomeItem || "Item sem nome"}</h4>
+        <p><strong>Enviado:</strong> ${item.quantidadeEnviada || 0}</p>
+        <label>Assado: <input type="number" id="assado-${index}" value="${item.assado ?? 0}"></label><br>
+        <label>Congelado: <input type="number" id="congelado-${index}" value="${item.congelado ?? 0}"></label><br>
+        <label>Perdido: <input type="number" id="perdido-${index}" value="${item.perdido ?? 0}"></label>
+        <hr>
       `;
       container.appendChild(div);
     });
 
-    const botao = document.createElement("button");
-    botao.textContent = "Salvar Evento";
-    botao.onclick = () => {
+    const botaoSalvar = document.createElement("button");
+    botaoSalvar.textContent = "Salvar Evento";
+    botaoSalvar.onclick = () => {
       const novosItens = evento.itens.map((item, index) => ({
         ...item,
         assado: parseInt(document.getElementById(`assado-${index}`).value) || 0,
@@ -69,16 +74,16 @@ get(refEvento).then(snapshot => {
       }).then(() => {
         alert("Evento finalizado com sucesso!");
         window.location.href = `resumo.html?id=${id}`;
-      }).catch(error => {
-        console.error("Erro ao salvar:", error);
+      }).catch(err => {
+        console.error("Erro ao salvar:", err);
         alert("Erro ao salvar o evento.");
       });
     };
 
-    document.body.appendChild(botao);
+    document.body.appendChild(botaoSalvar);
   } else {
-    container.innerHTML = "<p>Nenhum item registrado.</p>";
+    container.innerHTML = "<p>Nenhum item registrado neste evento.</p>";
   }
-}).catch(err => {
-  console.error("Erro ao buscar evento:", err);
+}).catch(error => {
+  console.error("Erro ao buscar dados do evento:", error);
 });
