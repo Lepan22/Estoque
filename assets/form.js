@@ -31,7 +31,6 @@ get(refEvento).then(snapshot => {
 
   const evento = snapshot.val();
 
-  // Exibir as informações principais do evento
   document.getElementById("eventoInfo").innerHTML = `
     <p><strong>Nome:</strong> ${evento.nome}</p>
     <p><strong>Data:</strong> ${evento.data}</p>
@@ -40,14 +39,13 @@ get(refEvento).then(snapshot => {
   `;
 
   const container = document.getElementById("itens");
+  const successMessage = document.getElementById("successMessage");
 
-  // Verificação se `itens` é um array ou um objeto
   const itensRaw = evento.itens || {};
   const itens = Array.isArray(itensRaw)
     ? itensRaw
     : Object.keys(itensRaw).sort().map(k => itensRaw[k]);
 
-  // Exibir os itens
   if (itens.length > 0) {
     itens.forEach(item => {
       const div = document.createElement("div");
@@ -64,7 +62,14 @@ get(refEvento).then(snapshot => {
   } else {
     container.innerHTML = "<p>Nenhum item registrado.</p>";
   }
+
+  // Exibir mensagem de sucesso ao final do evento
+  if (evento.status === "finalizado") {
+    successMessage.style.display = "block";
+  }
+
 }).catch(err => {
   console.error("Erro ao buscar evento:", err);
 });
+
 
