@@ -5,41 +5,32 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Detalhes do Evento</title>
   <style>
-    body {
-      font-family: Arial, sans-serif;
-      margin: 20px;
-    }
-
-    h1 {
-      color: #333;
-    }
-
-    .item {
-      border-bottom: 1px solid #ccc;
-      padding: 10px 0;
-    }
-
-    .item p {
-      margin: 4px 0;
-    }
-
-    #eventoInfo p {
-      margin: 4px 0;
-    }
-
-    button {
+    body { font-family: Arial, sans-serif; margin: 20px; }
+    h1 { color: #333; }
+    .item { margin-bottom: 10px; }
+    .item span { font-weight: bold; }
+    a.voltar {
+      display: inline-block;
       margin-top: 20px;
+      padding: 8px 16px;
+      background-color: #007bff;
+      color: white;
+      text-decoration: none;
+      border-radius: 5px;
+    }
+    a.voltar:hover { background-color: #0056b3; }
+    .button-container { margin-top: 20px; }
+    button {
       padding: 10px 20px;
-      font-weight: bold;
-      background-color: #28a745;
+      background-color: #007bff;
       color: white;
       border: none;
       border-radius: 5px;
+      font-size: 16px;
       cursor: pointer;
     }
-
     button:hover {
-      background-color: #218838;
+      background-color: #0056b3;
     }
   </style>
 </head>
@@ -47,9 +38,87 @@
   <h1>Detalhes do Evento</h1>
   <div id="eventoInfo"></div>
   <div id="itens"></div>
-  <button id="finalizarBtn">Finalizar Evento</button>
+  <div class="button-container">
+    <button id="finalizarEventoBtn">Finalizar Evento</button>
+  </div>
+  <a href="index.html" class="voltar">⬅ Voltar</a>
 
-  <!-- Corrigido o caminho para refletir que form.js está na pasta assets -->
-  <script type="module" src="assets/form.js"></script>
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js";
+    import { getDatabase, ref, get, update } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-database.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyBN-bmzgrlzjmrKMmuClZ8LVll-vJyx-aE",
+      authDomain: "controleestoquelepan.firebaseapp.com",
+      databaseURL: "https://controleestoquelepan-default-rtdb.firebaseio.com",
+      projectId: "controleestoquelepan",
+      storageBucket: "controleestoquelepan.appspot.com",
+      messagingSenderId: "779860276544",
+      appId: "1:779860276544:web:f45844571a8c0bab1576a5",
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+
+    const id = new URLSearchParams(window.location.search).get("id");
+
+    if (!id) {
+      alert("Evento não encontrado.");
+      window.location.href = "index.html";
+    }
+
+    const refEvento = ref(db, `eventos/${id}`);
+
+    // Carregar informações do evento e itens
+    get(refEvento).then(snapshot => {
+      if (!snapshot.exists()) {
+        alert("Evento não encontrado.");
+        return;
+      }
+
+      const evento = snapshot.val();
+
+      // Exibir as informações do evento
+      document.getElementById("eventoInfo").innerHTML = `
+        <p><strong>Nome:</strong> ${evento.nome}</p>
+        <p><strong>Data:</strong> ${evento.data}</p>
+        <p><strong>Responsável:</strong> ${evento.responsavel}</p>
+        <h3>Itens:</h3>
+      `;
+
+      const container = document.getElementById("itens");
+      if (Array.isArray(evento.itens) && evento.itens.length > 0) {
+        evento.itens.forEach(item => {
+          const div = document.createElement("div");
+          div.className = "item";
+          div.innerHTML = `
+            <span>Nome: ${item.nomeItem}</span><br>
+            <span>Quantidade Enviada: ${item.quantidadeEnviada}</span><br>
+            <span>Assado: ${item.assado}</span><br>
+            <span>Congelado: ${item.congelado}</span><br>
+            <span>Perdido: ${item.perdido}</span><br>
+          `;
+          container.appendChild(div);
+        });
+      } else {
+        container.innerHTML = "<p>Nenhum item registrado.</p>";
+      }
+
+      // Adicionar a lógica para finalizar evento
+      const finalizarBtn = document.getElementById("finalizarEventoBtn");
+      finalizarBtn.addEventListener("click", () => {
+        update(ref(db, `eventos/${id}`), { status: "finalizado" })
+          .then(() => {
+            alert("Evento finalizado com sucesso!");
+            window.location.href = "index.html"; // Voltar para a página principal
+          })
+          .catch(error => {
+            console.error("Erro ao finalizar evento:", error);
+          });
+      });
+    }).catch(err => {
+      console.error("Erro ao buscar evento:", err);
+    });
+  </script>
 </body>
 </html>
