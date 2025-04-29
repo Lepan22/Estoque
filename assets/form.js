@@ -50,7 +50,7 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js";
         import { getDatabase, ref, get, update } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-database.js";
 
-        // Configuração do Firebase (mantida a mesma do seu código original)
+        // Configuração do Firebase (mantida a mesma)
         const firebaseConfig = {
             apiKey: "AIzaSyBN-bmzgrlzjmrKMmuClZ8LVll-vJyx-aE",
             authDomain: "controleestoquelepan.firebaseapp.com",
@@ -64,27 +64,24 @@
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
 
-        // Obter o ID do evento da URL
         const id = new URLSearchParams(window.location.search).get("id");
 
         if (!id) {
             alert("ID do Evento não fornecido na URL.");
-            window.location.href = "index.html"; // Redireciona se não houver ID
+            window.location.href = "index.html";
         }
 
         const refEvento = ref(db, `eventos/${id}`);
 
-        // Carregar informações do evento e itens
         get(refEvento).then(snapshot => {
             if (!snapshot.exists()) {
                 alert("Evento não encontrado.");
-                window.location.href = "index.html"; // Redireciona se evento não existe
+                window.location.href = "index.html";
                 return;
             }
 
             const evento = snapshot.val();
 
-            // Exibir as informações gerais do evento
             document.getElementById("eventoInfo").innerHTML = `
                 <p><strong>Nome:</strong> ${evento.nome || 'Não informado'}</p>
                 <p><strong>Data:</strong> ${evento.data || 'Não informada'}</p>
@@ -93,19 +90,22 @@
             `;
 
             const container = document.getElementById("itens");
-            container.innerHTML = ''; // Limpa o container antes de adicionar itens
+            container.innerHTML = '';
 
-            // --- CORREÇÃO APLICADA AQUI ---
-            // Verifica se 'evento.itens' existe, é um objeto e não está vazio
-            if (evento.itens && typeof evento.itens === 'object' && Object.keys(evento.itens).length > 0) {
-                // Itera sobre os VALORES do objeto 'itens'
-                Object.values(evento.itens).forEach(item => {
+            // --- NOVA CORREÇÃO APLICADA AQUI ---
+            // Verifica se 'evento.itens' existe e é um ARRAY
+            if (evento.itens && Array.isArray(evento.itens) && evento.itens.length > 0) {
+                // Itera sobre os elementos do ARRAY 'itens'
+                evento.itens.forEach((item, index) => {
+                    // Ignora possíveis valores nulos no array (Firebase pode deixar 'buracos' se itens forem removidos)
+                    if (!item) return;
+
                     const div = document.createElement("div");
                     div.className = "item";
-                    // Adiciona verificações para propriedades que podem não existir
+                    // Usa 'item.enviado' para quantidade. Remove 'nomeItem' pois não existe.
                     div.innerHTML = `
-                        <span><strong>Nome:</strong> ${item.nomeItem || 'N/A'}</span><br>
-                        <span><strong>Quantidade Enviada:</strong> ${item.quantidadeEnviada !== undefined ? item.quantidadeEnviada : 'N/A'}</span><br>
+                        <span><strong>Item ${index + 1}</strong></span><br> <!-- Adiciona um índice genérico -->
+                        <span><strong>Quantidade Enviada:</strong> ${item.enviado !== undefined ? item.enviado : 'N/A'}</span><br>
                         <span><strong>Assado:</strong> ${item.assado !== undefined ? item.assado : 'N/A'}</span><br>
                         <span><strong>Congelado:</strong> ${item.congelado !== undefined ? item.congelado : 'N/A'}</span><br>
                         <span><strong>Perdido:</strong> ${item.perdido !== undefined ? item.perdido : 'N/A'}</span><br>
@@ -113,20 +113,17 @@
                     container.appendChild(div);
                 });
             } else {
-                // Mensagem se não houver itens ou se 'evento.itens' não for um objeto adequado
                 container.innerHTML = "<p>Nenhum item registrado para este evento.</p>";
             }
-            // --- FIM DA CORREÇÃO ---
+            // --- FIM DA NOVA CORREÇÃO ---
 
-            // Lógica para finalizar o evento (mantida a mesma)
             const finalizarBtn = document.getElementById("finalizarEventoBtn");
-            // Remove listener antigo para evitar duplicação se o código for executado múltiplas vezes
-            finalizarBtn.replaceWith(finalizarBtn.cloneNode(true));
+            finalizarBtn.replaceWith(finalizarBtn.cloneNode(true)); // Previne múltiplos listeners
             document.getElementById("finalizarEventoBtn").addEventListener("click", () => {
                 update(ref(db, `eventos/${id}`), { status: "finalizado" })
                     .then(() => {
                         alert("Evento finalizado com sucesso!");
-                        window.location.href = "index.html"; // Voltar para a página principal
+                        window.location.href = "index.html";
                     })
                     .catch(error => {
                         console.error("Erro ao finalizar evento:", error);
@@ -137,7 +134,6 @@
         }).catch(err => {
             console.error("Erro ao buscar dados do evento:", err);
             alert("Erro ao carregar os dados do evento. Verifique o console para mais detalhes.");
-            // Limpa a área de itens em caso de erro ao buscar
             document.getElementById("itens").innerHTML = "<p>Erro ao carregar itens.</p>";
         });
     </script>
