@@ -5,32 +5,50 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Detalhes do Evento</title>
   <style>
-    body { font-family: Arial, sans-serif; margin: 20px; }
-    h1 { color: #333; }
-    .item { margin-bottom: 10px; }
-    .item span { font-weight: bold; }
-    .container { margin-top: 20px; }
-    .btn-salvar { 
-      padding: 10px 20px; 
-      background-color: #28a745; 
-      color: white; 
-      border: none; 
-      border-radius: 5px;
-      font-weight: bold;
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
     }
-    .btn-salvar:hover { background-color: #218838; }
+
+    h1 {
+      color: #333;
+    }
+
+    .item {
+      border-bottom: 1px solid #ccc;
+      padding: 10px 0;
+    }
+
+    .item p {
+      margin: 4px 0;
+    }
+
+    #eventoInfo p {
+      margin: 4px 0;
+    }
+
+    button {
+      margin-top: 20px;
+      padding: 10px 20px;
+      font-weight: bold;
+      background-color: #28a745;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #218838;
+    }
   </style>
 </head>
 <body>
   <h1>Detalhes do Evento</h1>
   <div id="eventoInfo"></div>
   <div id="itens"></div>
-  
-  <div class="container">
-    <button class="btn-salvar" id="finalizarBtn">Finalizar Evento</button>
-  </div>
-  
-  <script type="module" src="assets/form.js"></script>
+  <button id="finalizarBtn">Finalizar Evento</button>
+
+  <script type="module" src="form.js"></script>
 </body>
 </html>
-
