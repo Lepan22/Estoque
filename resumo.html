@@ -1,36 +1,59 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Resumo do Evento</title>
-  <style>
-    body { font-family: Arial, sans-serif; margin: 20px; }
-    h1 { color: #333; }
-    .item { margin-bottom: 10px; }
-    .item span { font-weight: bold; }
-    .container { margin-top: 20px; }
-    .btn-voltar { 
-      padding: 10px 20px; 
-      background-color: #007bff; 
-      color: white; 
-      border: none; 
-      border-radius: 5px;
-      font-weight: bold;
-      text-decoration: none;
-    }
-    .btn-voltar:hover { background-color: #0056b3; }
-  </style>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Resumo do Evento</title>
+    <!-- Link para o arquivo CSS externo -->
+    <link rel="stylesheet" href="assets/style.css">
+
+    <!-- Estilos específicos para resumo.html (se necessário) -->
+    <style>
+        /* Estilos para a seção de resumo */
+        #resumo-container {
+            margin-top: 20px;
+        }
+        .resumo-item {
+            margin-bottom: 15px;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            background-color: #f9f9f9;
+        }
+        .resumo-item div {
+            margin-bottom: 8px;
+        }
+        .resumo-item strong {
+             min-width: 150px; /* Alinha com os labels do form.html */
+             display: inline-block;
+        }
+        #eventoInfoResumo p {
+             margin-bottom: 10px;
+             font-size: 1.1em;
+        }
+    </style>
 </head>
 <body>
-  <h1>Resumo do Evento</h1>
-  <div id="eventoInfo"></div>
-  <div id="itens"></div>
+    <div class="container">
+        <h1>Resumo do Evento</h1>
+        
+        <!-- Informações gerais do evento -->
+        <div id="eventoInfoResumo"></div>
+        
+        <!-- Resumo dos itens -->
+        <h3>Itens:</h3>
+        <div id="resumo-container">
+            <!-- Conteúdo do resumo será carregado aqui -->
+            <p>Carregando resumo...</p>
+        </div>
 
-  <div class="container">
-    <a href="index.html" class="btn-voltar">Voltar para a Página Inicial</a>
-  </div>
+        <!-- Botão Voltar -->
+        <div class="button-container" style="margin-top: 30px;">
+            <a href="index.html" class="botao">Voltar para a Página Inicial</a>
+        </div>
+    </div>
 
-  <script type="module" src="assets/resumo.js"></script>
+    <!-- Script continua sendo externo -->
+    <script type="module" src="assets/resumo.js"></script>
 </body>
 </html>
