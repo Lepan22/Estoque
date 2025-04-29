@@ -30,7 +30,7 @@ document.getElementById('formCriarEvento').addEventListener('submit', (e) => {
     itens: itens
   }).then(() => {
     alert("Evento criado com sucesso!");
-    window.location.href = "index.html"; // Redireciona de volta ao painel
+    window.location.href = '../index.html'; // Redireciona de volta ao painel
   }).catch((error) => {
     alert("Erro ao criar evento: " + error.message);
   });
