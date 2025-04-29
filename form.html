@@ -1,113 +1,141 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Detalhes do Evento</title>
-  <style>
-    body { font-family: Arial, sans-serif; margin: 20px; }
-    h1 { color: #333; }
-    .item { margin-bottom: 10px; }
-    .item span { font-weight: bold; }
-    .button-container { margin-top: 20px; }
-    button {
-      padding: 10px 20px;
-      background-color: #007bff;
-      color: white;
-      border: none;
-      border-radius: 5px;
-      font-size: 16px;
-      cursor: pointer;
-    }
-    button:hover {
-      background-color: #0056b3;
-    }
-  </style>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Detalhes do Evento</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        h1 {
+            color: #333;
+        }
+        .item {
+            margin-bottom: 10px;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        .item span {
+            font-weight: bold;
+        }
+        .button-container {
+            margin-top: 20px;
+        }
+        button {
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+    </style>
 </head>
 <body>
-  <h1>Detalhes do Evento</h1>
-  <div id="eventoInfo"></div>
-  <div id="itens"></div>
-  <div class="button-container">
-    <button id="finalizarEventoBtn">Finalizar Evento</button>
-  </div>
+    <h1>Detalhes do Evento</h1>
+    <div id="eventoInfo"></div>
+    <div id="itens"></div>
+    <div class="button-container">
+        <button id="finalizarEventoBtn">Finalizar Evento</button>
+    </div>
 
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js";
-    import { getDatabase, ref, get, update } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-database.js";
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js";
+        import { getDatabase, ref, get, update } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-database.js";
 
-    const firebaseConfig = {
-      apiKey: "AIzaSyBN-bmzgrlzjmrKMmuClZ8LVll-vJyx-aE",
-      authDomain: "controleestoquelepan.firebaseapp.com",
-      databaseURL: "https://controleestoquelepan-default-rtdb.firebaseio.com",
-      projectId: "controleestoquelepan",
-      storageBucket: "controleestoquelepan.appspot.com",
-      messagingSenderId: "779860276544",
-      appId: "1:779860276544:web:f45844571a8c0bab1576a5",
-    };
+        // Configuração do Firebase (mantida a mesma)
+        const firebaseConfig = {
+            apiKey: "AIzaSyBN-bmzgrlzjmrKMmuClZ8LVll-vJyx-aE",
+            authDomain: "controleestoquelepan.firebaseapp.com",
+            databaseURL: "https://controleestoquelepan-default-rtdb.firebaseio.com",
+            projectId: "controleestoquelepan",
+            storageBucket: "controleestoquelepan.appspot.com",
+            messagingSenderId: "779860276544",
+            appId: "1:779860276544:web:f45844571a8c0bab1576a5",
+        };
 
-    const app = initializeApp(firebaseConfig);
-    const db = getDatabase(app);
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
 
-    const id = new URLSearchParams(window.location.search).get("id");
+        const id = new URLSearchParams(window.location.search).get("id");
 
-    if (!id) {
-      alert("Evento não encontrado.");
-      window.location.href = "index.html";
-    }
+        if (!id) {
+            alert("ID do Evento não fornecido na URL.");
+            window.location.href = "index.html";
+        }
 
-    const refEvento = ref(db, `eventos/${id}`);
+        const refEvento = ref(db, `eventos/${id}`);
 
-    // Carregar informações do evento e itens
-    get(refEvento).then(snapshot => {
-      if (!snapshot.exists()) {
-        alert("Evento não encontrado.");
-        return;
-      }
+        get(refEvento).then(snapshot => {
+            if (!snapshot.exists()) {
+                alert("Evento não encontrado.");
+                window.location.href = "index.html";
+                return;
+            }
 
-      const evento = snapshot.val();
+            const evento = snapshot.val();
 
-      // Exibir as informações do evento
-      document.getElementById("eventoInfo").innerHTML = `
-        <p><strong>Nome:</strong> ${evento.nome}</p>
-        <p><strong>Data:</strong> ${evento.data}</p>
-        <p><strong>Responsável:</strong> ${evento.responsavel}</p>
-        <h3>Itens:</h3>
-      `;
+            document.getElementById("eventoInfo").innerHTML = `
+                <p><strong>Nome:</strong> ${evento.nome || 'Não informado'}</p>
+                <p><strong>Data:</strong> ${evento.data || 'Não informada'}</p>
+                <p><strong>Responsável:</strong> ${evento.responsavel || 'Não informado'}</p>
+                <h3>Itens:</h3>
+            `;
 
-      const container = document.getElementById("itens");
-      if (evento.itens && Array.isArray(evento.itens) && evento.itens.length > 0) {
-        evento.itens.forEach(item => {
-          const div = document.createElement("div");
-          div.className = "item";
-          div.innerHTML = `
-            <span><strong>Nome:</strong> ${item.nomeItem}</span><br>
-            <span><strong>Quantidade Enviada:</strong> ${item.quantidadeEnviada}</span><br>
-            <span><strong>Assado:</strong> ${item.assado}</span><br>
-            <span><strong>Congelado:</strong> ${item.congelado}</span><br>
-            <span><strong>Perdido:</strong> ${item.perdido}</span><br>
-          `;
-          container.appendChild(div);
+            const container = document.getElementById("itens");
+            container.innerHTML = '';
+
+            // --- NOVA CORREÇÃO APLICADA AQUI ---
+            // Verifica se 'evento.itens' existe e é um ARRAY
+            if (evento.itens && Array.isArray(evento.itens) && evento.itens.length > 0) {
+                // Itera sobre os elementos do ARRAY 'itens'
+                evento.itens.forEach((item, index) => {
+                    // Ignora possíveis valores nulos no array (Firebase pode deixar 'buracos' se itens forem removidos)
+                    if (!item) return;
+
+                    const div = document.createElement("div");
+                    div.className = "item";
+                    // Usa 'item.enviado' para quantidade. Remove 'nomeItem' pois não existe.
+                    div.innerHTML = `
+                        <span><strong>Item ${index + 1}</strong></span><br> <!-- Adiciona um índice genérico -->
+                        <span><strong>Quantidade Enviada:</strong> ${item.enviado !== undefined ? item.enviado : 'N/A'}</span><br>
+                        <span><strong>Assado:</strong> ${item.assado !== undefined ? item.assado : 'N/A'}</span><br>
+                        <span><strong>Congelado:</strong> ${item.congelado !== undefined ? item.congelado : 'N/A'}</span><br>
+                        <span><strong>Perdido:</strong> ${item.perdido !== undefined ? item.perdido : 'N/A'}</span><br>
+                    `;
+                    container.appendChild(div);
+                });
+            } else {
+                container.innerHTML = "<p>Nenhum item registrado para este evento.</p>";
+            }
+            // --- FIM DA NOVA CORREÇÃO ---
+
+            const finalizarBtn = document.getElementById("finalizarEventoBtn");
+            finalizarBtn.replaceWith(finalizarBtn.cloneNode(true)); // Previne múltiplos listeners
+            document.getElementById("finalizarEventoBtn").addEventListener("click", () => {
+                update(ref(db, `eventos/${id}`), { status: "finalizado" })
+                    .then(() => {
+                        alert("Evento finalizado com sucesso!");
+                        window.location.href = "index.html";
+                    })
+                    .catch(error => {
+                        console.error("Erro ao finalizar evento:", error);
+                        alert("Erro ao finalizar o evento. Verifique o console para mais detalhes.");
+                    });
+            });
+
+        }).catch(err => {
+            console.error("Erro ao buscar dados do evento:", err);
+            alert("Erro ao carregar os dados do evento. Verifique o console para mais detalhes.");
+            document.getElementById("itens").innerHTML = "<p>Erro ao carregar itens.</p>";
         });
-      } else {
-        container.innerHTML = "<p>Nenhum item registrado.</p>";
-      }
-
-      // Adicionar a lógica para finalizar evento
-      const finalizarBtn = document.getElementById("finalizarEventoBtn");
-      finalizarBtn.addEventListener("click", () => {
-        update(ref(db, `eventos/${id}`), { status: "finalizado" })
-          .then(() => {
-            alert("Evento finalizado com sucesso!");
-            window.location.href = "index.html"; // Voltar para a página principal
-          })
-          .catch(error => {
-            console.error("Erro ao finalizar evento:", error);
-          });
-      });
-    }).catch(err => {
-      console.error("Erro ao buscar evento:", err);
-    });
-  </script>
+    </script>
 </body>
 </html>
