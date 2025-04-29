@@ -25,41 +25,31 @@ const refEvento = ref(db, `eventos/${id}`);
 
 get(refEvento).then(snapshot => {
   if (!snapshot.exists()) {
-    alert("Evento não existe.");
+    alert("Evento não encontrado.");
     return;
   }
 
   const evento = snapshot.val();
 
-  // Exibir informações principais
-  document.getElementById("eventoNome").innerText = evento.nome;
-  document.getElementById("eventoData").innerText = evento.data;
-  document.getElementById("eventoResponsavel").innerText = evento.responsavel;
+  document.getElementById("eventoInfo").innerHTML = `
+    <p><strong>Nome:</strong> ${evento.nome}</p>
+    <p><strong>Data:</strong> ${evento.data}</p>
+    <p><strong>Responsável:</strong> ${evento.responsavel}</p>
+    <p><strong>Status:</strong> ${evento.status}</p>
+    <h3>Itens:</h3>
+  `;
 
-  // Exibir itens do evento
   const container = document.getElementById("itens");
-  const itensRaw = evento.itens || {};
-  const itens = Array.isArray(itensRaw)
-    ? itensRaw
-    : Object.keys(itensRaw).sort().map(k => itensRaw[k]);
-
-  if (itens.length > 0) {
-    itens.forEach(item => {
+  if (Array.isArray(evento.itens) && evento.itens.length > 0) {
+    evento.itens.forEach(item => {
       const div = document.createElement("div");
       div.className = "item";
-      div.innerHTML = `
-        <span>Nome: ${item.nomeItem}</span><br>
-        <span>Quantidade Enviada: ${item.quantidadeEnviada}</span><br>
-        <span>Assado: ${item.assado}</span><br>
-        <span>Congelado: ${item.congelado}</span><br>
-        <span>Perdido: ${item.perdido}</span><br>
-      `;
+      div.innerHTML = `<span>${item.nomeItem}:</span> ${item.quantidadeEnviada}`;
       container.appendChild(div);
     });
   } else {
     container.innerHTML = "<p>Nenhum item registrado.</p>";
   }
-
 }).catch(err => {
   console.error("Erro ao buscar evento:", err);
 });
