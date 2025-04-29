@@ -39,37 +39,29 @@ get(refEvento).then(snapshot => {
   `;
 
   const container = document.getElementById("itens");
-  const successMessage = document.getElementById("successMessage");
-
-  const itensRaw = evento.itens || {};
-  const itens = Array.isArray(itensRaw)
-    ? itensRaw
-    : Object.keys(itensRaw).sort().map(k => itensRaw[k]);
-
-  if (itens.length > 0) {
-    itens.forEach(item => {
+  if (Array.isArray(evento.itens) && evento.itens.length > 0) {
+    evento.itens.forEach(item => {
       const div = document.createElement("div");
       div.className = "item";
-      div.innerHTML = `
-        <span>Nome: ${item.nomeItem}</span><br>
-        <span>Quantidade Enviada: ${item.quantidadeEnviada}</span><br>
-        <span>Assado: ${item.assado}</span><br>
-        <span>Congelado: ${item.congelado}</span><br>
-        <span>Perdido: ${item.perdido}</span><br>
-      `;
+      div.innerHTML = `<span>${item.nomeItem}:</span> ${item.quantidadeEnviada}`;
       container.appendChild(div);
     });
   } else {
     container.innerHTML = "<p>Nenhum item registrado.</p>";
   }
 
-  // Exibir mensagem de sucesso ao final do evento
-  if (evento.status === "finalizado") {
-    successMessage.style.display = "block";
-  }
-
+  // Adicionar ação ao botão de "Finalizar Evento"
+  const finalizarBtn = document.getElementById("finalizarBtn");
+  finalizarBtn.addEventListener("click", () => {
+    // Atualizar o status do evento para "finalizado"
+    update(refEvento, { status: "finalizado" }).then(() => {
+      alert("Evento finalizado com sucesso!");
+      window.location.href = `resumo.html?id=${id}`; // Redireciona para a página de resumo
+    }).catch((error) => {
+      console.error("Erro ao finalizar evento:", error);
+      alert("Houve um erro ao finalizar o evento.");
+    });
+  });
 }).catch(err => {
   console.error("Erro ao buscar evento:", err);
 });
-
-
