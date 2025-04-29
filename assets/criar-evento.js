@@ -15,34 +15,57 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 
-const form = document.getElementById('form-criar-evento');
+const form = document.getElementById("form-evento");
+const addItemBtn = document.getElementById("add-item");
+const itensContainer = document.getElementById("itens-container");
 
-form.addEventListener('submit', async (e) => {
+addItemBtn.addEventListener("click", () => {
+  const div = document.createElement("div");
+  div.innerHTML = `
+    <label>Item: <input type="text" name="item-nome" required /></label>
+    <label>Quantidade Enviada: <input type="number" name="item-quantidade" required min="1" /></label>
+    <button type="button" onclick="this.parentElement.remove()">Remover</button>
+    <br><br>
+  `;
+  itensContainer.appendChild(div);
+});
+
+form.addEventListener("submit", async (e) => {
   e.preventDefault();
-  const nome = document.getElementById('nome').value.trim();
-  const data = document.getElementById('data').value;
-  const responsavel = document.getElementById('responsavel').value.trim();
+  const data = new FormData(form);
 
-  if (!nome || !data || !responsavel) {
-    alert("Preencha todos os campos.");
-    return;
-  }
+  const nome = data.get("nome");
+  const dataEvento = data.get("data");
+  const responsavel = data.get("responsavel");
+
+  const inputs = itensContainer.querySelectorAll("div");
+  const itens = {};
+
+  inputs.forEach(div => {
+    const nomeInput = div.querySelector("input[name='item-nome']");
+    const qtdInput = div.querySelector("input[name='item-quantidade']");
+    const nomeItem = nomeInput.value.trim();
+    const quantidade = parseInt(qtdInput.value.trim());
+    if (nomeItem && quantidade > 0) {
+      itens[nomeItem] = { enviado: quantidade };
+    }
+  });
 
   const novoEvento = {
     nome,
-    data,
+    data: dataEvento,
     responsavel,
     status: "aberto",
-    itens: {}
+    itens
   };
 
   try {
-    const eventosRef = ref(db, 'eventos');
-    await push(eventosRef, novoEvento);
+    await push(ref(db, "eventos"), novoEvento);
     alert("Evento criado com sucesso!");
     window.location.href = "../index.html";
   } catch (error) {
     console.error("Erro ao criar evento:", error);
-    alert("Erro ao criar evento. Tente novamente.");
+    alert("Erro ao criar evento.");
   }
 });
+
