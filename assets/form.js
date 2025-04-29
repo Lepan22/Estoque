@@ -15,7 +15,7 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 
-// Obter ID do evento
+// Pega o ID do evento pela URL
 const id = new URLSearchParams(window.location.search).get("id");
 
 if (!id) {
@@ -25,7 +25,7 @@ if (!id) {
 
 const refEvento = ref(db, `eventos/${id}`);
 
-// Buscar dados do evento
+// Carrega dados do evento
 get(refEvento).then(snapshot => {
   if (!snapshot.exists()) {
     alert("Evento não encontrado.");
@@ -43,47 +43,54 @@ get(refEvento).then(snapshot => {
   const container = document.getElementById("itens");
   container.innerHTML = "";
 
-  if (Array.isArray(evento.itens) && evento.itens.length > 0) {
-    evento.itens.forEach((item, index) => {
-      const div = document.createElement("div");
-      div.className = "item";
-      div.innerHTML = `
-        <h4>${item.nomeItem || "Item sem nome"}</h4>
-        <p><strong>Enviado:</strong> ${item.quantidadeEnviada || 0}</p>
-        <label>Assado: <input type="number" id="assado-${index}" value="${item.assado ?? 0}"></label><br>
-        <label>Congelado: <input type="number" id="congelado-${index}" value="${item.congelado ?? 0}"></label><br>
-        <label>Perdido: <input type="number" id="perdido-${index}" value="${item.perdido ?? 0}"></label>
-        <hr>
-      `;
-      container.appendChild(div);
-    });
+  // Suporte a arrays ou objetos
+  const itensArray = Array.isArray(evento.itens)
+    ? evento.itens
+    : Object.values(evento.itens || {});
 
-    const botaoSalvar = document.createElement("button");
-    botaoSalvar.textContent = "Salvar Evento";
-    botaoSalvar.onclick = () => {
-      const novosItens = evento.itens.map((item, index) => ({
-        ...item,
-        assado: parseInt(document.getElementById(`assado-${index}`).value) || 0,
-        congelado: parseInt(document.getElementById(`congelado-${index}`).value) || 0,
-        perdido: parseInt(document.getElementById(`perdido-${index}`).value) || 0,
-      }));
-
-      update(refEvento, {
-        itens: novosItens,
-        status: "finalizado"
-      }).then(() => {
-        alert("Evento finalizado com sucesso!");
-        window.location.href = `resumo.html?id=${id}`;
-      }).catch(err => {
-        console.error("Erro ao salvar:", err);
-        alert("Erro ao salvar o evento.");
-      });
-    };
-
-    document.body.appendChild(botaoSalvar);
-  } else {
-    container.innerHTML = "<p>Nenhum item registrado neste evento.</p>";
+  if (itensArray.length === 0) {
+    container.innerHTML = "<p>Nenhum item registrado.</p>";
+    return;
   }
+
+  itensArray.forEach((item, index) => {
+    const div = document.createElement("div");
+    div.className = "item";
+    div.innerHTML = `
+      <h4>${item.nomeItem || "Item sem nome"}</h4>
+      <p><strong>Enviado:</strong> ${item.quantidadeEnviada ?? 0}</p>
+      <label>Assado: <input type="number" id="assado-${index}" value="${item.assado ?? 0}"></label><br>
+      <label>Congelado: <input type="number" id="congelado-${index}" value="${item.congelado ?? 0}"></label><br>
+      <label>Perdido: <input type="number" id="perdido-${index}" value="${item.perdido ?? 0}"></label>
+      <hr>
+    `;
+    container.appendChild(div);
+  });
+
+  // Botão para salvar retorno
+  const botaoSalvar = document.createElement("button");
+  botaoSalvar.textContent = "Finalizar Evento";
+  botaoSalvar.onclick = () => {
+    const novosItens = itensArray.map((item, index) => ({
+      ...item,
+      assado: parseInt(document.getElementById(`assado-${index}`).value) || 0,
+      congelado: parseInt(document.getElementById(`congelado-${index}`).value) || 0,
+      perdido: parseInt(document.getElementById(`perdido-${index}`).value) || 0,
+    }));
+
+    update(refEvento, {
+      itens: novosItens,
+      status: "finalizado"
+    }).then(() => {
+      alert("Evento finalizado com sucesso!");
+      window.location.href = `resumo.html?id=${id}`;
+    }).catch(err => {
+      console.error("Erro ao salvar:", err);
+      alert("Erro ao salvar o evento.");
+    });
+  };
+
+  document.body.appendChild(botaoSalvar);
 }).catch(error => {
-  console.error("Erro ao buscar dados do evento:", error);
+  console.error("Erro ao buscar evento:", error);
 });
