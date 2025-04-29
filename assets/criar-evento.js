@@ -22,19 +22,22 @@ const itensContainer = document.getElementById("itens-container");
 addItemBtn.addEventListener("click", () => {
   const div = document.createElement("div");
   div.classList.add("item-line");
+  div.style.marginBottom = "10px"; // Adiciona um espaço entre as linhas de item
 
   const nomeInput = document.createElement("input");
   nomeInput.type = "text";
   nomeInput.name = "item-nome";
   nomeInput.required = true;
   nomeInput.placeholder = "Nome do item";
+  nomeInput.style.marginRight = "5px";
 
   const qtdInput = document.createElement("input");
   qtdInput.type = "number";
   qtdInput.name = "item-quantidade";
   qtdInput.required = true;
   qtdInput.min = 1;
-  qtdInput.placeholder = "Quantidade";
+  qtdInput.placeholder = "Quantidade Enviada";
+  qtdInput.style.marginRight = "5px";
 
   const removerBtn = document.createElement("button");
   removerBtn.type = "button";
@@ -46,8 +49,6 @@ addItemBtn.addEventListener("click", () => {
   div.appendChild(nomeInput);
   div.appendChild(qtdInput);
   div.appendChild(removerBtn);
-  div.appendChild(document.createElement("br"));
-  div.appendChild(document.createElement("br"));
 
   itensContainer.appendChild(div);
 });
@@ -61,32 +62,51 @@ form.addEventListener("submit", async (e) => {
   const responsavel = data.get("responsavel");
 
   const inputs = itensContainer.querySelectorAll(".item-line");
-  const itens = {};
+  // --- MUDANÇA AQUI: Inicializa 'itens' como um ARRAY --- 
+  const itens = []; 
 
   inputs.forEach(div => {
     const nomeInput = div.querySelector("input[name='item-nome']");
     const qtdInput = div.querySelector("input[name='item-quantidade']");
     const nomeItem = nomeInput.value.trim();
     const quantidade = parseInt(qtdInput.value.trim());
+    
     if (nomeItem && quantidade > 0) {
-      itens[nomeItem] = { enviado: quantidade };
+      // --- MUDANÇA AQUI: Adiciona um OBJETO ao ARRAY 'itens' --- 
+      itens.push({
+        nomeItem: nomeItem,       // Salva o nome do item
+        enviado: quantidade,      // Salva a quantidade enviada
+        assado: 0,              // Inicializa os outros campos como 0
+        congelado: 0,
+        perdido: 0
+      });
     }
   });
+
+  // Verifica se pelo menos um item foi adicionado
+  if (itens.length === 0) {
+    alert("Por favor, adicione pelo menos um item ao evento.");
+    return; // Impede o envio do formulário se não houver itens
+  }
 
   const novoEvento = {
     nome,
     data: dataEvento,
     responsavel,
     status: "aberto",
-    itens
+    itens // Agora 'itens' é um array de objetos
   };
 
   try {
     await push(ref(db, "eventos"), novoEvento);
     alert("Evento criado com sucesso!");
-    window.location.href = "../index.html";
+    // Limpa o formulário após o sucesso (opcional)
+    form.reset();
+    itensContainer.innerHTML = ''; // Limpa os itens adicionados dinamicamente
+    // Redireciona para a página inicial
+    window.location.href = "../index.html"; 
   } catch (error) {
     console.error("Erro ao criar evento:", error);
-    alert("Erro ao criar evento.");
+    alert("Erro ao criar evento. Verifique o console para mais detalhes.");
   }
 });
