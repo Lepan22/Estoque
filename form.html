@@ -9,21 +9,28 @@
     h1 { color: #333; }
     .item { margin-bottom: 10px; }
     .item span { font-weight: bold; }
-    .success-message {
-      background-color: #28a745;
-      color: white;
-      padding: 10px;
+    .container { margin-top: 20px; }
+    .btn-salvar { 
+      padding: 10px 20px; 
+      background-color: #28a745; 
+      color: white; 
+      border: none; 
       border-radius: 5px;
-      display: none;
+      font-weight: bold;
     }
+    .btn-salvar:hover { background-color: #218838; }
   </style>
 </head>
 <body>
   <h1>Detalhes do Evento</h1>
   <div id="eventoInfo"></div>
   <div id="itens"></div>
-  <div class="success-message" id="successMessage">Evento finalizado com sucesso!</div>
-
+  
+  <div class="container">
+    <button class="btn-salvar" id="finalizarBtn">Finalizar Evento</button>
+  </div>
+  
   <script type="module" src="assets/form.js"></script>
 </body>
 </html>
+
