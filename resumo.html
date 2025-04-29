@@ -7,23 +7,29 @@
   <style>
     body { font-family: Arial, sans-serif; margin: 20px; }
     h1 { color: #333; }
-    .resumo { margin-top: 20px; }
     .item { margin-bottom: 10px; }
     .item span { font-weight: bold; }
+    .container { margin-top: 20px; }
+    .btn-voltar { 
+      padding: 10px 20px; 
+      background-color: #007bff; 
+      color: white; 
+      border: none; 
+      border-radius: 5px;
+      font-weight: bold;
+      text-decoration: none;
+    }
+    .btn-voltar:hover { background-color: #0056b3; }
   </style>
 </head>
 <body>
   <h1>Resumo do Evento</h1>
-  <div class="resumo">
-    <p><strong>Nome do Evento:</strong> <span id="eventoNome"></span></p>
-    <p><strong>Data:</strong> <span id="eventoData"></span></p>
-    <p><strong>Responsável:</strong> <span id="eventoResponsavel"></span></p>
+  <div id="eventoInfo"></div>
+  <div id="itens"></div>
 
-    <h3>Itens:</h3>
-    <div id="itens"></div>
+  <div class="container">
+    <a href="index.html" class="btn-voltar">Voltar para a Página Inicial</a>
   </div>
-
-  <a href="index.html">⬅ Voltar para a Página Principal</a>
 
   <script type="module" src="assets/resumo.js"></script>
 </body>
