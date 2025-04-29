@@ -21,12 +21,34 @@ const itensContainer = document.getElementById("itens-container");
 
 addItemBtn.addEventListener("click", () => {
   const div = document.createElement("div");
-  div.innerHTML = `
-    <label>Item: <input type="text" name="item-nome" required /></label>
-    <label>Quantidade Enviada: <input type="number" name="item-quantidade" required min="1" /></label>
-    <button type="button" onclick="this.parentElement.remove()">Remover</button>
-    <br><br>
-  `;
+  div.classList.add("item-line");
+
+  const nomeInput = document.createElement("input");
+  nomeInput.type = "text";
+  nomeInput.name = "item-nome";
+  nomeInput.required = true;
+  nomeInput.placeholder = "Nome do item";
+
+  const qtdInput = document.createElement("input");
+  qtdInput.type = "number";
+  qtdInput.name = "item-quantidade";
+  qtdInput.required = true;
+  qtdInput.min = 1;
+  qtdInput.placeholder = "Quantidade";
+
+  const removerBtn = document.createElement("button");
+  removerBtn.type = "button";
+  removerBtn.textContent = "Remover";
+  removerBtn.addEventListener("click", () => {
+    itensContainer.removeChild(div);
+  });
+
+  div.appendChild(nomeInput);
+  div.appendChild(qtdInput);
+  div.appendChild(removerBtn);
+  div.appendChild(document.createElement("br"));
+  div.appendChild(document.createElement("br"));
+
   itensContainer.appendChild(div);
 });
 
@@ -38,7 +60,7 @@ form.addEventListener("submit", async (e) => {
   const dataEvento = data.get("data");
   const responsavel = data.get("responsavel");
 
-  const inputs = itensContainer.querySelectorAll("div");
+  const inputs = itensContainer.querySelectorAll(".item-line");
   const itens = {};
 
   inputs.forEach(div => {
