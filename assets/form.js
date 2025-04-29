@@ -47,6 +47,12 @@ onValue(eventoRef, (snapshot) => {
 
   const isFinalizado = evento.status === "finalizado";
 
+  if (!evento.itens || Object.keys(evento.itens).length === 0) {
+    form.innerHTML = "<p>Nenhum item foi adicionado ao evento.</p>";
+    salvarBtn.disabled = true;
+    return;
+  }
+
   for (const [nomeItem, dados] of Object.entries(evento.itens)) {
     const congelado = dados.congelado || 0;
     const assado = dados.assado || 0;
@@ -96,3 +102,4 @@ salvarBtn.addEventListener("click", async () => {
     alert("Erro ao salvar.");
   }
 });
+
