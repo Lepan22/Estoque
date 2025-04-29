@@ -34,18 +34,19 @@
         }
 
         const eventos = snapshot.val();
-        Object.entries(eventos).forEach(([id, evento]) => {
+        const eventosArray = Object.entries(eventos)
+          .map(([id, evento]) => ({ id, ...evento }))
+          .sort((a, b) => new Date(b.data) - new Date(a.data)); // Ordenando por data decrescente
+
+        eventosArray.forEach(({ id, nome, data, responsavel, status }) => {
           const div = document.createElement("div");
           div.style.marginBottom = "20px";
           div.style.border = "1px solid #ccc";
           div.style.padding = "10px";
           div.style.borderRadius = "5px";
           div.innerHTML = `
-            <p><strong>Nome:</strong> ${evento.nome}</p>
-            <p><strong>Data:</strong> ${evento.data}</p>
-            <p><strong>Responsável:</strong> ${evento.responsavel}</p>
-            <p><strong>Status:</strong> ${evento.status || "aberto"}</p>
-            <a href="assets/form.html?id=${id}" class="botao-criar">Ver Detalhes</a>
+            <p><strong>Nome:</strong> ${nome} | <strong>Data:</strong> ${data} | <strong>Responsável:</strong> ${responsavel} | <strong>Status:</strong> ${status || "aberto"}</p>
+            <a href="form.html?id=${id}" class="botao-criar">Ver Detalhes</a>
           `;
           container.appendChild(div);
         });
