@@ -92,19 +92,18 @@
             const container = document.getElementById("itens");
             container.innerHTML = '';
 
-            // --- NOVA CORREÇÃO APLICADA AQUI ---
             // Verifica se 'evento.itens' existe e é um ARRAY
             if (evento.itens && Array.isArray(evento.itens) && evento.itens.length > 0) {
                 // Itera sobre os elementos do ARRAY 'itens'
-                evento.itens.forEach((item, index) => {
-                    // Ignora possíveis valores nulos no array (Firebase pode deixar 'buracos' se itens forem removidos)
+                evento.itens.forEach((item) => {
+                    // Ignora possíveis valores nulos no array
                     if (!item) return;
 
                     const div = document.createElement("div");
                     div.className = "item";
-                    // Usa 'item.enviado' para quantidade. Remove 'nomeItem' pois não existe.
+                    // --- MUDANÇA AQUI: Usa 'item.nomeItem' para o nome --- 
                     div.innerHTML = `
-                        <span><strong>Item ${index + 1}</strong></span><br> <!-- Adiciona um índice genérico -->
+                        <span><strong>Nome:</strong> ${item.nomeItem || 'N/A'}</span><br> <!-- Exibe o nome do item ou N/A -->
                         <span><strong>Quantidade Enviada:</strong> ${item.enviado !== undefined ? item.enviado : 'N/A'}</span><br>
                         <span><strong>Assado:</strong> ${item.assado !== undefined ? item.assado : 'N/A'}</span><br>
                         <span><strong>Congelado:</strong> ${item.congelado !== undefined ? item.congelado : 'N/A'}</span><br>
@@ -113,9 +112,9 @@
                     container.appendChild(div);
                 });
             } else {
+                // Mensagem se não houver itens ou se 'evento.itens' não for um array adequado
                 container.innerHTML = "<p>Nenhum item registrado para este evento.</p>";
             }
-            // --- FIM DA NOVA CORREÇÃO ---
 
             const finalizarBtn = document.getElementById("finalizarEventoBtn");
             finalizarBtn.replaceWith(finalizarBtn.cloneNode(true)); // Previne múltiplos listeners
