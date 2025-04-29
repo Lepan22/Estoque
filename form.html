@@ -9,17 +9,27 @@
             font-family: Arial, sans-serif;
             margin: 20px;
         }
-        h1 {
+        h1, h3 {
             color: #333;
         }
         .item {
-            margin-bottom: 10px;
-            padding: 10px;
+            margin-bottom: 15px;
+            padding: 15px;
             border: 1px solid #ddd;
             border-radius: 4px;
+            background-color: #f9f9f9;
         }
-        .item span {
+        .item label {
+            display: inline-block;
+            min-width: 150px; /* Ajuste conforme necessário */
             font-weight: bold;
+            margin-bottom: 5px;
+        }
+        .item input[type="number"] {
+            width: 60px; /* Ajuste conforme necessário */
+            padding: 5px;
+            margin-left: 5px;
+            margin-bottom: 5px;
         }
         .button-container {
             margin-top: 20px;
@@ -32,17 +42,26 @@
             border-radius: 5px;
             font-size: 16px;
             cursor: pointer;
+            margin-right: 10px;
         }
         button:hover {
             background-color: #0056b3;
+        }
+        #salvarAlteracoesBtn {
+            background-color: #28a745; /* Cor verde para salvar */
+        }
+        #salvarAlteracoesBtn:hover {
+            background-color: #218838;
         }
     </style>
 </head>
 <body>
     <h1>Detalhes do Evento</h1>
     <div id="eventoInfo"></div>
+    <h3>Itens:</h3>
     <div id="itens"></div>
     <div class="button-container">
+        <button id="salvarAlteracoesBtn">Salvar Alterações</button>
         <button id="finalizarEventoBtn">Finalizar Evento</button>
     </div>
 
@@ -50,7 +69,6 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js";
         import { getDatabase, ref, get, update } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-database.js";
 
-        // Configuração do Firebase (mantida a mesma)
         const firebaseConfig = {
             apiKey: "AIzaSyBN-bmzgrlzjmrKMmuClZ8LVll-vJyx-aE",
             authDomain: "controleestoquelepan.firebaseapp.com",
@@ -65,76 +83,119 @@
         const db = getDatabase(app);
 
         const id = new URLSearchParams(window.location.search).get("id");
+        const refEvento = ref(db, `eventos/${id}`);
+        let currentItensData = []; // Variável para guardar os dados atuais dos itens
 
         if (!id) {
             alert("ID do Evento não fornecido na URL.");
             window.location.href = "index.html";
         }
 
-        const refEvento = ref(db, `eventos/${id}`);
+        // Função para carregar e exibir os dados
+        function carregarDados() {
+            get(refEvento).then(snapshot => {
+                if (!snapshot.exists()) {
+                    alert("Evento não encontrado.");
+                    window.location.href = "index.html";
+                    return;
+                }
 
-        get(refEvento).then(snapshot => {
-            if (!snapshot.exists()) {
-                alert("Evento não encontrado.");
-                window.location.href = "index.html";
-                return;
-            }
+                const evento = snapshot.val();
+                currentItensData = evento.itens || []; // Guarda os dados dos itens
 
-            const evento = snapshot.val();
+                document.getElementById("eventoInfo").innerHTML = `
+                    <p><strong>Nome:</strong> ${evento.nome || 'Não informado'}</p>
+                    <p><strong>Data:</strong> ${evento.data || 'Não informada'}</p>
+                    <p><strong>Responsável:</strong> ${evento.responsavel || 'Não informado'}</p>
+                `;
 
-            document.getElementById("eventoInfo").innerHTML = `
-                <p><strong>Nome:</strong> ${evento.nome || 'Não informado'}</p>
-                <p><strong>Data:</strong> ${evento.data || 'Não informada'}</p>
-                <p><strong>Responsável:</strong> ${evento.responsavel || 'Não informado'}</p>
-                <h3>Itens:</h3>
-            `;
+                const container = document.getElementById("itens");
+                container.innerHTML = ''; // Limpa antes de recarregar
 
-            const container = document.getElementById("itens");
-            container.innerHTML = '';
+                if (currentItensData && Array.isArray(currentItensData) && currentItensData.length > 0) {
+                    currentItensData.forEach((item, index) => {
+                        if (!item) return; // Ignora itens nulos
 
-            // Verifica se 'evento.itens' existe e é um ARRAY
-            if (evento.itens && Array.isArray(evento.itens) && evento.itens.length > 0) {
-                // Itera sobre os elementos do ARRAY 'itens'
-                evento.itens.forEach((item) => {
-                    // Ignora possíveis valores nulos no array
-                    if (!item) return;
+                        const div = document.createElement("div");
+                        div.className = "item";
+                        div.setAttribute('data-item-index', index); // Adiciona índice para referência
 
-                    const div = document.createElement("div");
-                    div.className = "item";
-                    // --- MUDANÇA AQUI: Usa 'item.nomeItem' para o nome --- 
-                    div.innerHTML = `
-                        <span><strong>Nome:</strong> ${item.nomeItem || 'N/A'}</span><br> <!-- Exibe o nome do item ou N/A -->
-                        <span><strong>Quantidade Enviada:</strong> ${item.enviado !== undefined ? item.enviado : 'N/A'}</span><br>
-                        <span><strong>Assado:</strong> ${item.assado !== undefined ? item.assado : 'N/A'}</span><br>
-                        <span><strong>Congelado:</strong> ${item.congelado !== undefined ? item.congelado : 'N/A'}</span><br>
-                        <span><strong>Perdido:</strong> ${item.perdido !== undefined ? item.perdido : 'N/A'}</span><br>
-                    `;
-                    container.appendChild(div);
-                });
-            } else {
-                // Mensagem se não houver itens ou se 'evento.itens' não for um array adequado
-                container.innerHTML = "<p>Nenhum item registrado para este evento.</p>";
-            }
-
-            const finalizarBtn = document.getElementById("finalizarEventoBtn");
-            finalizarBtn.replaceWith(finalizarBtn.cloneNode(true)); // Previne múltiplos listeners
-            document.getElementById("finalizarEventoBtn").addEventListener("click", () => {
-                update(ref(db, `eventos/${id}`), { status: "finalizado" })
-                    .then(() => {
-                        alert("Evento finalizado com sucesso!");
-                        window.location.href = "index.html";
-                    })
-                    .catch(error => {
-                        console.error("Erro ao finalizar evento:", error);
-                        alert("Erro ao finalizar o evento. Verifique o console para mais detalhes.");
+                        // --- CAMPOS EDITÁVEIS --- 
+                        div.innerHTML = `
+                            <div><strong>Nome:</strong> ${item.nomeItem || 'N/A'}</div>
+                            <div><label>Quantidade Enviada:</label> ${item.enviado !== undefined ? item.enviado : 'N/A'}</div>
+                            <div><label for="assado-${index}">Assado:</label> <input type="number" id="assado-${index}" name="assado" value="${item.assado !== undefined ? item.assado : 0}" min="0"></div>
+                            <div><label for="congelado-${index}">Congelado:</label> <input type="number" id="congelado-${index}" name="congelado" value="${item.congelado !== undefined ? item.congelado : 0}" min="0"></div>
+                            <div><label for="perdido-${index}">Perdido:</label> <input type="number" id="perdido-${index}" name="perdido" value="${item.perdido !== undefined ? item.perdido : 0}" min="0"></div>
+                        `;
+                        container.appendChild(div);
                     });
+                } else {
+                    container.innerHTML = "<p>Nenhum item registrado para este evento.</p>";
+                }
+
+            }).catch(err => {
+                console.error("Erro ao buscar dados do evento:", err);
+                alert("Erro ao carregar os dados do evento. Verifique o console para mais detalhes.");
+                document.getElementById("itens").innerHTML = "<p>Erro ao carregar itens.</p>";
+            });
+        }
+
+        // --- LÓGICA PARA SALVAR ALTERAÇÕES --- 
+        const salvarBtn = document.getElementById("salvarAlteracoesBtn");
+        salvarBtn.addEventListener("click", () => {
+            const itemDivs = document.querySelectorAll('#itens .item');
+            const novosItens = [];
+
+            itemDivs.forEach(div => {
+                const index = parseInt(div.getAttribute('data-item-index'));
+                const itemOriginal = currentItensData[index];
+                if (!itemOriginal) return; // Pula se o item original não existir
+
+                const assadoInput = div.querySelector('input[name="assado"]');
+                const congeladoInput = div.querySelector('input[name="congelado"]');
+                const perdidoInput = div.querySelector('input[name="perdido"]');
+
+                // Cria o objeto atualizado do item, mantendo os dados originais e atualizando os editáveis
+                const itemAtualizado = {
+                    ...itemOriginal, // Mantém nomeItem, enviado, etc.
+                    assado: parseInt(assadoInput.value) || 0,
+                    congelado: parseInt(congeladoInput.value) || 0,
+                    perdido: parseInt(perdidoInput.value) || 0
+                };
+                novosItens.push(itemAtualizado);
             });
 
-        }).catch(err => {
-            console.error("Erro ao buscar dados do evento:", err);
-            alert("Erro ao carregar os dados do evento. Verifique o console para mais detalhes.");
-            document.getElementById("itens").innerHTML = "<p>Erro ao carregar itens.</p>";
+            // Atualiza apenas o campo 'itens' no Firebase
+            update(ref(db, `eventos/${id}`), { itens: novosItens })
+                .then(() => {
+                    alert("Alterações salvas com sucesso!");
+                    currentItensData = novosItens; // Atualiza os dados locais após salvar
+                })
+                .catch(error => {
+                    console.error("Erro ao salvar alterações:", error);
+                    alert("Erro ao salvar alterações. Verifique o console para mais detalhes.");
+                });
         });
+
+        // Lógica para finalizar o evento (mantida)
+        const finalizarBtn = document.getElementById("finalizarEventoBtn");
+        // Usar replaceWith/cloneNode aqui pode remover o listener do 'salvar', então adicionamos diretamente
+        finalizarBtn.addEventListener("click", () => {
+            update(ref(db, `eventos/${id}`), { status: "finalizado" })
+                .then(() => {
+                    alert("Evento finalizado com sucesso!");
+                    window.location.href = "index.html";
+                })
+                .catch(error => {
+                    console.error("Erro ao finalizar evento:", error);
+                    alert("Erro ao finalizar o evento. Verifique o console para mais detalhes.");
+                });
+        });
+
+        // Carrega os dados iniciais ao abrir a página
+        carregarDados();
+
     </script>
 </body>
 </html>
