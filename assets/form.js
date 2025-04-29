@@ -42,64 +42,66 @@ onValue(eventoRef, (snapshot) => {
     <strong>Evento:</strong> ${evento.nome}<br>
     <strong>Data:</strong> ${evento.data}<br>
     <strong>Responsável:</strong> ${evento.responsavel}<br>
-    <strong>Status:</strong> ${evento.status.toUpperCase()}<br><br>
+    <strong>Status:</strong> ${evento.status ? evento.status.toUpperCase() : "ABERTO"}<br><br>
   `;
 
   const isFinalizado = evento.status === "finalizado";
 
-  if (!evento.itens || Object.keys(evento.itens).length === 0) {
+  if (!evento.itens || evento.itens.length === 0) {
     form.innerHTML = "<p>Nenhum item foi adicionado ao evento.</p>";
     salvarBtn.disabled = true;
     return;
   }
 
-  for (const [nomeItem, dados] of Object.entries(evento.itens)) {
-    const congelado = dados.congelado || 0;
-    const assado = dados.assado || 0;
-    const perdido = dados.perdido || 0;
-    const enviado = dados.enviado || 0;
+  evento.itens.forEach((item, index) => {
+    const nome = item.nomeItem;
+    const enviado = item.quantidadeEnviada || 0;
+    const congelado = item.congelado || 0;
+    const assado = item.assado || 0;
+    const perdido = item.perdido || 0;
     const vendido = enviado - (congelado + assado + perdido);
 
     const div = document.createElement("div");
     div.innerHTML = `
-      <strong>${nomeItem}</strong><br>
+      <strong>${nome}</strong><br>
       Enviado: ${enviado}<br>
-      <label>Congelado: <input type="number" name="${nomeItem}-congelado" value="${congelado}" ${isFinalizado ? 'disabled' : ''}></label><br>
-      <label>Assado: <input type="number" name="${nomeItem}-assado" value="${assado}" ${isFinalizado ? 'disabled' : ''}></label><br>
-      <label>Perdido: <input type="number" name="${nomeItem}-perdido" value="${perdido}" ${isFinalizado ? 'disabled' : ''}></label><br>
+      <label>Congelado: <input type="number" name="${index}-congelado" value="${congelado}" ${isFinalizado ? 'disabled' : ''}></label><br>
+      <label>Assado: <input type="number" name="${index}-assado" value="${assado}" ${isFinalizado ? 'disabled' : ''}></label><br>
+      <label>Perdido: <input type="number" name="${index}-perdido" value="${perdido}" ${isFinalizado ? 'disabled' : ''}></label><br>
       <strong>Venda:</strong> ${vendido}<br><br>
     `;
     form.appendChild(div);
-  }
+  });
 
   salvarBtn.disabled = isFinalizado;
 });
 
 salvarBtn.addEventListener("click", async () => {
-  const data = {};
   const inputs = form.querySelectorAll("input");
+  const eventoRef = ref(db, `eventos/${eventoId}`);
 
-  inputs.forEach(input => {
-    const [item, tipo] = input.name.split("-");
-    if (!data[item]) data[item] = {};
-    data[item][tipo] = parseInt(input.value) || 0;
-  });
+  onValue(eventoRef, (snapshot) => {
+    const evento = snapshot.val();
+    if (!evento || !evento.itens) return;
 
-  const updates = {};
-  for (const item in data) {
-    updates[`eventos/${eventoId}/itens/${item}/congelado`] = data[item].congelado;
-    updates[`eventos/${eventoId}/itens/${item}/assado`] = data[item].assado;
-    updates[`eventos/${eventoId}/itens/${item}/perdido`] = data[item].perdido;
-  }
-  updates[`eventos/${eventoId}/status`] = "finalizado";
+    const atualizados = evento.itens.map((item, index) => {
+      return {
+        ...item,
+        congelado: parseInt(document.querySelector(`[name="${index}-congelado"]`)?.value) || 0,
+        assado: parseInt(document.querySelector(`[name="${index}-assado"]`)?.value) || 0,
+        perdido: parseInt(document.querySelector(`[name="${index}-perdido"]`)?.value) || 0
+      };
+    });
 
-  try {
-    await update(ref(db), updates);
-    alert("Evento salvo e finalizado.");
-    location.reload();
-  } catch (e) {
-    console.error(e);
-    alert("Erro ao salvar.");
-  }
+    update(ref(db), {
+      [`eventos/${eventoId}/itens`]: atualizados,
+      [`eventos/${eventoId}/status`]: "finalizado"
+    }).then(() => {
+      alert("Evento salvo e finalizado.");
+      location.reload();
+    }).catch((err) => {
+      console.error(err);
+      alert("Erro ao salvar.");
+    });
+  }, { onlyOnce: true });
 });
-
