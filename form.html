@@ -9,16 +9,6 @@
     h1 { color: #333; }
     .item { margin-bottom: 10px; }
     .item span { font-weight: bold; }
-    a.voltar {
-      display: inline-block;
-      margin-top: 20px;
-      padding: 8px 16px;
-      background-color: #007bff;
-      color: white;
-      text-decoration: none;
-      border-radius: 5px;
-    }
-    a.voltar:hover { background-color: #0056b3; }
     .button-container { margin-top: 20px; }
     button {
       padding: 10px 20px;
@@ -41,7 +31,6 @@
   <div class="button-container">
     <button id="finalizarEventoBtn">Finalizar Evento</button>
   </div>
-  <a href="index.html" class="voltar">⬅ Voltar</a>
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js";
@@ -87,16 +76,16 @@
       `;
 
       const container = document.getElementById("itens");
-      if (Array.isArray(evento.itens) && evento.itens.length > 0) {
+      if (evento.itens && Array.isArray(evento.itens) && evento.itens.length > 0) {
         evento.itens.forEach(item => {
           const div = document.createElement("div");
           div.className = "item";
           div.innerHTML = `
-            <span>Nome: ${item.nomeItem}</span><br>
-            <span>Quantidade Enviada: ${item.quantidadeEnviada}</span><br>
-            <span>Assado: ${item.assado}</span><br>
-            <span>Congelado: ${item.congelado}</span><br>
-            <span>Perdido: ${item.perdido}</span><br>
+            <span><strong>Nome:</strong> ${item.nomeItem}</span><br>
+            <span><strong>Quantidade Enviada:</strong> ${item.quantidadeEnviada}</span><br>
+            <span><strong>Assado:</strong> ${item.assado}</span><br>
+            <span><strong>Congelado:</strong> ${item.congelado}</span><br>
+            <span><strong>Perdido:</strong> ${item.perdido}</span><br>
           `;
           container.appendChild(div);
         });
