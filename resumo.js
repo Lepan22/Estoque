@@ -31,25 +31,34 @@ get(refEvento).then(snapshot => {
 
   const evento = snapshot.val();
 
-  document.getElementById("eventoInfo").innerHTML = `
+  document.getElementById("eventoResumo").innerHTML = `
+    <h2>Resumo do Evento</h2>
     <p><strong>Nome:</strong> ${evento.nome}</p>
     <p><strong>Data:</strong> ${evento.data}</p>
     <p><strong>Responsável:</strong> ${evento.responsavel}</p>
-    <p><strong>Status:</strong> ${evento.status}</p>
+    <p><strong>Status:</strong> ${evento.status || "pendente"}</p>
     <h3>Itens:</h3>
   `;
 
-  const container = document.getElementById("itens");
+  const container = document.getElementById("resumoItens");
+
   if (Array.isArray(evento.itens) && evento.itens.length > 0) {
     evento.itens.forEach(item => {
       const div = document.createElement("div");
-      div.className = "item";
-      div.innerHTML = `<span>${item.nomeItem}:</span> ${item.quantidadeEnviada}`;
+      div.className = "item-resumo";
+      div.innerHTML = `
+        <p><strong>Nome:</strong> ${item.nomeItem || "N/A"}</p>
+        <p><strong>Quantidade Enviada:</strong> ${item.quantidadeEnviada || 0}</p>
+        <p><strong>Assado:</strong> ${item.assado || 0}</p>
+        <p><strong>Congelado:</strong> ${item.congelado || 0}</p>
+        <p><strong>Perdido:</strong> ${item.perdido || 0}</p>
+        <hr>
+      `;
       container.appendChild(div);
     });
   } else {
     container.innerHTML = "<p>Nenhum item registrado.</p>";
   }
-}).catch(err => {
-  console.error("Erro ao buscar evento:", err);
+}).catch(error => {
+  console.error("Erro ao buscar dados:", error);
 });
