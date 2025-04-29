@@ -35,33 +35,50 @@ get(refEvento).then(snapshot => {
     <p><strong>Nome:</strong> ${evento.nome}</p>
     <p><strong>Data:</strong> ${evento.data}</p>
     <p><strong>Responsável:</strong> ${evento.responsavel}</p>
-    <h3>Itens:</h3>
   `;
 
   const container = document.getElementById("itens");
+  container.innerHTML = "";
+
   if (Array.isArray(evento.itens) && evento.itens.length > 0) {
-    evento.itens.forEach(item => {
+    evento.itens.forEach((item, index) => {
       const div = document.createElement("div");
       div.className = "item";
-      div.innerHTML = `<span>${item.nomeItem}:</span> ${item.quantidadeEnviada}`;
+      div.innerHTML = `
+        <p><strong>${item.nomeItem}</strong> (Enviado: ${item.quantidadeEnviada})</p>
+        <label>Assado: <input type="number" id="assado-${index}" value="${item.assado || 0}"></label><br>
+        <label>Congelado: <input type="number" id="congelado-${index}" value="${item.congelado || 0}"></label><br>
+        <label>Perdido: <input type="number" id="perdido-${index}" value="${item.perdido || 0}"></label>
+      `;
       container.appendChild(div);
     });
+
+    const botao = document.createElement("button");
+    botao.textContent = "Salvar Evento";
+    botao.onclick = () => {
+      const novosItens = evento.itens.map((item, index) => ({
+        ...item,
+        assado: parseInt(document.getElementById(`assado-${index}`).value) || 0,
+        congelado: parseInt(document.getElementById(`congelado-${index}`).value) || 0,
+        perdido: parseInt(document.getElementById(`perdido-${index}`).value) || 0,
+      }));
+
+      update(refEvento, {
+        itens: novosItens,
+        status: "finalizado"
+      }).then(() => {
+        alert("Evento finalizado com sucesso!");
+        window.location.href = `resumo.html?id=${id}`;
+      }).catch(error => {
+        console.error("Erro ao salvar:", error);
+        alert("Erro ao salvar o evento.");
+      });
+    };
+
+    document.body.appendChild(botao);
   } else {
     container.innerHTML = "<p>Nenhum item registrado.</p>";
   }
-
-  // Adicionar ação ao botão de "Finalizar Evento"
-  const finalizarBtn = document.getElementById("finalizarBtn");
-  finalizarBtn.addEventListener("click", () => {
-    // Atualizar o status do evento para "finalizado"
-    update(refEvento, { status: "finalizado" }).then(() => {
-      alert("Evento finalizado com sucesso!");
-      window.location.href = `resumo.html?id=${id}`; // Redireciona para a página de resumo
-    }).catch((error) => {
-      console.error("Erro ao finalizar evento:", error);
-      alert("Houve um erro ao finalizar o evento.");
-    });
-  });
 }).catch(err => {
   console.error("Erro ao buscar evento:", err);
 });
