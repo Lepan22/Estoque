@@ -1,103 +1,32 @@
 <!DOCTYPE html>
-<html lang="pt-br">
-
+<html lang="pt-BR">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Controle de Estoque - Evento</title>
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Detalhes do Evento</title>
   <style>
-    body {
-      font-family: 'Roboto', sans-serif;
-      margin: 0;
-      padding: 0;
-      background-color: #f4f4f4;
-    }
-
-    .container {
-      max-width: 900px;
-      margin: 0 auto;
-      padding: 20px;
-    }
-
-    h1 {
-      text-align: center;
-    }
-
-    .evento-info {
-      background-color: #fff;
-      padding: 20px;
-      margin-bottom: 20px;
-      border-radius: 8px;
-      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    }
-
-    .evento-info p {
-      margin: 5px 0;
-    }
-
-    .itens {
-      background-color: #fff;
-      padding: 20px;
-      border-radius: 8px;
-      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    }
-
-    .itens div {
-      margin-bottom: 10px;
-    }
-
-    label {
-      margin-top: 10px;
-    }
-
-    input[type="number"] {
-      width: 60px;
-      padding: 5px;
-      margin: 5px 0;
-    }
-
-    button {
-      background-color: #4CAF50;
+    body { font-family: Arial, sans-serif; margin: 20px; }
+    h1 { color: #333; }
+    .item { margin-bottom: 10px; }
+    .item span { font-weight: bold; }
+    a.voltar {
+      display: inline-block;
+      margin-top: 20px;
+      padding: 8px 16px;
+      background-color: #007bff;
       color: white;
-      padding: 10px 20px;
-      border: none;
+      text-decoration: none;
       border-radius: 5px;
-      cursor: pointer;
-      display: block;
-      margin: 20px auto;
-      font-size: 16px;
     }
-
-    button:hover {
-      background-color: #45a049;
-    }
+    a.voltar:hover { background-color: #0056b3; }
   </style>
 </head>
-
 <body>
-  <div class="container">
-    <h1>Controle de Estoque - Evento</h1>
-
-    <!-- Info do Evento -->
-    <div class="evento-info">
-      <h2>Informações do Evento</h2>
-      <p><strong>Nome do Evento:</strong> <span id="eventoNome">Carregando...</span></p>
-      <p><strong>Data do Evento:</strong> <span id="eventoData">Carregando...</span></p>
-      <p><strong>Responsável:</strong> <span id="eventoResponsavel">Carregando...</span></p>
-    </div>
-
-    <!-- Itens do Evento -->
-    <div class="itens">
-      <h2>Itens do Evento</h2>
-      <div id="itens">Carregando itens...</div>
-    </div>
-
-    <!-- Botão de Salvar -->
-    <button id="saveButton">Salvar Evento</button>
-  </div>
+  <h1>Detalhes do Evento</h1>
+  <div id="eventoInfo"></div>
+  <div id="itens"></div>
+  <a href="index.html" class="voltar">⬅ Voltar</a>
 
   <script type="module" src="assets/form.js"></script>
 </body>
-
 </html>
