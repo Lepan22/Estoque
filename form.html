@@ -36,7 +36,7 @@
         }
         button {
             padding: 10px 20px;
-            background-color: #007bff;
+            background-color: #dc3545; /* Cor vermelha padrão para finalizar */
             color: white;
             border: none;
             border-radius: 5px;
@@ -45,13 +45,7 @@
             margin-right: 10px;
         }
         button:hover {
-            background-color: #0056b3;
-        }
-        #salvarAlteracoesBtn {
-            background-color: #28a745; /* Cor verde para salvar */
-        }
-        #salvarAlteracoesBtn:hover {
-            background-color: #218838;
+            background-color: #c82333;
         }
     </style>
 </head>
@@ -61,8 +55,7 @@
     <h3>Itens:</h3>
     <div id="itens"></div>
     <div class="button-container">
-        <button id="salvarAlteracoesBtn">Salvar Alterações</button>
-        <button id="finalizarEventoBtn">Finalizar Evento</button>
+        <button id="finalizarEventoBtn">Finalizar Evento e Salvar Alterações</button>
     </div>
 
     <script type="module">
@@ -120,7 +113,6 @@
                         div.className = "item";
                         div.setAttribute('data-item-index', index); // Adiciona índice para referência
 
-                        // --- CAMPOS EDITÁVEIS --- 
                         div.innerHTML = `
                             <div><strong>Nome:</strong> ${item.nomeItem || 'N/A'}</div>
                             <div><label>Quantidade Enviada:</label> ${item.enviado !== undefined ? item.enviado : 'N/A'}</div>
@@ -134,6 +126,14 @@
                     container.innerHTML = "<p>Nenhum item registrado para este evento.</p>";
                 }
 
+                // Desabilita o botão se o evento já estiver finalizado
+                if (evento.status === 'finalizado') {
+                    document.getElementById('finalizarEventoBtn').disabled = true;
+                    document.getElementById('finalizarEventoBtn').textContent = 'Evento Finalizado';
+                    // Opcional: desabilitar inputs também
+                    container.querySelectorAll('input[type="number"]').forEach(input => input.disabled = true);
+                }
+
             }).catch(err => {
                 console.error("Erro ao buscar dados do evento:", err);
                 alert("Erro ao carregar os dados do evento. Verifique o console para mais detalhes.");
@@ -141,24 +141,27 @@
             });
         }
 
-        // --- LÓGICA PARA SALVAR ALTERAÇÕES --- 
-        const salvarBtn = document.getElementById("salvarAlteracoesBtn");
-        salvarBtn.addEventListener("click", () => {
+        // LÓGICA DO BOTÃO FINALIZAR (AGORA TAMBÉM SALVA E NÃO REDIRECIONA)
+        const finalizarBtn = document.getElementById("finalizarEventoBtn");
+        finalizarBtn.addEventListener("click", () => {
+            // Desabilita o botão imediatamente para evitar cliques duplos
+            finalizarBtn.disabled = true;
+            finalizarBtn.textContent = 'Processando...';
+
+            // 1. Coleta os dados atualizados dos itens dos inputs
             const itemDivs = document.querySelectorAll('#itens .item');
             const novosItens = [];
-
             itemDivs.forEach(div => {
                 const index = parseInt(div.getAttribute('data-item-index'));
                 const itemOriginal = currentItensData[index];
-                if (!itemOriginal) return; // Pula se o item original não existir
+                if (!itemOriginal) return;
 
                 const assadoInput = div.querySelector('input[name="assado"]');
                 const congeladoInput = div.querySelector('input[name="congelado"]');
                 const perdidoInput = div.querySelector('input[name="perdido"]');
 
-                // Cria o objeto atualizado do item, mantendo os dados originais e atualizando os editáveis
                 const itemAtualizado = {
-                    ...itemOriginal, // Mantém nomeItem, enviado, etc.
+                    ...itemOriginal,
                     assado: parseInt(assadoInput.value) || 0,
                     congelado: parseInt(congeladoInput.value) || 0,
                     perdido: parseInt(perdidoInput.value) || 0
@@ -166,30 +169,33 @@
                 novosItens.push(itemAtualizado);
             });
 
-            // Atualiza apenas o campo 'itens' no Firebase
+            // 2. Salva os itens atualizados no Firebase
             update(ref(db, `eventos/${id}`), { itens: novosItens })
                 .then(() => {
-                    alert("Alterações salvas com sucesso!");
-                    currentItensData = novosItens; // Atualiza os dados locais após salvar
-                })
-                .catch(error => {
-                    console.error("Erro ao salvar alterações:", error);
-                    alert("Erro ao salvar alterações. Verifique o console para mais detalhes.");
-                });
-        });
+                    console.log("Alterações nos itens salvas com sucesso!");
+                    currentItensData = novosItens; // Atualiza dados locais
 
-        // Lógica para finalizar o evento (mantida)
-        const finalizarBtn = document.getElementById("finalizarEventoBtn");
-        // Usar replaceWith/cloneNode aqui pode remover o listener do 'salvar', então adicionamos diretamente
-        finalizarBtn.addEventListener("click", () => {
-            update(ref(db, `eventos/${id}`), { status: "finalizado" })
+                    // 3. Após salvar os itens, atualiza o status do evento para "finalizado"
+                    return update(ref(db, `eventos/${id}`), { status: "finalizado" });
+                })
                 .then(() => {
-                    alert("Evento finalizado com sucesso!");
-                    window.location.href = "index.html";
+                    // 4. Se ambos updates foram bem-sucedidos
+                    alert("Alterações salvas e evento finalizado com sucesso!");
+                    // --- REMOVIDO REDIRECIONAMENTO ---
+                    // window.location.href = "index.html"; 
+                    
+                    // Atualiza a interface para refletir o estado finalizado
+                    finalizarBtn.textContent = 'Evento Finalizado'; // Mantém desabilitado
+                    // Opcional: desabilitar inputs também
+                    document.querySelectorAll('#itens input[type="number"]').forEach(input => input.disabled = true);
                 })
                 .catch(error => {
-                    console.error("Erro ao finalizar evento:", error);
-                    alert("Erro ao finalizar o evento. Verifique o console para mais detalhes.");
+                    // Captura erro de qualquer um dos updates
+                    console.error("Erro ao salvar alterações ou finalizar evento:", error);
+                    alert("Erro ao salvar alterações ou finalizar o evento. Verifique o console para mais detalhes.");
+                    // Reabilita o botão em caso de erro para permitir nova tentativa
+                    finalizarBtn.disabled = false;
+                    finalizarBtn.textContent = 'Finalizar Evento e Salvar Alterações';
                 });
         });
 
