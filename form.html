@@ -4,64 +4,66 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <title>Detalhes do Evento</title>
+    <!-- Link para o arquivo CSS externo -->
+    <link rel="stylesheet" href="assets/style.css">
+
+    <!-- Estilos específicos para form.html (se necessário, ou mover para style.css) -->
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 20px;
-        }
-        h1, h3 {
-            color: #333;
-        }
+        /* Ajustes finos para os itens no form.html */
         .item {
             margin-bottom: 15px;
             padding: 15px;
             border: 1px solid #ddd;
-            border-radius: 4px;
+            border-radius: 8px;
             background-color: #f9f9f9;
+        }
+        .item div {
+            margin-bottom: 8px; /* Espaçamento entre as linhas de informação do item */
         }
         .item label {
             display: inline-block;
-            min-width: 150px; /* Ajuste conforme necessário */
+            min-width: 150px; /* Alinha os inputs */
             font-weight: bold;
-            margin-bottom: 5px;
         }
         .item input[type="number"] {
-            width: 60px; /* Ajuste conforme necessário */
-            padding: 5px;
+            width: 70px; /* Um pouco mais largo */
+            padding: 8px;
             margin-left: 5px;
-            margin-bottom: 5px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
         }
-        .button-container {
-            margin-top: 20px;
+        #eventoInfo p {
+            margin-bottom: 10px;
+            font-size: 1.1em;
         }
-        button {
-            padding: 10px 20px;
-            background-color: #dc3545; /* Cor vermelha padrão para finalizar */
-            color: white;
-            border: none;
-            border-radius: 5px;
-            font-size: 16px;
-            cursor: pointer;
-            margin-right: 10px;
+        #finalizarEventoBtn {
+             background-color: #dc3545; /* Vermelho para finalizar */
         }
-        button:hover {
-            background-color: #c82333;
+        #finalizarEventoBtn:hover {
+             background-color: #c82333;
+        }
+        #finalizarEventoBtn:disabled {
+            background-color: #6c757d; /* Cinza quando desabilitado */
+            cursor: not-allowed;
         }
     </style>
 </head>
 <body>
-    <h1>Detalhes do Evento</h1>
-    <div id="eventoInfo"></div>
-    <h3>Itens:</h3>
-    <div id="itens"></div>
-    <div class="button-container">
-        <button id="finalizarEventoBtn">Finalizar Evento e Salvar Alterações</button>
+    <div class="container">
+        <h1>Detalhes do Evento</h1>
+        <div id="eventoInfo"></div>
+        <h3>Itens:</h3>
+        <div id="itens"></div>
+        <div class="button-container">
+            <button id="finalizarEventoBtn">Finalizar Evento e Salvar Alterações</button>
+        </div>
     </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js";
         import { getDatabase, ref, get, update } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-database.js";
 
+        // --- Configuração Firebase (mantida) --- 
         const firebaseConfig = {
             apiKey: "AIzaSyBN-bmzgrlzjmrKMmuClZ8LVll-vJyx-aE",
             authDomain: "controleestoquelepan.firebaseapp.com",
@@ -77,14 +79,14 @@
 
         const id = new URLSearchParams(window.location.search).get("id");
         const refEvento = ref(db, `eventos/${id}`);
-        let currentItensData = []; // Variável para guardar os dados atuais dos itens
+        let currentItensData = []; 
 
         if (!id) {
             alert("ID do Evento não fornecido na URL.");
             window.location.href = "index.html";
         }
 
-        // Função para carregar e exibir os dados
+        // --- Função carregarDados (com ajustes nos inputs) --- 
         function carregarDados() {
             get(refEvento).then(snapshot => {
                 if (!snapshot.exists()) {
@@ -94,7 +96,7 @@
                 }
 
                 const evento = snapshot.val();
-                currentItensData = evento.itens || []; // Guarda os dados dos itens
+                currentItensData = evento.itens || []; 
 
                 document.getElementById("eventoInfo").innerHTML = `
                     <p><strong>Nome:</strong> ${evento.nome || 'Não informado'}</p>
@@ -103,19 +105,20 @@
                 `;
 
                 const container = document.getElementById("itens");
-                container.innerHTML = ''; // Limpa antes de recarregar
+                container.innerHTML = ''; 
 
                 if (currentItensData && Array.isArray(currentItensData) && currentItensData.length > 0) {
                     currentItensData.forEach((item, index) => {
-                        if (!item) return; // Ignora itens nulos
+                        if (!item) return; 
 
                         const div = document.createElement("div");
                         div.className = "item";
-                        div.setAttribute('data-item-index', index); // Adiciona índice para referência
+                        div.setAttribute('data-item-index', index); 
 
+                        // Inputs com labels associados corretamente
                         div.innerHTML = `
                             <div><strong>Nome:</strong> ${item.nomeItem || 'N/A'}</div>
-                            <div><label>Quantidade Enviada:</label> ${item.enviado !== undefined ? item.enviado : 'N/A'}</div>
+                            <div><strong>Quantidade Enviada:</strong> ${item.enviado !== undefined ? item.enviado : 'N/A'}</div>
                             <div><label for="assado-${index}">Assado:</label> <input type="number" id="assado-${index}" name="assado" value="${item.assado !== undefined ? item.assado : 0}" min="0"></div>
                             <div><label for="congelado-${index}">Congelado:</label> <input type="number" id="congelado-${index}" name="congelado" value="${item.congelado !== undefined ? item.congelado : 0}" min="0"></div>
                             <div><label for="perdido-${index}">Perdido:</label> <input type="number" id="perdido-${index}" name="perdido" value="${item.perdido !== undefined ? item.perdido : 0}" min="0"></div>
@@ -126,11 +129,10 @@
                     container.innerHTML = "<p>Nenhum item registrado para este evento.</p>";
                 }
 
-                // Desabilita o botão se o evento já estiver finalizado
+                // Desabilita botão e inputs se finalizado
                 if (evento.status === 'finalizado') {
                     document.getElementById('finalizarEventoBtn').disabled = true;
                     document.getElementById('finalizarEventoBtn').textContent = 'Evento Finalizado';
-                    // Opcional: desabilitar inputs também
                     container.querySelectorAll('input[type="number"]').forEach(input => input.disabled = true);
                 }
 
@@ -141,14 +143,12 @@
             });
         }
 
-        // LÓGICA DO BOTÃO FINALIZAR (AGORA TAMBÉM SALVA E NÃO REDIRECIONA)
+        // --- Lógica Botão Finalizar (mantida) --- 
         const finalizarBtn = document.getElementById("finalizarEventoBtn");
         finalizarBtn.addEventListener("click", () => {
-            // Desabilita o botão imediatamente para evitar cliques duplos
             finalizarBtn.disabled = true;
             finalizarBtn.textContent = 'Processando...';
 
-            // 1. Coleta os dados atualizados dos itens dos inputs
             const itemDivs = document.querySelectorAll('#itens .item');
             const novosItens = [];
             itemDivs.forEach(div => {
@@ -169,37 +169,26 @@
                 novosItens.push(itemAtualizado);
             });
 
-            // 2. Salva os itens atualizados no Firebase
             update(ref(db, `eventos/${id}`), { itens: novosItens })
                 .then(() => {
                     console.log("Alterações nos itens salvas com sucesso!");
-                    currentItensData = novosItens; // Atualiza dados locais
-
-                    // 3. Após salvar os itens, atualiza o status do evento para "finalizado"
+                    currentItensData = novosItens; 
                     return update(ref(db, `eventos/${id}`), { status: "finalizado" });
                 })
                 .then(() => {
-                    // 4. Se ambos updates foram bem-sucedidos
                     alert("Alterações salvas e evento finalizado com sucesso!");
-                    // --- REMOVIDO REDIRECIONAMENTO ---
-                    // window.location.href = "index.html"; 
-                    
-                    // Atualiza a interface para refletir o estado finalizado
-                    finalizarBtn.textContent = 'Evento Finalizado'; // Mantém desabilitado
-                    // Opcional: desabilitar inputs também
+                    finalizarBtn.textContent = 'Evento Finalizado'; 
                     document.querySelectorAll('#itens input[type="number"]').forEach(input => input.disabled = true);
                 })
                 .catch(error => {
-                    // Captura erro de qualquer um dos updates
                     console.error("Erro ao salvar alterações ou finalizar evento:", error);
                     alert("Erro ao salvar alterações ou finalizar o evento. Verifique o console para mais detalhes.");
-                    // Reabilita o botão em caso de erro para permitir nova tentativa
                     finalizarBtn.disabled = false;
                     finalizarBtn.textContent = 'Finalizar Evento e Salvar Alterações';
                 });
         });
 
-        // Carrega os dados iniciais ao abrir a página
+        // Carrega dados iniciais
         carregarDados();
 
     </script>
