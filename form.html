@@ -10,63 +10,81 @@
       margin: 20px;
       background-color: #f9f9f9;
     }
+
     h1 {
       color: #333;
+      margin-bottom: 20px;
     }
+
+    .info-evento {
+      background: #fff;
+      border-radius: 8px;
+      padding: 15px 20px;
+      margin-bottom: 30px;
+      box-shadow: 0 0 5px rgba(0,0,0,0.05);
+      display: flex;
+      flex-wrap: wrap;
+      gap: 30px;
+      justify-content: flex-start;
+    }
+
     .item {
+      background: #f0f8ff;
+      border: 1px solid #dde;
+      border-radius: 6px;
+      padding: 15px;
       margin-bottom: 15px;
-      padding: 10px;
-      background-color: #fff;
-      border-radius: 5px;
-      box-shadow: 0 0 5px rgba(0,0,0,0.1);
     }
+
     .item p {
-      margin: 0 0 5px;
+      margin: 5px 0;
     }
-    label {
+
+    .item label {
       display: block;
-      margin-bottom: 5px;
+      margin-top: 10px;
     }
+
     input[type="number"] {
       width: 100px;
       padding: 5px;
-      margin-left: 5px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      margin-top: 4px;
     }
-    button {
-      padding: 10px 20px;
+
+    #mensagem {
+      margin-top: 15px;
+      font-weight: bold;
+      color: green;
+    }
+
+    #btnSalvar {
       margin-top: 20px;
-      background-color: #28a745;
+      padding: 10px 20px;
+      background-color: #007bff;
       color: white;
       border: none;
       border-radius: 5px;
       cursor: pointer;
       font-size: 16px;
     }
-    button:hover {
-      background-color: #218838;
-    }
-    a.voltar {
-      display: inline-block;
-      margin-top: 30px;
-      padding: 8px 16px;
-      background-color: #007bff;
-      color: white;
-      text-decoration: none;
-      border-radius: 5px;
-    }
-    a.voltar:hover {
+
+    #btnSalvar:hover {
       background-color: #0056b3;
     }
   </style>
 </head>
 <body>
   <h1>Detalhes do Evento</h1>
-  <div id="eventoInfo"></div>
-  <div id="itens">
-    <p>Carregando itens...</p>
-  </div>
-  <a href="index.html" class="voltar">⬅ Voltar</a>
+
+  <div id="eventoInfo" class="info-evento"></div>
+  <div id="itens"></div>
+
+  <button id="btnSalvar">Salvar Retornos</button>
+  <div id="mensagem"></div>
 
   <script type="module" src="assets/form.js"></script>
 </body>
 </html>
+
