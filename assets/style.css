@@ -75,10 +75,160 @@ button:hover, a.botao:hover {
     background-color: #f1f1f1;
 }
 
-/* Responsividade da Tabela */
+/* Estilos específicos para form.html - Layout de Itens em Linha */
+#itens-header,
+.item-row {
+    display: flex;
+    align-items: center;
+    padding: 8px 0; /* Espaçamento vertical reduzido */
+    border-bottom: 1px solid #eee;
+}
+
+#itens-header {
+    font-weight: bold;
+    background-color: #f8f8f8;
+    border-bottom: 2px solid #ddd;
+    margin-bottom: 5px;
+}
+
+.item-col {
+    padding: 0 8px; /* Espaçamento horizontal reduzido */
+    box-sizing: border-box;
+}
+
+.item-col-nome {
+    flex: 2; /* Nome ocupa mais espaço */
+    min-width: 120px;
+}
+
+.item-col-enviado {
+    flex: 1;
+    min-width: 80px;
+    text-align: center;
+}
+
+.item-col-editavel {
+    flex: 1;
+    min-width: 100px; /* Espaço para input e label implícito */
+    text-align: center;
+}
+
+.item-col-editavel input[type="number"] {
+    width: 60px; /* Largura do input */
+    padding: 5px;
+    text-align: center;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    margin-left: 0; /* Removido margin-left */
+}
+
+/* Esconder labels explícitos no layout de linha */
+.item-row label {
+    display: none;
+}
+
+/* Botão Finalizar no form.html */
+#finalizarEventoBtn {
+    background-color: #dc3545; /* Vermelho para finalizar */
+}
+#finalizarEventoBtn:hover {
+    background-color: #c82333;
+}
+#finalizarEventoBtn:disabled {
+    background-color: #6c757d; /* Cinza quando desabilitado */
+    cursor: not-allowed;
+}
+
+/* Estilos específicos para resumo.html */
+#resumo-container {
+    margin-top: 20px;
+}
+.resumo-item {
+    margin-bottom: 15px;
+    padding: 15px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    background-color: #f9f9f9;
+}
+.resumo-item div {
+    margin-bottom: 8px;
+}
+.resumo-item strong {
+    min-width: 150px;
+    display: inline-block;
+}
+#eventoInfoResumo p {
+    margin-bottom: 10px;
+    font-size: 1.1em;
+}
+
+/* Estilos específicos para criar-evento.html */
+#form-evento label {
+    display: block;
+    margin-bottom: 15px;
+    font-weight: bold;
+}
+#form-evento input[type="text"],
+#form-evento input[type="date"] {
+    width: calc(100% - 22px);
+    padding: 10px;
+    margin-top: 5px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-sizing: border-box;
+}
+#itens-container .item-line {
+    display: flex;
+    align-items: center;
+    margin-bottom: 10px;
+    padding: 10px;
+    border: 1px solid #eee;
+    border-radius: 4px;
+    background-color: #f9f9f9;
+}
+#itens-container .item-line input {
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    margin-right: 10px;
+}
+#itens-container .item-line input[name="item-nome"] {
+    flex-grow: 1;
+}
+#itens-container .item-line input[name="item-quantidade"] {
+    width: 80px;
+}
+#itens-container .item-line button {
+    padding: 8px 12px;
+    background-color: #dc3545;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+}
+#itens-container .item-line button:hover {
+    background-color: #c82333;
+}
+#add-item {
+    background-color: #17a2b8;
+    margin-bottom: 20px;
+}
+#add-item:hover {
+    background-color: #138496;
+}
+button[type="submit"] {
+    width: 100%;
+    padding: 12px;
+    font-size: 18px;
+}
+
+/* --- Responsividade --- */
+
+/* Tabela Index */
 @media screen and (max-width: 768px) {
     #eventos-tabela thead {
-        display: none; /* Oculta cabeçalhos em telas pequenas */
+        display: none;
     }
     #eventos-tabela, #eventos-tabela tbody, #eventos-tabela tr, #eventos-tabela td {
         display: block;
@@ -91,16 +241,16 @@ button:hover, a.botao:hover {
     }
     #eventos-tabela td {
         text-align: right;
-        padding-left: 50%; /* Cria espaço para o label */
+        padding-left: 50%;
         position: relative;
         border: none;
         border-bottom: 1px solid #eee;
     }
     #eventos-tabela td::before {
-        content: attr(data-label); /* Usa o data-label como título */
+        content: attr(data-label);
         position: absolute;
         left: 10px;
-        width: calc(50% - 20px); /* Largura do label */
+        width: calc(50% - 20px);
         padding-right: 10px;
         white-space: nowrap;
         text-align: left;
@@ -110,8 +260,68 @@ button:hover, a.botao:hover {
         border-bottom: 0;
     }
     #eventos-tabela td a.botao {
-        display: block; /* Faz o botão ocupar a largura */
+        display: block;
         margin-top: 5px;
+    }
+}
+
+/* Itens Form em Linha */
+@media screen and (max-width: 768px) {
+    #itens-header {
+        display: none; /* Oculta cabeçalho em telas pequenas */
+    }
+    .item-row {
+        flex-direction: column; /* Empilha colunas */
+        align-items: stretch; /* Alinha à esquerda */
+        padding: 10px;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+        margin-bottom: 10px;
+        background-color: #f9f9f9;
+    }
+    .item-col {
+        padding: 5px 0; /* Ajusta padding vertical */
+        text-align: left; /* Alinha texto à esquerda */
+        border-bottom: 1px dashed #eee; /* Linha separadora */
+    }
+     .item-col:last-child {
+         border-bottom: none;
+     }
+    .item-col::before {
+        content: attr(data-label); /* Adiciona label antes do valor */
+        font-weight: bold;
+        display: inline-block;
+        min-width: 120px; /* Largura mínima do label */
+        margin-right: 10px;
+    }
+    .item-col-nome::before { content: "Nome:"; }
+    .item-col-enviado::before { content: "Enviado:"; }
+    .item-col-editavel.assado::before { content: "Assado:"; }
+    .item-col-editavel.congelado::before { content: "Congelado:"; }
+    .item-col-editavel.perdido::before { content: "Perdido:"; }
+
+    .item-col-editavel input[type="number"] {
+        display: inline-block; /* Mantém na linha do label implícito */
+        width: 70px; /* Largura do input */
+        margin-left: 5px;
+    }
+}
+
+/* Itens Criar Evento */
+@media screen and (max-width: 600px) {
+    #itens-container .item-line {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    #itens-container .item-line input,
+    #itens-container .item-line button {
+        width: 100%;
+        margin-bottom: 10px;
+        margin-right: 0;
+        box-sizing: border-box;
+    }
+    #itens-container .item-line button {
+        margin-bottom: 0;
     }
 }
 
