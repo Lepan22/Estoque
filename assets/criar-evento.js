@@ -68,4 +68,3 @@ form.addEventListener("submit", async (e) => {
     alert("Erro ao criar evento.");
   }
 });
-
