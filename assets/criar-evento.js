@@ -1,50 +1,54 @@
-import { db } from './firebase-config.js';
-import { ref, push, set } from "https://www.gstatic.com/firebasejs/10.10.0/firebase-database.js";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js";
+import { getDatabase, ref, push } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-database.js";
 
-document.getElementById('formCriarEvento').addEventListener('submit', (e) => {
+// Configuração do Firebase
+const firebaseConfig = {
+  apiKey: "AIzaSyBN-bmzgrlzjmrKMmuClZ8LVll-vJyx-aE",
+  authDomain: "controleestoquelepan.firebaseapp.com",
+  databaseURL: "https://controleestoquelepan-default-rtdb.firebaseio.com",
+  projectId: "controleestoquelepan",
+  storageBucket: "controleestoquelepan.appspot.com",
+  messagingSenderId: "779860276544",
+  appId: "1:779860276544:web:f45844571a8c0bab1576a5",
+  measurementId: "G-EDKYH7TKMG"
+};
+
+// Inicializa Firebase
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+
+// Formulário
+const form = document.getElementById('form-criar-evento');
+
+form.addEventListener('submit', async (e) => {
   e.preventDefault();
-  
-  const nome = document.getElementById('nome').value;
+
+  const nome = document.getElementById('nome').value.trim();
   const data = document.getElementById('data').value;
-  const responsavel = document.getElementById('responsavel').value;
+  const responsavel = document.getElementById('responsavel').value.trim();
 
-  const itens = [];
-  const itemElements = document.querySelectorAll('.item');
+  if (!nome || !data || !responsavel) {
+    alert("Preencha todos os campos.");
+    return;
+  }
 
-  itemElements.forEach(item => {
-    const nomeItem = item.querySelector('.item-nome').value;
-    const quantidadeEnviada = parseInt(item.querySelector('.item-quantidade').value, 10);
-    itens.push({ nomeItem, quantidadeEnviada });
-  });
-
-  // Criando evento no Firebase
-  const eventosRef = ref(db, 'eventos');
-  const novoRef = push(eventosRef);
-  const id = novoRef.key;
-
-  set(novoRef, {
-    nome: nome || "Novo Evento",
-    data: data || new Date().toISOString().split('T')[0],
-    responsavel: responsavel || "Não informado",
+  const novoEvento = {
+    nome,
+    data,
+    responsavel,
     status: "aberto",
-    itens: itens
-  }).then(() => {
+    itens: {}
+  };
+
+  try {
+    const eventosRef = ref(db, 'eventos');
+    await push(eventosRef, novoEvento);
+
     alert("Evento criado com sucesso!");
-    window.location.href = '../index.html'; // Redireciona de volta ao painel
-  }).catch((error) => {
-    alert("Erro ao criar evento: " + error.message);
-  });
+    window.location.href = "../index.html"; // Redireciona corretamente
+  } catch (error) {
+    console.error("Erro ao criar evento:", error);
+    alert("Erro ao criar evento. Tente novamente.");
+  }
 });
 
-document.getElementById('adicionar-item').addEventListener('click', () => {
-  const itensContainer = document.getElementById('itens-container');
-  const novoItem = document.createElement('div');
-  novoItem.classList.add('item');
-  novoItem.innerHTML = `
-    <label for="item">Nome do Item:</label>
-    <input type="text" class="item-nome" placeholder="Nome do item" required><br><br>
-    <label for="quantidade">Quantidade Enviada:</label>
-    <input type="number" class="item-quantidade" placeholder="Quantidade enviada" required><br><br>
-  `;
-  itensContainer.appendChild(novoItem);
-});
