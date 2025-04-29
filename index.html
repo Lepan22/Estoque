@@ -19,6 +19,20 @@
       font-weight: bold;
     }
     a.botao-criar:hover { background-color: #0056b3; }
+    .evento {
+      margin-bottom: 20px;
+      padding: 10px;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+      background-color: #f9f9f9;
+    }
+    .evento p {
+      margin: 5px 0;
+    }
+    .status {
+      font-weight: bold;
+      color: #007bff;
+    }
   </style>
 </head>
 <body>
@@ -27,5 +41,63 @@
   <div id="eventos-container">
     <p>Carregando eventos...</p>
   </div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js";
+    import { getDatabase, ref, get } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-database.js";
+
+    // Configuração do Firebase
+    const firebaseConfig = {
+      apiKey: "AIzaSyBN-bmzgrlzjmrKMmuClZ8LVll-vJyx-aE",
+      authDomain: "controleestoquelepan.firebaseapp.com",
+      databaseURL: "https://controleestoquelepan-default-rtdb.firebaseio.com",
+      projectId: "controleestoquelepan",
+      storageBucket: "controleestoquelepan.appspot.com",
+      messagingSenderId: "779860276544",
+      appId: "1:779860276544:web:f45844571a8c0bab1576a5",
+    };
+
+    // Inicializando o Firebase
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+
+    // Função para carregar eventos
+    function carregarEventos() {
+      const eventosRef = ref(db, "eventos/");
+      get(eventosRef).then(snapshot => {
+        if (snapshot.exists()) {
+          const eventos = snapshot.val();
+          const container = document.getElementById("eventos-container");
+          container.innerHTML = ""; // Limpa o conteúdo inicial
+
+          Object.keys(eventos).forEach(id => {
+            const evento = eventos[id];
+            const eventoDiv = document.createElement("div");
+            eventoDiv.className = "evento";
+
+            // Exibe informações do evento
+            eventoDiv.innerHTML = `
+              <p><strong>Nome:</strong> ${evento.nome}</p>
+              <p><strong>Data:</strong> ${evento.data}</p>
+              <p><strong>Responsável:</strong> ${evento.responsavel}</p>
+              <p><strong>Status:</strong> <span class="status">${evento.status ? evento.status : "Pendente"}</span></p>
+              <a href="assets/form.html?id=${id}" class="botao-criar">Ver Detalhes</a>
+            `;
+
+            // Adiciona o evento na lista
+            container.appendChild(eventoDiv);
+          });
+        } else {
+          document.getElementById("eventos-container").innerHTML = "<p>Nenhum evento encontrado.</p>";
+        }
+      }).catch(error => {
+        console.error("Erro ao carregar eventos:", error);
+      });
+    }
+
+    // Carregar eventos quando a página carregar
+    carregarEventos();
+  </script>
 </body>
 </html>
+
