@@ -4,56 +4,33 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <title>Detalhes do Evento</title>
-    <!-- Link para o arquivo CSS externo -->
-    <link rel="stylesheet" href="assets/style.css">
+    <!-- Link para o NOVO arquivo CSS -->
+    <link rel="stylesheet" href="assets/style_v2.css">
 
-    <!-- Estilos específicos para form.html (se necessário, ou mover para style.css) -->
-    <style>
-        /* Ajustes finos para os itens no form.html */
-        .item {
-            margin-bottom: 15px;
-            padding: 15px;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            background-color: #f9f9f9;
-        }
-        .item div {
-            margin-bottom: 8px; /* Espaçamento entre as linhas de informação do item */
-        }
-        .item label {
-            display: inline-block;
-            min-width: 150px; /* Alinha os inputs */
-            font-weight: bold;
-        }
-        .item input[type="number"] {
-            width: 70px; /* Um pouco mais largo */
-            padding: 8px;
-            margin-left: 5px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-        }
-        #eventoInfo p {
-            margin-bottom: 10px;
-            font-size: 1.1em;
-        }
-        #finalizarEventoBtn {
-             background-color: #dc3545; /* Vermelho para finalizar */
-        }
-        #finalizarEventoBtn:hover {
-             background-color: #c82333;
-        }
-        #finalizarEventoBtn:disabled {
-            background-color: #6c757d; /* Cinza quando desabilitado */
-            cursor: not-allowed;
-        }
-    </style>
+    <!-- Estilos inline removidos ou movidos para style_v2.css -->
+
 </head>
 <body>
     <div class="container">
         <h1>Detalhes do Evento</h1>
         <div id="eventoInfo"></div>
         <h3>Itens:</h3>
-        <div id="itens"></div>
+        
+        <!-- Cabeçalho para os itens -->
+        <div id="itens-header">
+            <div class="item-col item-col-nome">Nome</div>
+            <div class="item-col item-col-enviado">Enviado</div>
+            <div class="item-col item-col-editavel assado">Assado</div>
+            <div class="item-col item-col-editavel congelado">Congelado</div>
+            <div class="item-col item-col-editavel perdido">Perdido</div>
+        </div>
+
+        <!-- Container para as linhas de itens -->
+        <div id="itens">
+             <!-- Linhas de itens serão carregadas aqui -->
+             <p>Carregando itens...</p>
+        </div>
+
         <div class="button-container">
             <button id="finalizarEventoBtn">Finalizar Evento e Salvar Alterações</button>
         </div>
@@ -86,7 +63,7 @@
             window.location.href = "index.html";
         }
 
-        // --- Função carregarDados (com ajustes nos inputs) --- 
+        // --- Função carregarDados (adaptada para layout em linha) --- 
         function carregarDados() {
             get(refEvento).then(snapshot => {
                 if (!snapshot.exists()) {
@@ -105,25 +82,31 @@
                 `;
 
                 const container = document.getElementById("itens");
-                container.innerHTML = ''; 
+                container.innerHTML = ''; // Limpa container (inclusive o 'Carregando...')
 
                 if (currentItensData && Array.isArray(currentItensData) && currentItensData.length > 0) {
                     currentItensData.forEach((item, index) => {
                         if (!item) return; 
 
-                        const div = document.createElement("div");
-                        div.className = "item";
-                        div.setAttribute('data-item-index', index); 
+                        const divRow = document.createElement("div");
+                        divRow.className = "item-row"; // Usa a classe para linha
+                        divRow.setAttribute('data-item-index', index); 
 
-                        // Inputs com labels associados corretamente
-                        div.innerHTML = `
-                            <div><strong>Nome:</strong> ${item.nomeItem || 'N/A'}</div>
-                            <div><strong>Quantidade Enviada:</strong> ${item.enviado !== undefined ? item.enviado : 'N/A'}</div>
-                            <div><label for="assado-${index}">Assado:</label> <input type="number" id="assado-${index}" name="assado" value="${item.assado !== undefined ? item.assado : 0}" min="0"></div>
-                            <div><label for="congelado-${index}">Congelado:</label> <input type="number" id="congelado-${index}" name="congelado" value="${item.congelado !== undefined ? item.congelado : 0}" min="0"></div>
-                            <div><label for="perdido-${index}">Perdido:</label> <input type="number" id="perdido-${index}" name="perdido" value="${item.perdido !== undefined ? item.perdido : 0}" min="0"></div>
+                        // Cria colunas para cada informação
+                        divRow.innerHTML = `
+                            <div class="item-col item-col-nome" data-label="Nome">${item.nomeItem || 'N/A'}</div>
+                            <div class="item-col item-col-enviado" data-label="Enviado">${item.enviado !== undefined ? item.enviado : 'N/A'}</div>
+                            <div class="item-col item-col-editavel assado" data-label="Assado">
+                                <input type="number" id="assado-${index}" name="assado" value="${item.assado !== undefined ? item.assado : 0}" min="0">
+                            </div>
+                            <div class="item-col item-col-editavel congelado" data-label="Congelado">
+                                <input type="number" id="congelado-${index}" name="congelado" value="${item.congelado !== undefined ? item.congelado : 0}" min="0">
+                            </div>
+                            <div class="item-col item-col-editavel perdido" data-label="Perdido">
+                                <input type="number" id="perdido-${index}" name="perdido" value="${item.perdido !== undefined ? item.perdido : 0}" min="0">
+                            </div>
                         `;
-                        container.appendChild(div);
+                        container.appendChild(divRow);
                     });
                 } else {
                     container.innerHTML = "<p>Nenhum item registrado para este evento.</p>";
@@ -143,22 +126,23 @@
             });
         }
 
-        // --- Lógica Botão Finalizar (mantida) --- 
+        // --- Lógica Botão Finalizar (adaptada para nova estrutura) --- 
         const finalizarBtn = document.getElementById("finalizarEventoBtn");
         finalizarBtn.addEventListener("click", () => {
             finalizarBtn.disabled = true;
             finalizarBtn.textContent = 'Processando...';
 
-            const itemDivs = document.querySelectorAll('#itens .item');
+            const itemRows = document.querySelectorAll('#itens .item-row'); // Seleciona as linhas
             const novosItens = [];
-            itemDivs.forEach(div => {
-                const index = parseInt(div.getAttribute('data-item-index'));
+            itemRows.forEach(row => {
+                const index = parseInt(row.getAttribute('data-item-index'));
                 const itemOriginal = currentItensData[index];
                 if (!itemOriginal) return;
 
-                const assadoInput = div.querySelector('input[name="assado"]');
-                const congeladoInput = div.querySelector('input[name="congelado"]');
-                const perdidoInput = div.querySelector('input[name="perdido"]');
+                // Busca os inputs dentro da linha específica
+                const assadoInput = row.querySelector('input[name="assado"]');
+                const congeladoInput = row.querySelector('input[name="congelado"]');
+                const perdidoInput = row.querySelector('input[name="perdido"]');
 
                 const itemAtualizado = {
                     ...itemOriginal,
