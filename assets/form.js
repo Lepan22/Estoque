@@ -1,86 +1,141 @@
 // form.js
-import { initializeApp }      from "https://www.gstatic.com/firebasejs/9.22.1/firebase-app.js";
-import { getDatabase, ref, get, child, update } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-database.js";
+import { initializeApp }              from "https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js";
+import { getDatabase, ref, get, update } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-database.js";
 
-// 1) Inicializa o Firebase (use seus dados)
+// --- Configuração do Firebase (use seus dados) ---
 const firebaseConfig = {
-  apiKey: "SUA_API_KEY",
+  apiKey: "AIzaSyBN-bmzgrlzjmrKMmuClZ8LVll-vJyx-aE",
   authDomain: "controleestoquelepan.firebaseapp.com",
   databaseURL: "https://controleestoquelepan-default-rtdb.firebaseio.com",
   projectId: "controleestoquelepan",
   storageBucket: "controleestoquelepan.appspot.com",
-  messagingSenderId: "SENDER_ID",
-  appId: "APP_ID"
+  messagingSenderId: "779860276544",
+  appId: "1:779860276544:web:f45844571a8c0bab1576a5",
 };
+
 const app = initializeApp(firebaseConfig);
 const db  = getDatabase(app);
 
-// 2) Lê o parâmetro ?id= do URL
-const params = new URLSearchParams(location.search);
-const eventId = params.get('id');
+// Captura o ID do evento na URL
+const params    = new URLSearchParams(window.location.search);
+const eventId   = params.get("id");
+const itensBody = document.getElementById("itens-body");
+const btnFinal  = document.getElementById("finalizar");
+
 if (!eventId) {
-  alert('ID do evento não fornecido na URL.');
-  throw new Error('Falta parâmetro id');
+  alert("ID do evento não fornecido.");
+  location.href = "index.html";
 }
 
-// 3) Carrega o evento do Firebase
-const dbRef = ref(db);
-get(child(dbRef, `eventos/${eventId}`))
-  .then(snapshot => {
-    if (!snapshot.exists()) {
-      alert('Evento não encontrado.');
-      return;
-    }
-    const ev = snapshot.val();
+// Referência ao evento
+const eventoRef = ref(db, `eventos/${eventId}`);
 
-    // Preenche os campos
-    document.getElementById('nome').value = ev.nome;
-    document.getElementById('data').value = ev.data;
-    document.getElementById('responsavel').value = ev.responsavel;
+// Função para carregar dados do evento e popular a tabela
+function carregarDados() {
+  get(eventoRef)
+    .then(snapshot => {
+      if (!snapshot.exists()) {
+        alert("Evento não encontrado.");
+        location.href = "index.html";
+        return;
+      }
 
-    // Monta a tabela de itens
-    const body = document.getElementById('itens-body');
-    body.innerHTML = '';  // limpa "Carregando itens..."
-    const itens = ev.itens || [];
-    if (itens.length === 0) {
-      body.innerHTML = '<tr><td colspan="5">Nenhum item cadastrado.</td></tr>';
-    } else {
-      itens.forEach((item, idx) => {
-        const tr = document.createElement('tr');
+      const ev = snapshot.val();
 
-        // Nome
-        const tdNome = document.createElement('td');
-        tdNome.textContent = item.nome;
-        tr.appendChild(tdNome);
+      // Preenche campos principais
+      document.getElementById("nome").value       = ev.nome       || "";
+      document.getElementById("data").value       = ev.data       || "";
+      document.getElementById("responsavel").value= ev.responsavel|| "";
 
-        // Cria quatro checkboxes: enviado, assado, congelado, perdido
-        ['enviado','assado','congelado','perdido'].forEach(prop => {
-          const td = document.createElement('td');
-          const chk = document.createElement('input');
-          chk.type = 'checkbox';
-          chk.checked = item[prop] === true;
-          chk.addEventListener('change', () => {
-            // Atualiza só aquele campo no Firebase
-            const updates = {};
-            updates[`eventos/${eventId}/itens/${idx}/${prop}`] = chk.checked;
-            update(ref(db), updates);
-          });
-          td.appendChild(chk);
-          tr.appendChild(td);
+      // Limpa tabela
+      itensBody.innerHTML = "";
+
+      const itens = Array.isArray(ev.itens) ? ev.itens : [];
+
+      if (itens.length === 0) {
+        itensBody.innerHTML = `<tr><td colspan="5">Nenhum item registrado para este evento.</td></tr>`;
+      } else {
+        itens.forEach((item, idx) => {
+          const tr = document.createElement("tr");
+          tr.setAttribute("data-index", idx);
+
+          // Nome pode estar em item.nomeItem ou item.nome
+          const nomeExib = item.nomeItem ?? item.nome ?? "—";
+          // Enviado pode ser boolean ou número/texto
+          const enviadoExib = (item.enviado === true || item.enviado === false)
+            ? item.enviado
+            : (item.enviado ?? "—");
+
+          tr.innerHTML = `
+            <td>${nomeExib}</td>
+            <td>${enviadoExib}</td>
+            <td><input type="number" name="assado"    value="${item.assado   ?? 0}" min="0"></td>
+            <td><input type="number" name="congelado" value="${item.congelado?? 0}" min="0"></td>
+            <td><input type="number" name="perdido"   value="${item.perdido  ?? 0}" min="0"></td>
+          `;
+
+          itensBody.appendChild(tr);
         });
+      }
 
-        body.appendChild(tr);
-      });
-    }
-  })
-  .catch(err => {
-    console.error('Erro ao carregar evento:', err);
-    alert('Falha ao carregar detalhes. Veja console.');
+      // Se já finalizado, desabilita inputs e botão
+      if (ev.status === "finalizado") {
+        btnFinal.textContent = "Evento Finalizado";
+        btnFinal.disabled    = true;
+        itensBody.querySelectorAll("input").forEach(i => i.disabled = true);
+      }
+    })
+    .catch(err => {
+      console.error("Erro ao carregar evento:", err);
+      itensBody.innerHTML = `<tr><td colspan="5">Erro ao carregar itens.</td></tr>`;
+    });
+}
+
+// Função para finalizar evento (salvar alterações nos itens e marcar status)
+btnFinal.addEventListener("click", () => {
+  btnFinal.disabled    = true;
+  btnFinal.textContent = "Salvando...";
+
+  const linhas = document.querySelectorAll("#itens-body tr[data-index]");
+  const novos  = [];
+
+  linhas.forEach(tr => {
+    const idx = parseInt(tr.getAttribute("data-index"), 10);
+    const orig = Array.isArray(orig = null) ? null : null; // placeholder
   });
 
-// 4) Botão Finalizar: aqui você pode adicionar lógica extra antes de salvar
-document.getElementById('finalizar').addEventListener('click', () => {
-  alert('Alterações salvas com sucesso!');
-  // Caso queira redirecionar:
-  // location.href = 'lista-eventos.html';
+  // Corrige acima: precisamos do array original. Recarregue snapshot.
+  get(eventoRef).then(snapshot => {
+    const ev = snapshot.val();
+    const itensOrig = Array.isArray(ev.itens) ? ev.itens : [];
+
+    linhas.forEach(tr => {
+      const idx = parseInt(tr.getAttribute("data-index"), 10);
+      if (isNaN(idx) || !itensOrig[idx]) return;
+
+      const orig = itensOrig[idx];
+      const assado    = parseInt(tr.querySelector('input[name="assado"]').value, 10)    || 0;
+      const congelado = parseInt(tr.querySelector('input[name="congelado"]').value, 10) || 0;
+      const perdido   = parseInt(tr.querySelector('input[name="perdido"]').value, 10)   || 0;
+
+      novos.push({ ...orig, assado, congelado, perdido });
+    });
+
+    // Atualiza itens e status
+    update(eventoRef, { itens: novos, status: "finalizado" })
+      .then(() => {
+        alert("Alterações salvas e evento finalizado!");
+        btnFinal.textContent = "Evento Finalizado";
+        itensBody.querySelectorAll("input").forEach(i => i.disabled = true);
+      })
+      .catch(err => {
+        console.error("Erro ao salvar alterações:", err);
+        alert("Falha ao salvar. Veja console.");
+        btnFinal.disabled    = false;
+        btnFinal.textContent = "Finalizar Evento e Salvar Alterações";
+      });
+  });
 });
+
+// Carrega tudo ao iniciar
+carregarDados();
