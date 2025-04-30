@@ -1,134 +1,145 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-    <title>Criar Evento</title>
-    <!-- Link para o arquivo CSS externo -->
-    <link rel="stylesheet" href="style.css">
-
-    <!-- Estilos específicos para criar-evento.html -->
-    <style>
-        /* Estilos para o formulário */
-        #form-evento label {
-            display: block;
-            margin-bottom: 15px;
-            font-weight: bold;
-        }
-
-        #form-evento input[type="text"],
-        #form-evento input[type="date"] {
-            width: calc(100% - 22px);
-            padding: 10px;
-            margin-top: 5px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-            box-sizing: border-box;
-        }
-
-        /* Estilos para a seção de itens */
-        #itens-container .item-line {
-            display: flex;
-            align-items: center;
-            margin-bottom: 10px;
-            padding: 10px;
-            border: 1px solid #eee;
-            border-radius: 4px;
-            background-color: #f9f9f9;
-        }
-
-        #itens-container .item-line input {
-            padding: 8px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-            margin-right: 10px;
-        }
-
-        #itens-container .item-line input[name="item-nome"] {
-            flex-grow: 1;
-        }
-
-        #itens-container .item-line input[name="item-quantidade"] {
-            width: 80px;
-        }
-
-        #itens-container .item-line button {
-            padding: 8px 12px;
-            background-color: #dc3545;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 14px;
-        }
-        #itens-container .item-line button:hover {
-             background-color: #c82333;
-        }
-
-        /* Botões principais */
-        #add-item {
-            background-color: #17a2b8;
-            margin-bottom: 20px;
-        }
-        #add-item:hover {
-             background-color: #138496;
-        }
-
-        button[type="submit"] {
-            width: 100%;
-            padding: 12px;
-            font-size: 18px;
-        }
-
-        /* Responsividade para itens */
-        @media screen and (max-width: 600px) {
-            #itens-container .item-line {
-                flex-direction: column;
-                align-items: stretch;
-            }
-            #itens-container .item-line input,
-            #itens-container .item-line button {
-                width: 100%;
-                margin-bottom: 10px;
-                margin-right: 0;
-                box-sizing: border-box;
-            }
-            #itens-container .item-line button {
-                margin-bottom: 0;
-            }
-        }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Criar / Editar Evento</title>
+  <link rel="stylesheet" href="assets/style.css">
 </head>
 <body>
-    <div class="container">
-        <h2>Criar Novo Evento</h2>
-        <form id="form-evento">
-            <label for="nome">Nome do Evento:
-                <input type="text" id="nome" name="nome" required />
-            </label>
+  <div class="container">
+    <h2 id="form-title">Criar Novo Evento</h2>
+    <form id="form-evento">
+      <label for="nome">Nome do Evento:
+        <input type="text" id="nome" name="nome" required />
+      </label>
+      <label for="data">Data:
+        <input type="date" id="data" name="data" required />
+      </label>
+      <label for="responsavel">Responsável:
+        <input type="text" id="responsavel" name="responsavel" required />
+      </label>
 
-            <label for="data">Data:
-                <input type="date" id="data" name="data" required />
-            </label>
+      <h3>Itens</h3>
+      <datalist id="lista-produtos"></datalist>
+      <div id="itens-container"></div>
+      <button type="button" id="add-item" class="botao">➕ Adicionar Item</button>
 
-            <label for="responsavel">Responsável:
-                <input type="text" id="responsavel" name="responsavel" required />
-            </label>
+      <button type="submit" id="submit-btn" class="botao">Criar Evento</button>
+    </form>
+  </div>
 
-            <h3>Itens</h3>
-            <!-- datalist para produtos -->
-            <datalist id="lista-produtos"></datalist>
+  <script type="module">
+    import { initializeApp }        from "https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js";
+    import {
+      getDatabase, ref, push, update,
+      get, child
+    } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-database.js";
 
-            <div id="itens-container">
-                <!-- Itens adicionados dinamicamente aqui -->
-            </div>
-            <button type="button" id="add-item" class="botao">➕ Adicionar Item</button>
+    // --- FIREBASE CONFIG ---
+    const firebaseConfig = {
+      apiKey: "AIzaSyBN-bmzgrlzjmrKMmuClZ8LVll-vJyx-aE",
+      authDomain: "controleestoquelepan.firebaseapp.com",
+      databaseURL: "https://controleestoquelepan-default-rtdb.firebaseio.com",
+      projectId: "controleestoquelepan",
+      storageBucket: "controleestoquelepan.appspot.com",
+      messagingSenderId: "779860276544",
+      appId: "1:779860276544:web:f45844571a8c0bab1576a5"
+    };
+    const app = initializeApp(firebaseConfig);
+    const db  = getDatabase(app);
 
-            <button type="submit" class="botao">Criar Evento</button>
-        </form>
-    </div>
+    // Params
+    const params   = new URLSearchParams(window.location.search);
+    const eventId  = params.get("id");
+    const isEdit   = Boolean(eventId);
 
-    <!-- Script continua sendo externo -->
-    <script type="module" src="criar-evento.js"></script> 
+    // Elements
+    const titleH2   = document.getElementById("form-title");
+    const submitBtn = document.getElementById("submit-btn");
+    const addItem   = document.getElementById("add-item");
+    const itensCt   = document.getElementById("itens-container");
+    const form      = document.getElementById("form-evento");
+    const datalist  = document.getElementById("lista-produtos");
+
+    // 1) Carrega produtos no datalist
+    get(ref(db, "produtos"))
+      .then(snap => {
+        const prods = snap.val() || {};
+        Object.values(prods).forEach(p => {
+          const opt = document.createElement("option");
+          opt.value = p.nome;
+          datalist.appendChild(opt);
+        });
+      });
+
+    // 2) Função de adicionar linha de item
+    function novaLinha(item = {}) {
+      const div = document.createElement("div");
+      div.className = "item-line";
+
+      const nome = document.createElement("input");
+      nome.type = "text"; nome.name = "item-nome";
+      nome.setAttribute("list","lista-produtos");
+      nome.placeholder = "Produto";
+      nome.required = true;
+      nome.value = item.nomeItem || item.nome || "";
+
+      const qtd = document.createElement("input");
+      qtd.type = "number"; qtd.name = "item-quantidade";
+      qtd.placeholder = "Qtd"; qtd.min = "1"; qtd.required = true;
+      qtd.value = item.quantidade ?? item.qtd ?? "";
+
+      const rem = document.createElement("button");
+      rem.type = "button"; rem.textContent = "❌";
+      rem.addEventListener("click", () => div.remove());
+
+      div.append(nome, qtd, rem);
+      itensCt.appendChild(div);
+    }
+
+    addItem.addEventListener("click", () => novaLinha());
+
+    // 3) Se for edição, carrega dados existentes
+    if (isEdit) {
+      titleH2.textContent   = "Editar Evento";
+      submitBtn.textContent = "Salvar Alterações";
+      get(child(ref(db), `eventos/${eventId}`))
+        .then(snap => {
+          if (!snap.exists()) return;
+          const ev = snap.val();
+          form.nome.value        = ev.nome;
+          form.data.value        = ev.data;
+          form.responsavel.value = ev.responsavel;
+          (ev.itens || []).forEach(it => novaLinha(it));
+        });
+    }
+
+    // 4) Submit: push ou update
+    form.addEventListener("submit", e => {
+      e.preventDefault();
+      const evObj = {
+        nome:        form.nome.value,
+        data:        form.data.value,
+        responsavel: form.responsavel.value,
+        itens: Array.from(itensCt.children).map(div => ({
+          nomeItem:   div.querySelector('[name="item-nome"]').value,
+          quantidade: +div.querySelector('[name="item-quantidade"]').value
+        })),
+        status: "aberto"
+      };
+
+      const action = isEdit
+        ? update(ref(db, `eventos/${eventId}`), evObj)
+        : push(ref(db, "eventos"), evObj);
+
+      action
+        .then(() => location.href = "index.html")
+        .catch(err => {
+          console.error(err);
+          alert("Falha ao salvar.");
+        });
+    });
+  </script>
 </body>
 </html>
