@@ -59,27 +59,27 @@ function carregarProdutos() {
   const produtosRef = ref(db, "produtos");
 
   onValue(produtosRef, (snapshot) => {
+    container.innerHTML = "";
+
     if (!snapshot.exists()) {
-      container.innerHTML = "<p>Nenhum produto cadastrado.</p>";
+      container.innerHTML = "<tr><td colspan='4'>Nenhum produto cadastrado.</td></tr>";
       return;
     }
 
     const produtos = snapshot.val();
-    container.innerHTML = "";
 
     Object.entries(produtos).forEach(([id, produto]) => {
-      const div = document.createElement("div");
-      div.className = "produto";
-      div.innerHTML = `
-        <p><strong>Nome:</strong> ${produto.nome}</p>
-        <p><strong>Valor Venda:</strong> R$ ${produto.valorVenda?.toFixed(2) || "0,00"}</p>
-        <p><strong>Custo:</strong> R$ ${produto.custo?.toFixed(2) || "0,00"}</p>
-        <button class="botao-editar" data-id="${id}">Editar</button>
+      const row = document.createElement("tr");
+      row.innerHTML = `
+        <td>${produto.nome}</td>
+        <td>R$ ${produto.valorVenda?.toFixed(2) || "0,00"}</td>
+        <td>R$ ${produto.custo?.toFixed(2) || "0,00"}</td>
+        <td><button class="edit-button" data-id="${id}">Editar</button></td>
       `;
-      container.appendChild(div);
+      container.appendChild(row);
     });
 
-    document.querySelectorAll(".botao-editar").forEach(botao => {
+    document.querySelectorAll(".edit-button").forEach(botao => {
       botao.addEventListener("click", (e) => {
         const id = e.target.dataset.id;
         preencherFormulario(id);
