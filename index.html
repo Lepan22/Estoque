@@ -1,103 +1,84 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-    <title>Painel do Gerente</title>
-    <!-- Link para o arquivo CSS externo -->
-    <link rel="stylesheet" href="assets/style.css">
-
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js";
-        import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-database.js";
-
-        const firebaseConfig = {
-            apiKey: "AIzaSyBN-bmzgrlzjmrKMmuClZ8LVll-vJyx-aE",
-            authDomain: "controleestoquelepan.firebaseapp.com",
-            databaseURL: "https://controleestoquelepan-default-rtdb.firebaseio.com",
-            projectId: "controleestoquelepan",
-            storageBucket: "controleestoquelepan.appspot.com",
-            messagingSenderId: "779860276544",
-            appId: "1:779860276544:web:f45844571a8c0bab1576a5",
-        };
-
-        const app = initializeApp(firebaseConfig);
-        const db = getDatabase(app);
-        
-        // Referência ao tbody da tabela
-        const tabelaBody = document.getElementById("eventos-tbody");
-        const loadingRow = document.getElementById("loading-row");
-
-        function carregarEventos() {
-            const eventosRef = ref(db, "eventos");
-            onValue(eventosRef, (snapshot) => {
-                tabelaBody.innerHTML = ''; // Limpa o corpo da tabela
-                loadingRow.style.display = 'none'; // Esconde a linha de carregamento
-
-                if (!snapshot.exists()) {
-                    tabelaBody.innerHTML = '<tr><td colspan="5">Nenhum evento encontrado.</td></tr>';
-                    return;
-                }
-
-                const eventos = snapshot.val();
-                const eventosArray = Object.entries(eventos)
-                    .map(([id, evento]) => ({ id, ...evento }))
-                    .sort((a, b) => new Date(b.data) - new Date(a.data)); // Ordenando por data decrescente
-
-                eventosArray.forEach(({ id, nome, data, responsavel, status }) => {
-                    const tr = document.createElement("tr");
-                    
-                    // Adiciona células com data-label para responsividade
-                    tr.innerHTML = `
-                        <td data-label="Nome">${nome || 'N/A'}</td>
-                        <td data-label="Data">${data || 'N/A'}</td>
-                        <td data-label="Responsável">${responsavel || 'N/A'}</td>
-                        <td data-label="Status">${status || 'aberto'}</td>
-                        <td data-label="Ações">
-                            <a href="form.html?id=${id}" class="botao">Ver Detalhes</a>
-                        </td>
-                    `;
-                    tabelaBody.appendChild(tr);
-                });
-            }, (error) => {
-                console.error("Erro ao carregar eventos: ", error);
-                loadingRow.style.display = 'none';
-                tabelaBody.innerHTML = '<tr><td colspan="5">Erro ao carregar eventos.</td></tr>';
-            });
-        }
-
-        // Garante que o DOM está carregado antes de chamar a função
-        document.addEventListener('DOMContentLoaded', carregarEventos);
-    </script>
-    
-    <!-- Estilos removidos daqui e movidos para style.css -->
-
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Lista de Eventos</title>
+  <link rel="stylesheet" href="assets/style.css">
 </head>
 <body>
-    <div class="container">
-        <h1>Painel do Gerente</h1>
-        <a href="assets/criar-evento.html" class="botao">➕ Criar Novo Evento</a>
-        <a href="assets/produtos.html" class="botao-criar">📦 Cadastro de Produto</a>
-        
-        <!-- Estrutura da tabela -->
-        <table id="eventos-tabela">
-            <thead>
-                <tr>
-                    <th>Nome</th>
-                    <th>Data</th>
-                    <th>Responsável</th>
-                    <th>Status</th>
-                    <th>Ações</th>
-                </tr>
-            </thead>
-            <tbody id="eventos-tbody">
-                <!-- Linha de carregamento inicial -->
-                <tr id="loading-row">
-                    <td colspan="5">Carregando eventos...</td>
-                </tr>
-                <!-- Linhas de eventos serão inseridas aqui pelo JavaScript -->
-            </tbody>
-        </table>
-    </div> 
+  <div class="container">
+    <h1>Eventos Cadastrados</h1>
+    <table id="eventos-tabela">
+      <thead>
+        <tr>
+          <th>Nome</th>
+          <th>Data</th>
+          <th>Responsável</th>
+          <th>Ações</th>
+        </tr>
+      </thead>
+      <tbody id="eventos-body">
+        <tr><td colspan="4">Carregando eventos…</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js";
+    import { getDatabase, ref, get, child } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-database.js";
+
+    //===== CONFIGURAÇÃO FIREBASE =====
+    const firebaseConfig = {
+      apiKey: "…",
+      authDomain: "…",
+      databaseURL: "https://controleestoquelepan-default-rtdb.firebaseio.com",
+      projectId: "controleestoquelepan",
+      storageBucket: "…",
+      messagingSenderId: "…",
+      appId: "…"
+    };
+    const app = initializeApp(firebaseConfig);
+    const db  = getDatabase(app);
+
+    //==== TOKEN DE EDIÇÃO ====
+    // quem tiver este token na URL do form.html ganha permissão de editar
+    const EDIT_TOKEN = "MINHA_CHAVE_SECRETA";
+
+    // monta lista de eventos
+    function carregarEventos() {
+      const body = document.getElementById("eventos-body");
+      const eventosRef = ref(db, "eventos");
+      get(child(eventosRef, "")).then(snap => {
+        body.innerHTML = "";
+        if (!snap.exists()) {
+          body.innerHTML = `<tr><td colspan="4">Nenhum evento encontrado.</td></tr>`;
+          return;
+        }
+        const evs = snap.val();
+        Object.entries(evs).forEach(([id, ev]) => {
+          const tr = document.createElement("tr");
+          tr.innerHTML = `
+            <td>${ev.nome || "—"}</td>
+            <td>${ev.data || "—"}</td>
+            <td>${ev.responsavel || "—"}</td>
+            <td>
+              <!-- Link de visualização sem token -->
+              <a href="form.html?id=${id}" class="botao">Ver</a>
+              <!-- Link de edição só aqui, com token -->
+              <a href="form.html?id=${id}&editKey=${EDIT_TOKEN}" 
+                 class="botao editar">Editar</a>
+            </td>
+          `;
+          body.appendChild(tr);
+        });
+      }).catch(err => {
+        console.error("Erro ao carregar eventos:", err);
+        body.innerHTML = `<tr><td colspan="4">Erro ao carregar.</td></tr>`;
+      });
+    }
+
+    carregarEventos();
+  </script>
 </body>
 </html>
