@@ -1,52 +1,172 @@
-<!-- form.html -->
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Detalhes do Evento</title>
-  <link rel="stylesheet" href="style.css">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Detalhes do Evento</title>
+    <!-- Link para o NOVO arquivo CSS -->
+    <link rel="stylesheet" href="assets/style.css">
 </head>
 <body>
-  <div class="container">
-    <h2>Detalhes do Evento</h2>
+    <div class="container">
+        <h1>Detalhes do Evento</h1>
+        <div id="eventoInfo"></div>
+        <h3>Itens:</h3>
+        
+        <!-- Tabela para os itens -->
+        <table id="itens-tabela">
+            <thead>
+                <tr>
+                    <th class="col-nome">Nome</th>
+                    <th class="col-enviado">Enviado</th>
+                    <th class="col-editavel">Assado</th>
+                    <th class="col-editavel">Congelado</th>
+                    <th class="col-editavel">Perdido</th>
+                </tr>
+            </thead>
+            <tbody id="itens-tbody">
+                 <tr><td colspan="5">Carregando itens...</td></tr>
+            </tbody>
+        </table>
 
-    <form id="form-evento">
-      <label>
-        Nome do Evento:
-        <input type="text" id="nome" name="nome" readonly />
-      </label>
+        <div class="button-container" style="margin-top: 20px;">
+            <button id="finalizarEventoBtn">Finalizar Evento e Salvar Alterações</button>
+        </div>
+    </div>
 
-      <label>
-        Data:
-        <input type="date" id="data" name="data" readonly />
-      </label>
+    <script type="module">
+        import { initializeApp }         from "https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js";
+        import { getDatabase, ref, get, update } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-database.js";
 
-      <label>
-        Responsável:
-        <input type="text" id="responsavel" name="responsavel" readonly />
-      </label>
+        // --- Configuração Firebase (mantida) --- 
+        const firebaseConfig = {
+            apiKey: "AIzaSyBN-bmzgrlzjmrKMmuClZ8LVll-vJyx-aE",
+            authDomain: "controleestoquelepan.firebaseapp.com",
+            databaseURL: "https://controleestoquelepan-default-rtdb.firebaseio.com",
+            projectId: "controleestoquelepan",
+            storageBucket: "controleestoquelepan.appspot.com",
+            messagingSenderId: "779860276544",
+            appId: "1:779860276544:web:f45844571a8c0bab1576a5",
+        };
 
-      <h3>Itens:</h3>
-      <table>
-        <thead>
-          <tr>
-            <th>Nome</th>
-            <th>Enviado</th>
-            <th>Assado</th>
-            <th>Congelado</th>
-            <th>Perdido</th>
-          </tr>
-        </thead>
-        <tbody id="itens-body">
-          <tr><td colspan="5">Carregando itens...</td></tr>
-        </tbody>
-      </table>
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
 
-      <button type="button" id="finalizar" class="botao">Finalizar Evento e Salvar Alterações</button>
-    </form>
-  </div>
+        const id = new URLSearchParams(window.location.search).get("id");
+        if (!id) {
+            alert("ID do Evento não fornecido na URL.");
+            window.location.href = "index.html";
+        }
+        const refEvento = ref(db, `eventos/${id}`);
+        let currentItensData = [];
 
-  <script type="module" src="form.js"></script>
+        function carregarDados() {
+            get(refEvento)
+                .then(snapshot => {
+                    if (!snapshot.exists()) {
+                        alert("Evento não encontrado.");
+                        window.location.href = "index.html";
+                        return;
+                    }
+
+                    const evento = snapshot.val();
+                    currentItensData = evento.itens || [];
+
+                    // Informações principais
+                    document.getElementById("eventoInfo").innerHTML = `
+                        <p><strong>Nome:</strong> ${evento.nome || '—'}</p>
+                        <p><strong>Data:</strong> ${evento.data || '—'}</p>
+                        <p><strong>Responsável:</strong> ${evento.responsavel || '—'}</p>
+                    `;
+
+                    // Tabela de itens
+                    const tabelaBody = document.getElementById("itens-tbody");
+                    tabelaBody.innerHTML = "";
+
+                    if (currentItensData.length > 0) {
+                        currentItensData.forEach((item, index) => {
+                            const tr = document.createElement("tr");
+                            tr.setAttribute("data-item-index", index);
+
+                            // Exibir nome procurando pelas duas propriedades
+                            const nomeExibido = item.nomeItem ?? item.nome ?? 'N/A';
+                            // Exibir enviado (boolean ou texto)
+                            const enviadoExibido = (item.enviado === true || item.enviado === false)
+                                ? item.enviado
+                                : (item.enviado ?? 'N/A');
+
+                            tr.innerHTML = `
+                                <td class="col-nome" data-label="Nome">${nomeExibido}</td>
+                                <td class="col-enviado" data-label="Enviado">${enviadoExibido}</td>
+                                <td class="col-editavel" data-label="Assado">
+                                    <input type="number" name="assado" value="${item.assado ?? 0}" min="0">
+                                </td>
+                                <td class="col-editavel" data-label="Congelado">
+                                    <input type="number" name="congelado" value="${item.congelado ?? 0}" min="0">
+                                </td>
+                                <td class="col-editavel" data-label="Perdido">
+                                    <input type="number" name="perdido" value="${item.perdido ?? 0}" min="0">
+                                </td>
+                            `;
+                            tabelaBody.appendChild(tr);
+                        });
+                    } else {
+                        tabelaBody.innerHTML = "<tr><td colspan='5'>Nenhum item registrado para este evento.</td></tr>";
+                    }
+
+                    // Se já finalizado
+                    if (evento.status === 'finalizado') {
+                        const btn = document.getElementById("finalizarEventoBtn");
+                        btn.disabled = true;
+                        btn.textContent = "Evento Finalizado";
+                        tabelaBody.querySelectorAll('input[type="number"]').forEach(i => i.disabled = true);
+                    }
+                })
+                .catch(err => {
+                    console.error("Erro ao buscar dados do evento:", err);
+                    document.getElementById("itens-tbody").innerHTML = "<tr><td colspan='5'>Erro ao carregar itens.</td></tr>";
+                });
+        }
+
+        // Botão de finalizar
+        document.getElementById("finalizarEventoBtn").addEventListener("click", () => {
+            const btn = document.getElementById("finalizarEventoBtn");
+            btn.disabled = true;
+            btn.textContent = "Processando...";
+
+            const linhas = document.querySelectorAll("#itens-tbody tr[data-item-index]");
+            const novos = [];
+
+            linhas.forEach(tr => {
+                const idx = Number(tr.getAttribute("data-item-index"));
+                if (isNaN(idx) || !currentItensData[idx]) return;
+                const orig = currentItensData[idx];
+                const novo = {
+                    ...orig,
+                    assado:  parseInt(tr.querySelector('input[name="assado"]').value)  || 0,
+                    congelado: parseInt(tr.querySelector('input[name="congelado"]').value) || 0,
+                    perdido:  parseInt(tr.querySelector('input[name="perdido"]').value)  || 0
+                };
+                novos.push(novo);
+            });
+
+            update(ref(db, `eventos/${id}`), { itens: novos, status: "finalizado" })
+                .then(() => {
+                    alert("Evento finalizado e alterações salvas!");
+                    // desabilita inputs
+                    document.querySelectorAll("#itens-tbody input").forEach(i => i.disabled = true);
+                    btn.textContent = "Evento Finalizado";
+                })
+                .catch(error => {
+                    console.error("Erro ao salvar alterações:", error);
+                    alert("Falha ao salvar alterações. Veja console.");
+                    btn.disabled = false;
+                    btn.textContent = "Finalizar Evento e Salvar Alterações";
+                });
+        });
+
+        // Carrega tudo ao abrir
+        carregarDados();
+    </script>
 </body>
 </html>
