@@ -4,25 +4,130 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Detalhes do Evento</title>
+  <!-- Seu CSS antigo -->
   <link rel="stylesheet" href="style.css">
+
+  <!-- Ajustes específicos deste arquivo -->
+  <style>
+    .container {
+      max-width: 800px;
+      margin: 40px auto;
+      padding: 20px;
+      background: #fff;
+      border-radius: 8px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    }
+    h2 {
+      margin-bottom: 20px;
+      font-size: 28px;
+      color: #333;
+    }
+    form label {
+      display: block;
+      margin-bottom: 15px;
+      font-weight: bold;
+      color: #555;
+    }
+    form input[readonly] {
+      background: #f5f5f5;
+      border: 1px solid #ddd;
+      padding: 8px;
+      width: 100%;
+      border-radius: 4px;
+      box-sizing: border-box;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+    }
+    table thead th {
+      background: #f0f0f0;
+      padding: 10px;
+      border-bottom: 2px solid #ddd;
+      text-align: left;
+      font-weight: 600;
+    }
+    table tbody td {
+      padding: 8px;
+      border-bottom: 1px solid #eee;
+    }
+    table tbody td input {
+      width: 70px;
+      padding: 4px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      box-sizing: border-box;
+    }
+    .button-container {
+      text-align: right;
+      margin-top: 20px;
+    }
+    #finalizar {
+      background: #28a745;
+      color: #fff;
+      border: none;
+      padding: 12px 20px;
+      font-size: 16px;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    #finalizar:disabled {
+      background: #aaa;
+      cursor: default;
+    }
+
+    /* Responsividade */
+    @media (max-width: 600px) {
+      table, thead, tbody, th, td, tr {
+        display: block;
+      }
+      thead tr {
+        position: absolute;
+        top: -9999px;
+        left: -9999px;
+      }
+      tr {
+        margin-bottom: 15px;
+      }
+      td {
+        position: relative;
+        padding-left: 50%;
+      }
+      td:before {
+        position: absolute;
+        top: 8px;
+        left: 10px;
+        width: 45%;
+        white-space: nowrap;
+        font-weight: bold;
+      }
+      td:nth-of-type(1):before { content: "Nome"; }
+      td:nth-of-type(2):before { content: "Quantidade"; }
+      td:nth-of-type(3):before { content: "Enviado"; }
+      td:nth-of-type(4):before { content: "Assado"; }
+      td:nth-of-type(5):before { content: "Congelado"; }
+      td:nth-of-type(6):before { content: "Perdido"; }
+      td input {
+        width: 100%;
+      }
+    }
+  </style>
 </head>
 <body>
   <div class="container">
     <h2>Detalhes do Evento</h2>
 
     <form id="form-evento">
-      <label>
-        Nome do Evento:
+      <label for="nome">Nome do Evento:
         <input type="text" id="nome" name="nome" readonly />
       </label>
 
-      <label>
-        Data:
+      <label for="data">Data:
         <input type="date" id="data" name="data" readonly />
       </label>
 
-      <label>
-        Responsável:
+      <label for="responsavel">Responsável:
         <input type="text" id="responsavel" name="responsavel" readonly />
       </label>
 
@@ -43,9 +148,11 @@
         </tbody>
       </table>
 
-      <button type="button" id="finalizar" class="botao">
-        Finalizar Evento e Salvar Alterações
-      </button>
+      <div class="button-container">
+        <button type="button" id="finalizar" class="botao">
+          Finalizar Evento e Salvar Alterações
+        </button>
+      </div>
     </form>
   </div>
 
@@ -53,7 +160,6 @@
     import { initializeApp }               from "https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js";
     import { getDatabase, ref, get, update } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-database.js";
 
-    // --- Configuração do Firebase ---
     const firebaseConfig = {
       apiKey: "AIzaSyBN-bmzgrlzjmrKMmuClZ8LVll-vJyx-aE",
       authDomain: "controleestoquelepan.firebaseapp.com",
@@ -66,7 +172,6 @@
     const app  = initializeApp(firebaseConfig);
     const db   = getDatabase(app);
 
-    // Captura ID do evento
     const params    = new URLSearchParams(window.location.search);
     const eventId   = params.get("id");
     const itensBody = document.getElementById("itens-body");
@@ -79,7 +184,6 @@
 
     const eventoRef = ref(db, `eventos/${eventId}`);
 
-    // Carrega dados e popula tabela
     function carregarDados() {
       get(eventoRef)
         .then(snapshot => {
@@ -88,15 +192,13 @@
             location.href = "index.html";
             return;
           }
-          const ev = snapshot.val();
+          const ev    = snapshot.val();
           const itens = Array.isArray(ev.itens) ? ev.itens : [];
 
-          // Campos principais
           document.getElementById("nome").value        = ev.nome        || "";
           document.getElementById("data").value        = ev.data        || "";
           document.getElementById("responsavel").value = ev.responsavel || "";
 
-          // Limpa tabela
           itensBody.innerHTML = "";
 
           if (itens.length === 0) {
@@ -106,12 +208,11 @@
               const tr = document.createElement("tr");
               tr.setAttribute("data-index", idx);
 
-              // Extrai valores (com fallback)
-              const nomeExib      = item.nomeItem ?? item.nome ?? "—";
-              const quantidadeExib= item.quantidade ?? item.qtd ?? "—";
-              const enviadoExib   = (item.enviado === true || item.enviado === false)
-                                    ? item.enviado
-                                    : (item.enviado ?? "—");
+              const nomeExib       = item.nomeItem ?? item.nome ?? "—";
+              const quantidadeExib = item.quantidade ?? item.qtd ?? "—";
+              const enviadoExib    = (item.enviado === true || item.enviado === false)
+                                     ? item.enviado
+                                     : (item.enviado ?? "—");
 
               tr.innerHTML = `
                 <td>${nomeExib}</td>
@@ -125,7 +226,6 @@
             });
           }
 
-          // Se já estiver finalizado, desabilita tudo
           if (ev.status === "finalizado") {
             btnFinal.textContent = "Evento Finalizado";
             btnFinal.disabled    = true;
@@ -138,7 +238,6 @@
         });
     }
 
-    // Finaliza e salva alterações
     btnFinal.addEventListener("click", () => {
       btnFinal.disabled    = true;
       btnFinal.textContent = "Salvando...";
@@ -158,7 +257,6 @@
           const congelado = parseInt(tr.querySelector('input[name="congelado"]').value, 10) || 0;
           const perdido   = parseInt(tr.querySelector('input[name="perdido"]').value, 10)   || 0;
 
-          // Mantém nome, quantidade e enviado originais
           novos.push({
             ...orig,
             assado,
@@ -167,7 +265,6 @@
           });
         });
 
-        // Atualiza em lote: itens + status
         update(eventoRef, { itens: novos, status: "finalizado" })
           .then(() => {
             alert("Evento finalizado e alterações salvas!");
@@ -183,7 +280,6 @@
       });
     });
 
-    // Executa ao carregar a página
     carregarDados();
   </script>
 </body>
