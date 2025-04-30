@@ -38,9 +38,11 @@ form.addEventListener("submit", (e) => {
   const produtoData = { nome, valorVenda, custo };
 
   if (id) {
+    // Atualiza produto existente
     const updateRef = ref(db, `produtos/${id}`);
     update(updateRef, produtoData);
   } else {
+    // Cria novo produto
     const novoRef = push(produtosRef);
     set(novoRef, produtoData);
   }
@@ -55,9 +57,18 @@ onValue(produtosRef, (snapshot) => {
     const produtos = snapshot.val();
     Object.entries(produtos).forEach(([id, produto]) => {
       const li = document.createElement("li");
+
+      const formatarMoeda = (valor) =>
+        new Intl.NumberFormat("pt-BR", {
+          style: "currency",
+          currency: "BRL",
+        }).format(valor || 0);
+
       li.innerHTML = `
-        <strong>${produto.nome}</strong> — Venda: R$${produto.valorVenda?.toFixed(2)} / Custo: R$${produto.custo?.toFixed(2)}
-        <button data-id="${id}">Editar</button>
+        <strong>${produto.nome}</strong><br>
+        Venda: ${formatarMoeda(produto.valorVenda)} /
+        Custo: ${formatarMoeda(produto.custo)}
+        <br><button data-id="${id}">Editar</button>
       `;
       li.querySelector("button").onclick = () => editarProduto(id, produto);
       lista.appendChild(li);
