@@ -22,12 +22,12 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 
-const form = document.getElementById("produtoForm");
+const form = document.getElementById("form-produto");
 const idInput = document.getElementById("produtoId");
 const nomeInput = document.getElementById("nome");
 const valorVendaInput = document.getElementById("valorVenda");
 const custoInput = document.getElementById("custo");
-const container = document.getElementById("produtosContainer");
+const container = document.querySelector("#produtos-tabela tbody");
 
 form.addEventListener("submit", async (e) => {
   e.preventDefault();
@@ -72,8 +72,8 @@ function carregarProdutos() {
       const row = document.createElement("tr");
       row.innerHTML = `
         <td>${produto.nome}</td>
-        <td>R$ ${produto.valorVenda?.toFixed(2) || "0,00"}</td>
-        <td>R$ ${produto.custo?.toFixed(2) || "0,00"}</td>
+        <td>${formatarMoeda(produto.valorVenda)}</td>
+        <td>${formatarMoeda(produto.custo)}</td>
         <td><button class="edit-button" data-id="${id}">Editar</button></td>
       `;
       container.appendChild(row);
@@ -98,6 +98,13 @@ function preencherFormulario(id) {
       custoInput.value = produto.custo || "";
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
+  });
+}
+
+function formatarMoeda(valor) {
+  return (parseFloat(valor) || 0).toLocaleString('pt-BR', {
+    style: 'currency',
+    currency: 'BRL'
   });
 }
 
