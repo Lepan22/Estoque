@@ -1,70 +1,133 @@
 <!DOCTYPE html>
-<html>
+<html lang="pt-BR">
 <head>
-  <title>Criar Evento</title>
-  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Criar Evento</title>
+    <!-- Link para o arquivo CSS externo -->
+    <link rel="stylesheet" href="style.css"> <!-- Ajustado para buscar na mesma pasta -->
+
+    <!-- Estilos específicos para criar-evento.html -->
+    <style>
+        /* Estilos para o formulário */
+        #form-evento label {
+            display: block; /* Coloca cada label em uma linha */
+            margin-bottom: 15px; /* Espaçamento entre os campos principais */
+            font-weight: bold;
+        }
+
+        #form-evento input[type="text"],
+        #form-evento input[type="date"] {
+            width: calc(100% - 22px); /* Ocupa largura total menos padding/border */
+            padding: 10px;
+            margin-top: 5px; /* Espaço entre label e input */
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box; /* Inclui padding e border na largura total */
+        }
+
+        /* Estilos para a seção de itens */
+        #itens-container .item-line {
+            display: flex; /* Alinha inputs e botão na mesma linha */
+            align-items: center; /* Centraliza verticalmente */
+            margin-bottom: 10px;
+            padding: 10px;
+            border: 1px solid #eee;
+            border-radius: 4px;
+            background-color: #f9f9f9;
+        }
+
+        #itens-container .item-line input {
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            margin-right: 10px; /* Espaço entre os elementos */
+        }
+
+        #itens-container .item-line input[name="item-nome"] {
+            flex-grow: 1; /* Faz o campo nome ocupar mais espaço */
+        }
+
+        #itens-container .item-line input[name="item-quantidade"] {
+            width: 80px; /* Largura fixa para quantidade */
+        }
+
+        #itens-container .item-line button {
+            padding: 8px 12px;
+            background-color: #dc3545; /* Vermelho para remover */
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        #itens-container .item-line button:hover {
+             background-color: #c82333;
+        }
+
+        /* Botões principais */
+        #add-item {
+            background-color: #17a2b8; /* Azul claro para adicionar */
+            margin-bottom: 20px; /* Espaço antes do botão Criar Evento */
+        }
+        #add-item:hover {
+             background-color: #138496;
+        }
+
+        button[type="submit"] {
+            /* Usa o estilo padrão laranja definido em style.css */
+            width: 100%; /* Ocupa a largura total */
+            padding: 12px;
+            font-size: 18px;
+        }
+
+        /* Responsividade para itens */
+        @media screen and (max-width: 600px) {
+            #itens-container .item-line {
+                flex-direction: column; /* Empilha os elementos verticalmente */
+                align-items: stretch; /* Alinha à esquerda */
+            }
+            #itens-container .item-line input,
+            #itens-container .item-line button {
+                width: 100%; /* Ocupa largura total */
+                margin-bottom: 10px; /* Espaço entre elementos empilhados */
+                margin-right: 0;
+                box-sizing: border-box;
+            }
+            #itens-container .item-line button {
+                margin-bottom: 0; /* Remove margem do último elemento (botão) */
+            }
+        }
+
+    </style>
 </head>
 <body>
-  <h1>Criar Evento</h1>
-  <form id="form-evento">
-    <label for="data">Data do Evento:</label>
-    <input type="date" id="data" required /><br><br>
+    <div class="container">
+        <h2>Criar Novo Evento</h2>
+        <form id="form-evento">
+            <label for="nome">Nome do Evento:
+                <input type="text" id="nome" name="nome" required />
+            </label>
 
-    <label for="nomeItem">Nome do Item:</label>
-    <input list="lista-produtos" id="nomeItem" name="nomeItem" placeholder="Escolha o produto" required />
-    <datalist id="lista-produtos"></datalist><br><br>
+            <label for="data">Data:
+                <input type="date" id="data" name="data" required />
+            </label>
 
-    <label for="quantidade">Quantidade:</label>
-    <input type="number" id="quantidade" required /><br><br>
+            <label for="responsavel">Responsável:
+                <input type="text" id="responsavel" name="responsavel" required />
+            </label>
 
-    <button type="submit">Salvar Evento</button>
-  </form>
+            <h3>Itens</h3>
+            <div id="itens-container">
+                <!-- Itens adicionados dinamicamente aqui -->
+            </div>
+            <button type="button" id="add-item" class="botao">➕ Adicionar Item</button>
 
-  <script>
-    // Configuração do Firebase
-    const firebaseConfig = {
-      apiKey: "SUA_API_KEY",
-      authDomain: "controleestoquelepan.firebaseapp.com",
-      databaseURL: "https://controleestoquelepan-default-rtdb.firebaseio.com",
-      projectId: "controleestoquelepan",
-      storageBucket: "controleestoquelepan.appspot.com",
-      messagingSenderId: "SENDER_ID",
-      appId: "APP_ID"
-    };
-    firebase.initializeApp(firebaseConfig);
+            <button type="submit" class="botao">Criar Evento</button>
+        </form>
+    </div>
 
-    // Preencher o datalist com produtos cadastrados
-    const datalist = document.getElementById('lista-produtos');
-    firebase.database().ref('produtos').once('value')
-      .then(snapshot => {
-        const produtos = snapshot.val();
-        for (let key in produtos) {
-          const option = document.createElement('option');
-          option.value = produtos[key].nome;
-          datalist.appendChild(option);
-        }
-      })
-      .catch(error => console.error('Erro ao buscar produtos:', error));
-
-    // Salvar o evento
-    const form = document.getElementById('form-evento');
-    form.addEventListener('submit', function (e) {
-      e.preventDefault();
-      const data = document.getElementById('data').value;
-      const nomeItem = document.getElementById('nomeItem').value;
-      const quantidade = document.getElementById('quantidade').value;
-
-      const evento = {
-        data,
-        nomeItem,
-        quantidade
-      };
-
-      firebase.database().ref('eventos').push(evento);
-      form.reset();
-      alert('Evento cadastrado com sucesso!');
-    });
-  </script>
+    <!-- Script continua sendo externo -->
+    <script type="module" src="criar-evento.js"></script> 
 </body>
 </html>
