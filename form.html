@@ -19,7 +19,6 @@
         <tr>
           <th class="col-nome">Nome</th>
           <th class="col-quantidade">Quantidade</th>
-          <th class="col-enviado">Enviado</th>
           <th class="col-editavel">Assado</th>
           <th class="col-editavel">Congelado</th>
           <th class="col-editavel">Perdido</th>
@@ -105,7 +104,6 @@
               tr.innerHTML = `
                 <td class="col-nome"     data-label="Nome">${nomeExib}</td>
                 <td class="col-quantidade"data-label="Quantidade">${quantidadeExib}</td>
-                <td class="col-enviado"   data-label="Enviado">${enviadoExib}</td>
                 <td class="col-editavel"  data-label="Assado">
                   <input type="number" name="assado"    value="${item.assado    ?? 0}" min="0">
                 </td>
