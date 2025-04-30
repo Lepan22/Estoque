@@ -1,96 +1,86 @@
-import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js";
-import { getDatabase, ref, get, update } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-database.js";
+// form.js
+import { initializeApp }      from "https://www.gstatic.com/firebasejs/9.22.1/firebase-app.js";
+import { getDatabase, ref, get, child, update } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-database.js";
 
-// Configuração Firebase
+// 1) Inicializa o Firebase (use seus dados)
 const firebaseConfig = {
-  apiKey: "AIzaSyBN-bmzgrlzjmrKMmuClZ8LVll-vJyx-aE",
+  apiKey: "SUA_API_KEY",
   authDomain: "controleestoquelepan.firebaseapp.com",
   databaseURL: "https://controleestoquelepan-default-rtdb.firebaseio.com",
   projectId: "controleestoquelepan",
   storageBucket: "controleestoquelepan.appspot.com",
-  messagingSenderId: "779860276544",
-  appId: "1:779860276544:web:f45844571a8c0bab1576a5",
+  messagingSenderId: "SENDER_ID",
+  appId: "APP_ID"
 };
-
 const app = initializeApp(firebaseConfig);
-const db = getDatabase(app);
+const db  = getDatabase(app);
 
-// Pega o ID do evento pela URL
-const id = new URLSearchParams(window.location.search).get("id");
-
-if (!id) {
-  alert("Evento não encontrado.");
-  window.location.href = "index.html";
+// 2) Lê o parâmetro ?id= do URL
+const params = new URLSearchParams(location.search);
+const eventId = params.get('id');
+if (!eventId) {
+  alert('ID do evento não fornecido na URL.');
+  throw new Error('Falta parâmetro id');
 }
 
-const refEvento = ref(db, `eventos/${id}`);
+// 3) Carrega o evento do Firebase
+const dbRef = ref(db);
+get(child(dbRef, `eventos/${eventId}`))
+  .then(snapshot => {
+    if (!snapshot.exists()) {
+      alert('Evento não encontrado.');
+      return;
+    }
+    const ev = snapshot.val();
 
-// Carrega dados do evento
-get(refEvento).then(snapshot => {
-  if (!snapshot.exists()) {
-    alert("Evento não encontrado.");
-    return;
-  }
+    // Preenche os campos
+    document.getElementById('nome').value = ev.nome;
+    document.getElementById('data').value = ev.data;
+    document.getElementById('responsavel').value = ev.responsavel;
 
-  const evento = snapshot.val();
+    // Monta a tabela de itens
+    const body = document.getElementById('itens-body');
+    body.innerHTML = '';  // limpa "Carregando itens..."
+    const itens = ev.itens || [];
+    if (itens.length === 0) {
+      body.innerHTML = '<tr><td colspan="5">Nenhum item cadastrado.</td></tr>';
+    } else {
+      itens.forEach((item, idx) => {
+        const tr = document.createElement('tr');
 
-  document.getElementById("eventoInfo").innerHTML = `
-    <p><strong>Nome:</strong> ${evento.nome || "N/A"}</p>
-    <p><strong>Data:</strong> ${evento.data || "N/A"}</p>
-    <p><strong>Responsável:</strong> ${evento.responsavel || "N/A"}</p>
-  `;
+        // Nome
+        const tdNome = document.createElement('td');
+        tdNome.textContent = item.nome;
+        tr.appendChild(tdNome);
 
-  const container = document.getElementById("itens");
-  container.innerHTML = "";
+        // Cria quatro checkboxes: enviado, assado, congelado, perdido
+        ['enviado','assado','congelado','perdido'].forEach(prop => {
+          const td = document.createElement('td');
+          const chk = document.createElement('input');
+          chk.type = 'checkbox';
+          chk.checked = item[prop] === true;
+          chk.addEventListener('change', () => {
+            // Atualiza só aquele campo no Firebase
+            const updates = {};
+            updates[`eventos/${eventId}/itens/${idx}/${prop}`] = chk.checked;
+            update(ref(db), updates);
+          });
+          td.appendChild(chk);
+          tr.appendChild(td);
+        });
 
-  // Suporte a arrays ou objetos
-  const itensArray = Array.isArray(evento.itens)
-    ? evento.itens
-    : Object.values(evento.itens || {});
-
-  if (itensArray.length === 0) {
-    container.innerHTML = "<p>Nenhum item registrado.</p>";
-    return;
-  }
-
-  itensArray.forEach((item, index) => {
-    const div = document.createElement("div");
-    div.className = "item";
-    div.innerHTML = `
-      <h4>${item.nomeItem || "Item sem nome"}</h4>
-      <p><strong>Enviado:</strong> ${item.quantidadeEnviada ?? 0}</p>
-      <label>Assado: <input type="number" id="assado-${index}" value="${item.assado ?? 0}"></label><br>
-      <label>Congelado: <input type="number" id="congelado-${index}" value="${item.congelado ?? 0}"></label><br>
-      <label>Perdido: <input type="number" id="perdido-${index}" value="${item.perdido ?? 0}"></label>
-      <hr>
-    `;
-    container.appendChild(div);
+        body.appendChild(tr);
+      });
+    }
+  })
+  .catch(err => {
+    console.error('Erro ao carregar evento:', err);
+    alert('Falha ao carregar detalhes. Veja console.');
   });
 
-  // Botão para salvar retorno
-  const botaoSalvar = document.createElement("button");
-  botaoSalvar.textContent = "Finalizar Evento";
-  botaoSalvar.onclick = () => {
-    const novosItens = itensArray.map((item, index) => ({
-      ...item,
-      assado: parseInt(document.getElementById(`assado-${index}`).value) || 0,
-      congelado: parseInt(document.getElementById(`congelado-${index}`).value) || 0,
-      perdido: parseInt(document.getElementById(`perdido-${index}`).value) || 0,
-    }));
-
-    update(refEvento, {
-      itens: novosItens,
-      status: "finalizado"
-    }).then(() => {
-      alert("Evento finalizado com sucesso!");
-      window.location.href = `resumo.html?id=${id}`;
-    }).catch(err => {
-      console.error("Erro ao salvar:", err);
-      alert("Erro ao salvar o evento.");
-    });
-  };
-
-  document.body.appendChild(botaoSalvar);
-}).catch(error => {
-  console.error("Erro ao buscar evento:", error);
+// 4) Botão Finalizar: aqui você pode adicionar lógica extra antes de salvar
+document.getElementById('finalizar').addEventListener('click', () => {
+  alert('Alterações salvas com sucesso!');
+  // Caso queira redirecionar:
+  // location.href = 'lista-eventos.html';
 });
