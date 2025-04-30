@@ -3,13 +3,61 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Lista de Eventos</title>
+  <title>Eventos Cadastrados</title>
   <link rel="stylesheet" href="assets/style.css">
+  <style>
+    /* Pequenos ajustes para manter consistência com form.html */
+    .container {
+      max-width: 900px;
+      margin: 40px auto;
+      padding: 20px;
+      background: #fff;
+      border-radius: 8px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    }
+    h1 {
+      margin-bottom: 20px;
+      font-size: 28px;
+      color: #333;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+    }
+    th, td {
+      padding: 10px;
+      border-bottom: 1px solid #eee;
+      text-align: left;
+    }
+    th {
+      background: #f0f0f0;
+      border-bottom: 2px solid #ddd;
+      font-weight: 600;
+    }
+    .botao {
+      display: inline-block;
+      padding: 6px 12px;
+      margin-right: 4px;
+      background: #007bff;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      text-decoration: none;
+      font-size: 14px;
+      cursor: pointer;
+    }
+    .botao.editar { background: #28a745; }
+    .botao:disabled {
+      background: #aaa;
+      cursor: default;
+    }
+  </style>
 </head>
 <body>
   <div class="container">
     <h1>Eventos Cadastrados</h1>
-    <table id="eventos-tabela">
+    <table>
       <thead>
         <tr>
           <th>Nome</th>
@@ -25,59 +73,59 @@
   </div>
 
   <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js";
+    import { initializeApp }   from "https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js";
     import { getDatabase, ref, get, child } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-database.js";
 
-    //===== CONFIGURAÇÃO FIREBASE =====
+    // === CONFIGURAÇÃO FIREBASE ===
     const firebaseConfig = {
-      apiKey: "…",
-      authDomain: "…",
+      apiKey: "AIzaSyBN-bmzgrlzjmrKMmuClZ8LVll-vJyx-aE",
+      authDomain: "controleestoquelepan.firebaseapp.com",
       databaseURL: "https://controleestoquelepan-default-rtdb.firebaseio.com",
       projectId: "controleestoquelepan",
-      storageBucket: "…",
-      messagingSenderId: "…",
-      appId: "…"
+      storageBucket: "controleestoquelepan.appspot.com",
+      messagingSenderId: "779860276544",
+      appId: "1:779860276544:web:f45844571a8c0bab1576a5"
     };
     const app = initializeApp(firebaseConfig);
     const db  = getDatabase(app);
 
-    //==== TOKEN DE EDIÇÃO ====
-    // quem tiver este token na URL do form.html ganha permissão de editar
+    // === TOKEN DE EDIÇÃO (mantenha em segredo) ===
     const EDIT_TOKEN = "MINHA_CHAVE_SECRETA";
 
-    // monta lista de eventos
+    // Pega <tbody> onde colocaremos as linhas
+    const body = document.getElementById("eventos-body");
+
     function carregarEventos() {
-      const body = document.getElementById("eventos-body");
       const eventosRef = ref(db, "eventos");
-      get(child(eventosRef, "")).then(snap => {
-        body.innerHTML = "";
-        if (!snap.exists()) {
-          body.innerHTML = `<tr><td colspan="4">Nenhum evento encontrado.</td></tr>`;
-          return;
-        }
-        const evs = snap.val();
-        Object.entries(evs).forEach(([id, ev]) => {
-          const tr = document.createElement("tr");
-          tr.innerHTML = `
-            <td>${ev.nome || "—"}</td>
-            <td>${ev.data || "—"}</td>
-            <td>${ev.responsavel || "—"}</td>
-            <td>
-              <!-- Link de visualização sem token -->
-              <a href="form.html?id=${id}" class="botao">Ver</a>
-              <!-- Link de edição só aqui, com token -->
-              <a href="form.html?id=${id}&editKey=${EDIT_TOKEN}" 
-                 class="botao editar">Editar</a>
-            </td>
-          `;
-          body.appendChild(tr);
+      get(child(eventosRef, ""))
+        .then(snapshot => {
+          body.innerHTML = "";
+          if (!snapshot.exists()) {
+            body.innerHTML = `<tr><td colspan="4">Nenhum evento encontrado.</td></tr>`;
+            return;
+          }
+          const evs = snapshot.val();
+          Object.entries(evs).forEach(([id, ev]) => {
+            const tr = document.createElement("tr");
+            tr.innerHTML = `
+              <td>${ev.nome || "—"}</td>
+              <td>${ev.data || "—"}</td>
+              <td>${ev.responsavel || "—"}</td>
+              <td>
+                <a href="form.html?id=${id}" class="botao">Ver</a>
+                <a href="form.html?id=${id}&editKey=${EDIT_TOKEN}" class="botao editar">Editar</a>
+              </td>
+            `;
+            body.appendChild(tr);
+          });
+        })
+        .catch(err => {
+          console.error("Erro ao carregar eventos:", err);
+          body.innerHTML = `<tr><td colspan="4">Erro ao carregar eventos. Veja console.</td></tr>`;
         });
-      }).catch(err => {
-        console.error("Erro ao carregar eventos:", err);
-        body.innerHTML = `<tr><td colspan="4">Erro ao carregar.</td></tr>`;
-      });
     }
 
+    // Carrega tudo ao abrir a página
     carregarEventos();
   </script>
 </body>
