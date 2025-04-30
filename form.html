@@ -49,6 +49,142 @@
     </form>
   </div>
 
-  <script type="module" src="form.js"></script>
+  <script type="module">
+    import { initializeApp }               from "https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js";
+    import { getDatabase, ref, get, update } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-database.js";
+
+    // --- Configuração do Firebase ---
+    const firebaseConfig = {
+      apiKey: "AIzaSyBN-bmzgrlzjmrKMmuClZ8LVll-vJyx-aE",
+      authDomain: "controleestoquelepan.firebaseapp.com",
+      databaseURL: "https://controleestoquelepan-default-rtdb.firebaseio.com",
+      projectId: "controleestoquelepan",
+      storageBucket: "controleestoquelepan.appspot.com",
+      messagingSenderId: "779860276544",
+      appId: "1:779860276544:web:f45844571a8c0bab1576a5",
+    };
+    const app  = initializeApp(firebaseConfig);
+    const db   = getDatabase(app);
+
+    // Captura ID do evento
+    const params    = new URLSearchParams(window.location.search);
+    const eventId   = params.get("id");
+    const itensBody = document.getElementById("itens-body");
+    const btnFinal  = document.getElementById("finalizar");
+
+    if (!eventId) {
+      alert("ID do evento não foi fornecido.");
+      location.href = "index.html";
+    }
+
+    const eventoRef = ref(db, `eventos/${eventId}`);
+
+    // Carrega dados e popula tabela
+    function carregarDados() {
+      get(eventoRef)
+        .then(snapshot => {
+          if (!snapshot.exists()) {
+            alert("Evento não encontrado.");
+            location.href = "index.html";
+            return;
+          }
+          const ev = snapshot.val();
+          const itens = Array.isArray(ev.itens) ? ev.itens : [];
+
+          // Campos principais
+          document.getElementById("nome").value        = ev.nome        || "";
+          document.getElementById("data").value        = ev.data        || "";
+          document.getElementById("responsavel").value = ev.responsavel || "";
+
+          // Limpa tabela
+          itensBody.innerHTML = "";
+
+          if (itens.length === 0) {
+            itensBody.innerHTML = `<tr><td colspan="6">Nenhum item registrado para este evento.</td></tr>`;
+          } else {
+            itens.forEach((item, idx) => {
+              const tr = document.createElement("tr");
+              tr.setAttribute("data-index", idx);
+
+              // Extrai valores (com fallback)
+              const nomeExib      = item.nomeItem ?? item.nome ?? "—";
+              const quantidadeExib= item.quantidade ?? item.qtd ?? "—";
+              const enviadoExib   = (item.enviado === true || item.enviado === false)
+                                    ? item.enviado
+                                    : (item.enviado ?? "—");
+
+              tr.innerHTML = `
+                <td>${nomeExib}</td>
+                <td>${quantidadeExib}</td>
+                <td>${enviadoExib}</td>
+                <td><input type="number" name="assado"    value="${item.assado    ?? 0}" min="0"></td>
+                <td><input type="number" name="congelado" value="${item.congelado ?? 0}" min="0"></td>
+                <td><input type="number" name="perdido"   value="${item.perdido   ?? 0}" min="0"></td>
+              `;
+              itensBody.appendChild(tr);
+            });
+          }
+
+          // Se já estiver finalizado, desabilita tudo
+          if (ev.status === "finalizado") {
+            btnFinal.textContent = "Evento Finalizado";
+            btnFinal.disabled    = true;
+            itensBody.querySelectorAll("input").forEach(i => i.disabled = true);
+          }
+        })
+        .catch(err => {
+          console.error("Erro ao carregar evento:", err);
+          itensBody.innerHTML = `<tr><td colspan="6">Erro ao carregar itens.</td></tr>`;
+        });
+    }
+
+    // Finaliza e salva alterações
+    btnFinal.addEventListener("click", () => {
+      btnFinal.disabled    = true;
+      btnFinal.textContent = "Salvando...";
+
+      get(eventoRef).then(snapshot => {
+        const ev       = snapshot.val();
+        const itensOrig= Array.isArray(ev.itens) ? ev.itens : [];
+        const linhas   = document.querySelectorAll("#itens-body tr[data-index]");
+        const novos    = [];
+
+        linhas.forEach(tr => {
+          const idx = parseInt(tr.getAttribute("data-index"), 10);
+          if (isNaN(idx) || !itensOrig[idx]) return;
+          const orig = itensOrig[idx];
+
+          const assado    = parseInt(tr.querySelector('input[name="assado"]').value, 10)    || 0;
+          const congelado = parseInt(tr.querySelector('input[name="congelado"]').value, 10) || 0;
+          const perdido   = parseInt(tr.querySelector('input[name="perdido"]').value, 10)   || 0;
+
+          // Mantém nome, quantidade e enviado originais
+          novos.push({
+            ...orig,
+            assado,
+            congelado,
+            perdido
+          });
+        });
+
+        // Atualiza em lote: itens + status
+        update(eventoRef, { itens: novos, status: "finalizado" })
+          .then(() => {
+            alert("Evento finalizado e alterações salvas!");
+            btnFinal.textContent = "Evento Finalizado";
+            itensBody.querySelectorAll("input").forEach(i => i.disabled = true);
+          })
+          .catch(err => {
+            console.error("Erro ao salvar alterações:", err);
+            alert("Falha ao salvar. Veja o console.");
+            btnFinal.disabled    = false;
+            btnFinal.textContent = "Finalizar Evento e Salvar Alterações";
+          });
+      });
+    });
+
+    // Executa ao carregar a página
+    carregarDados();
+  </script>
 </body>
 </html>
