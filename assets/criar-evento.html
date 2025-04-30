@@ -5,31 +5,31 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <title>Criar Evento</title>
     <!-- Link para o arquivo CSS externo -->
-    <link rel="stylesheet" href="style.css"> <!-- Ajustado para buscar na mesma pasta -->
+    <link rel="stylesheet" href="style.css">
 
     <!-- Estilos específicos para criar-evento.html -->
     <style>
         /* Estilos para o formulário */
         #form-evento label {
-            display: block; /* Coloca cada label em uma linha */
-            margin-bottom: 15px; /* Espaçamento entre os campos principais */
+            display: block;
+            margin-bottom: 15px;
             font-weight: bold;
         }
 
         #form-evento input[type="text"],
         #form-evento input[type="date"] {
-            width: calc(100% - 22px); /* Ocupa largura total menos padding/border */
+            width: calc(100% - 22px);
             padding: 10px;
-            margin-top: 5px; /* Espaço entre label e input */
+            margin-top: 5px;
             border: 1px solid #ccc;
             border-radius: 4px;
-            box-sizing: border-box; /* Inclui padding e border na largura total */
+            box-sizing: border-box;
         }
 
         /* Estilos para a seção de itens */
         #itens-container .item-line {
-            display: flex; /* Alinha inputs e botão na mesma linha */
-            align-items: center; /* Centraliza verticalmente */
+            display: flex;
+            align-items: center;
             margin-bottom: 10px;
             padding: 10px;
             border: 1px solid #eee;
@@ -41,20 +41,20 @@
             padding: 8px;
             border: 1px solid #ccc;
             border-radius: 4px;
-            margin-right: 10px; /* Espaço entre os elementos */
+            margin-right: 10px;
         }
 
         #itens-container .item-line input[name="item-nome"] {
-            flex-grow: 1; /* Faz o campo nome ocupar mais espaço */
+            flex-grow: 1;
         }
 
         #itens-container .item-line input[name="item-quantidade"] {
-            width: 80px; /* Largura fixa para quantidade */
+            width: 80px;
         }
 
         #itens-container .item-line button {
             padding: 8px 12px;
-            background-color: #dc3545; /* Vermelho para remover */
+            background-color: #dc3545;
             color: white;
             border: none;
             border-radius: 4px;
@@ -67,16 +67,15 @@
 
         /* Botões principais */
         #add-item {
-            background-color: #17a2b8; /* Azul claro para adicionar */
-            margin-bottom: 20px; /* Espaço antes do botão Criar Evento */
+            background-color: #17a2b8;
+            margin-bottom: 20px;
         }
         #add-item:hover {
              background-color: #138496;
         }
 
         button[type="submit"] {
-            /* Usa o estilo padrão laranja definido em style.css */
-            width: 100%; /* Ocupa a largura total */
+            width: 100%;
             padding: 12px;
             font-size: 18px;
         }
@@ -84,21 +83,20 @@
         /* Responsividade para itens */
         @media screen and (max-width: 600px) {
             #itens-container .item-line {
-                flex-direction: column; /* Empilha os elementos verticalmente */
-                align-items: stretch; /* Alinha à esquerda */
+                flex-direction: column;
+                align-items: stretch;
             }
             #itens-container .item-line input,
             #itens-container .item-line button {
-                width: 100%; /* Ocupa largura total */
-                margin-bottom: 10px; /* Espaço entre elementos empilhados */
+                width: 100%;
+                margin-bottom: 10px;
                 margin-right: 0;
                 box-sizing: border-box;
             }
             #itens-container .item-line button {
-                margin-bottom: 0; /* Remove margem do último elemento (botão) */
+                margin-bottom: 0;
             }
         }
-
     </style>
 </head>
 <body>
@@ -118,6 +116,9 @@
             </label>
 
             <h3>Itens</h3>
+            <!-- datalist para produtos -->
+            <datalist id="lista-produtos"></datalist>
+
             <div id="itens-container">
                 <!-- Itens adicionados dinamicamente aqui -->
             </div>
