@@ -1,76 +1,110 @@
-<script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js";
-  import {
-    getDatabase,
-    ref,
-    push,
-    set,
-    get,
-    onValue
-  } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-database.js";
-
-  const firebaseConfig = {
-    apiKey: "AIzaSyBN-bmzgrlzjmrKMmuClZ8LVll-vJyx-aE",
-    authDomain: "controleestoquelepan.firebaseapp.com",
-    databaseURL: "https://controleestoquelepan-default-rtdb.firebaseio.com",
-    projectId: "controleestoquelepan",
-    storageBucket: "controleestoquelepan.appspot.com",
-    messagingSenderId: "779860276544",
-    appId: "1:779860276544:web:f45844571a8c0bab1576a5",
-  };
-
-  const app = initializeApp(firebaseConfig);
-  const db = getDatabase(app);
-
-  const form = document.getElementById('form-produto');
-  const nomeInput = document.getElementById('nome');
-  const valorVendaInput = document.getElementById('valorVenda');
-  const custoInput = document.getElementById('custo');
-
-  form.addEventListener('submit', async function(e) {
-    e.preventDefault();
-
-    const nome = nomeInput.value.trim();
-    const valorVenda = parseFloat(valorVendaInput.value);
-    const custo = parseFloat(custoInput.value);
-
-    if (!nome || isNaN(valorVenda) || isNaN(custo)) {
-      alert('Preencha todos os campos corretamente!');
-      return;
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Cadastro de Produto</title>
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin-left: 4cm;
+      margin-top: 20px;
     }
 
-    const novoRef = push(ref(db, "produtos"));
-    await set(novoRef, { nome, valorVenda, custo });
+    h1 {
+      margin-bottom: 20px;
+    }
 
-    form.reset();
-    carregarProdutos();
-  });
+    .form-inline {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
 
-  function carregarProdutos() {
-    const tabela = document.getElementById('produtos-tabela').getElementsByTagName('tbody')[0];
-    const produtosRef = ref(db, "produtos");
+    .form-inline input {
+      padding: 6px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      width: 180px;
+    }
 
-    onValue(produtosRef, (snapshot) => {
-      tabela.innerHTML = '';
+    button {
+      padding: 8px 16px;
+      background-color: #007bff;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      font-weight: bold;
+      cursor: pointer;
+    }
 
-      if (!snapshot.exists()) {
-        const linha = tabela.insertRow();
-        const celula = linha.insertCell(0);
-        celula.colSpan = 3;
-        celula.textContent = 'Nenhum produto cadastrado.';
-        return;
-      }
+    button:hover {
+      background-color: #0056b3;
+    }
 
-      const produtos = snapshot.val();
+    table {
+      width: 90%;
+      border-collapse: collapse;
+      margin-top: 30px;
+    }
 
-      Object.values(produtos).forEach(produto => {
-        const linha = tabela.insertRow();
-        linha.insertCell(0).textContent = produto.nome;
-        linha.insertCell(1).textContent = parseFloat(produto.valorVenda).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
-        linha.insertCell(2).textContent = parseFloat(produto.custo).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
-      });
-    });
-  }
+    table th, table td {
+      padding: 10px;
+      border: 1px solid #ccc;
+      text-align: left;
+    }
 
-  window.addEventListener('DOMContentLoaded', carregarProdutos);
-</script>
+    table th {
+      background-color: #f2f2f2;
+    }
+
+    .edit-button {
+      background-color: #28a745;
+      color: white;
+      border: none;
+      padding: 4px 8px;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    .edit-button:hover {
+      background-color: #218838;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Cadastro de Produto</h1>
+
+  <form id="produtoForm">
+    <input type="hidden" id="produtoId" />
+
+    <div class="form-inline">
+      <input type="text" id="nome" placeholder="Nome do Produto" required />
+      <input type="number" id="valorVenda" step="0.01" placeholder="Valor de Venda (R$)" />
+      <input type="number" id="custo" step="0.01" placeholder="Custo (R$)" />
+    </div>
+
+    <button type="submit">Salvar Produto</button>
+  </form>
+
+  <h2 style="margin-top: 40px;">Lista de Produto Criado</h2>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Nome</th>
+        <th>Valor de Venda</th>
+        <th>Custo</th>
+        <th>Ações</th>
+      </tr>
+    </thead>
+    <tbody id="produtosContainer">
+      <tr><td colspan="4">Carregando produtos...</td></tr>
+    </tbody>
+  </table>
+
+  <script type="module" src="produtos.js"></script>
+</body>
+</html>
