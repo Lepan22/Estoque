@@ -2,94 +2,108 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Cadastro de Produtos</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Cadastro de Produto</title>
   <link rel="stylesheet" href="style.css" />
   <style>
-    .form-container {
-      background-color: #f9f9f9;
-      padding: 15px;
-      border: 1px solid #ccc;
-      border-radius: 8px;
-      margin-bottom: 30px;
-      max-width: 500px;
+    body {
+      font-family: Arial, sans-serif;
+      margin-left: 4cm;
+      margin-top: 20px;
     }
 
-    .form-group {
+    h1 {
+      margin-bottom: 20px;
+    }
+
+    .form-inline {
+      display: flex;
+      gap: 10px;
       margin-bottom: 10px;
     }
 
-    .form-group label {
-      display: block;
-      margin-bottom: 5px;
-      font-weight: bold;
-    }
-
-    .form-group input {
-      width: 100%;
+    .form-inline input {
       padding: 6px;
       border: 1px solid #ccc;
       border-radius: 4px;
+      width: 180px;
     }
 
-    .produtos-lista .produto {
-      border: 1px solid #ccc;
-      padding: 10px;
-      margin-bottom: 10px;
+    button {
+      padding: 8px 16px;
+      background-color: #007bff;
+      color: white;
+      border: none;
       border-radius: 5px;
+      font-weight: bold;
+      cursor: pointer;
     }
 
-    .produto strong {
-      display: inline-block;
-      width: 120px;
+    button:hover {
+      background-color: #0056b3;
     }
 
-    .botao-editar {
-      margin-top: 5px;
-      display: inline-block;
-      padding: 4px 10px;
+    table {
+      width: 90%;
+      border-collapse: collapse;
+      margin-top: 30px;
+    }
+
+    table th, table td {
+      padding: 10px;
+      border: 1px solid #ccc;
+      text-align: left;
+    }
+
+    table th {
+      background-color: #f2f2f2;
+    }
+
+    .edit-button {
       background-color: #28a745;
       color: white;
-      text-decoration: none;
+      border: none;
+      padding: 4px 8px;
       border-radius: 4px;
-      font-size: 0.9em;
+      cursor: pointer;
     }
 
-    .botao-editar:hover {
+    .edit-button:hover {
       background-color: #218838;
     }
   </style>
 </head>
 <body>
-  <h1>Cadastro de Produtos</h1>
 
-  <div class="form-container">
-    <form id="produtoForm">
-      <input type="hidden" id="produtoId" />
+  <h1>Cadastro de Produto</h1>
 
-      <div class="form-group">
-        <label for="nome">Nome do Produto</label>
-        <input type="text" id="nome" required />
-      </div>
+  <form id="produtoForm">
+    <input type="hidden" id="produtoId" />
 
-      <div class="form-group">
-        <label for="valorVenda">Valor de Venda (R$)</label>
-        <input type="number" id="valorVenda" step="0.01" />
-      </div>
+    <div class="form-inline">
+      <input type="text" id="nome" placeholder="Nome do Produto" required />
+      <input type="number" id="valorVenda" step="0.01" placeholder="Valor de Venda (R$)" />
+      <input type="number" id="custo" step="0.01" placeholder="Custo (R$)" />
+    </div>
 
-      <div class="form-group">
-        <label for="custo">Custo (R$)</label>
-        <input type="number" id="custo" step="0.01" />
-      </div>
+    <button type="submit">Salvar Produto</button>
+  </form>
 
-      <button type="submit">Salvar Produto</button>
-    </form>
-  </div>
+  <h2 style="margin-top: 40px;">Lista de Produto Criado</h2>
 
-  <div class="produtos-lista">
-    <h2>Produtos Cadastrados</h2>
-    <div id="produtosContainer">Carregando produtos...</div>
-  </div>
+  <table>
+    <thead>
+      <tr>
+        <th>Nome</th>
+        <th>Valor de Venda</th>
+        <th>Custo</th>
+        <th>Ações</th>
+      </tr>
+    </thead>
+    <tbody id="produtosContainer">
+      <tr><td colspan="4">Carregando produtos...</td></tr>
+    </tbody>
+  </table>
 
   <script type="module" src="produtos.js"></script>
 </body>
