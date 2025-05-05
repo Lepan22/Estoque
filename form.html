@@ -3,10 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Controle de Estoque - Formulário</title>
+    <title>Registro de Retorno - Estoque</title>
     <link rel="stylesheet" href="style.css">
     <style>
-        /* Estilos específicos para o formulário */
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             margin: 0;
@@ -29,7 +28,7 @@
         }
         
         .logo {
-            color: #FF6B00; /* Laranja do seu logo */
+            color: #FF6B00;
             font-weight: bold;
             font-size: 24px;
             text-align: center;
@@ -40,6 +39,13 @@
             border-radius: 8px;
             padding: 25px;
             box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+        
+        .produto-info {
+            background-color: #f9f9f9;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
         }
         
         .form-group {
@@ -61,8 +67,19 @@
             font-size: 16px;
         }
         
+        .quantidade-group {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+        
+        .quantidade-item {
+            flex: 1;
+            min-width: 120px;
+        }
+        
         button {
-            background-color: #FF6B00; /* Laranja do seu logo */
+            background-color: #FF6B00;
             color: white;
             border: none;
             padding: 12px 20px;
@@ -71,20 +88,22 @@
             font-size: 16px;
             width: 100%;
             font-weight: bold;
+            margin-top: 10px;
         }
         
-        button:hover {
-            background-color: #E05E00;
-        }
-        
-        /* Responsividade */
         @media (max-width: 600px) {
             .container {
                 padding: 10px;
             }
-            
             .form-container {
                 padding: 15px;
+            }
+            .quantidade-group {
+                flex-direction: column;
+                gap: 10px;
+            }
+            .quantidade-item {
+                width: 100%;
             }
         }
     </style>
@@ -92,32 +111,36 @@
 <body>
     <header>
         <div class="container">
-            <div class="logo">SEU LOGO AQUI</div>
+            <div class="logo">CONTROLE DE ESTOQUE</div>
         </div>
     </header>
     
     <div class="container">
         <div class="form-container">
-            <h2>Controle de Estoque</h2>
-            <form id="estoqueForm">
-                <div class="form-group">
-                    <label for="produto">Produto:</label>
-                    <input type="text" id="produto" name="produto" required>
+            <h2>Registrar Retorno</h2>
+            <form id="retornoForm">
+                <!-- Dados fixos do produto (não editável) -->
+                <div class="produto-info">
+                    <p><strong>Produto:</strong> <span id="produtoNome">Nome do Produto</span></p>
+                    <p><strong>Quantidade Inicial:</strong> <span id="quantidadeInicial">100</span></p>
                 </div>
                 
-                <div class="form-group">
-                    <label for="quantidade">Quantidade:</label>
-                    <input type="number" id="quantidade" name="quantidade" required>
-                </div>
-                
-                <div class="form-group">
-                    <label for="tipo">Tipo:</label>
-                    <select id="tipo" name="tipo" required>
-                        <option value="">Selecione...</option>
-                        <option value="Congelados">Congelados</option>
-                        <option value="Assados">Assados</option>
-                        <option value="Perda">Perda</option>
-                    </select>
+                <!-- Campos para preenchimento -->
+                <div class="quantidade-group">
+                    <div class="quantidade-item">
+                        <label for="congelados">Congelados:</label>
+                        <input type="number" id="congelados" name="congelados" min="0" required>
+                    </div>
+                    
+                    <div class="quantidade-item">
+                        <label for="assados">Assados:</label>
+                        <input type="number" id="assados" name="assados" min="0" required>
+                    </div>
+                    
+                    <div class="quantidade-item">
+                        <label for="perda">Perda:</label>
+                        <input type="number" id="perda" name="perda" min="0" required>
+                    </div>
                 </div>
                 
                 <div class="form-group">
@@ -125,16 +148,26 @@
                     <input type="text" id="observacoes" name="observacoes">
                 </div>
                 
-                <button type="submit">Enviar</button>
+                <button type="submit">Registrar Retorno</button>
             </form>
         </div>
     </div>
     
     <script>
-        // Seu código JavaScript pode permanecer aqui
-        document.getElementById('estoqueForm').addEventListener('submit', function(e) {
+        document.getElementById('retornoForm').addEventListener('submit', function(e) {
             e.preventDefault();
-            // Seu código de envio para o Firebase
+            
+            // Aqui você adiciona o código para enviar ao Firebase
+            const dados = {
+                congelados: document.getElementById('congelados').value,
+                assados: document.getElementById('assados').value,
+                perda: document.getElementById('perda').value,
+                observacoes: document.getElementById('observacoes').value
+            };
+            
+            console.log("Dados enviados:", dados);
+            alert("Retorno registrado com sucesso!");
+            this.reset();
         });
     </script>
 </body>
