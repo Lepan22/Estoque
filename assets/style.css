@@ -1,155 +1,335 @@
-/* Estilos gerais */
+/* Estilos gerais (mantidos de style_v2.css) */
 body {
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  background-color: #f5f5f5;
-  margin: 0;
-  padding: 0;
-  color: #333;
-  padding-bottom: 100px; /* Padding original, pode ser ajustado pelo responsivo */
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f4f4f4;
+    color: #333;
 }
 
 .container {
-  max-width: 1000px;
-  margin: 20px auto;
-  padding: 20px;
-  background: white;
-  border-radius: 8px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    width: 90%;
+    max-width: 1200px;
+    margin: 20px auto;
+    padding: 20px;
+    background-color: #fff;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
 }
 
-h1 {
-  color: #FF6B00;
-  text-align: center;
-  margin-bottom: 20px;
-  font-size: 24px;
+h1, h2, h3 {
+    color: #333;
 }
 
-/* Adicionando estilo para h3 que pode estar faltando */
-h3 {
-    font-size: 18px;
-    margin-top: 25px;
-    margin-bottom: 10px;
-    border-bottom: 1px solid #eee;
-    padding-bottom: 5px;
-}
-
-#eventoInfo {
-  background-color: #f9f9f9;
-  padding: 15px;
-  border-radius: 5px;
-  margin-bottom: 20px;
-  border: 1px solid #eee; /* Adicionado para consistência */
-}
-
-#eventoInfo p {
-  margin: 8px 0;
-  line-height: 1.5; /* Melhorar legibilidade */
-}
-
-/* Estilos da tabela - Desktop */
-#itens-tabela {
-  width: 100%;
-  border-collapse: collapse;
-  margin-top: 15px;
-  table-layout: fixed; /* Mantido do original */
-}
-
-#itens-tabela th {
-  background-color: #FF6B00;
-  color: white;
-  padding: 10px 5px;
-  text-align: center;
-  /* position: sticky; /* Removido por simplicidade, pode ser re-adicionado se necessário */
-  /* top: 0; */
-  font-size: 14px;
-  font-weight: bold;
-  border-bottom: 2px solid #E65C00;
-}
-
-#itens-tabela td {
-  padding: 10px 5px;
-  border-bottom: 1px solid #ddd;
-  vertical-align: middle;
-  text-align: center;
-  font-size: 14px;
-}
-
-#itens-tabela tr:nth-child(even) td {
-    background-color: #fdfdfd; /* Zebrado suave */
-}
-
-#itens-tabela .col-nome {
-  text-align: left;
-  padding-left: 8px;
-  width: 40%;
-}
-
-#itens-tabela .col-quantidade {
-  text-align: center;
-  width: 15%;
-}
-
-#itens-tabela .col-editavel {
-  width: 15%;
-}
-
-#itens-tabela input[type="number"] {
-  width: 100%; /* Ajustado para ocupar espaço da célula */
-  max-width: 70px;
-  padding: 6px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  text-align: center;
-  font-size: 14px;
-  margin: 0 auto;
-  display: block;
-  box-sizing: border-box;
+/* Cor Laranja */
+:root {
+    --cor-laranja: #FFA500; 
+    --cor-laranja-hover: #E69500;
 }
 
 /* Botões */
-.button-container {
-  display: flex;
-  gap: 10px;
-  margin-top: 20px;
+button, a.botao {
+    display: inline-block;
+    padding: 10px 20px;
+    background-color: var(--cor-laranja);
+    color: white;
+    border: none;
+    border-radius: 5px;
+    font-size: 16px;
+    cursor: pointer;
+    text-decoration: none;
+    text-align: center;
+    margin-right: 10px;
+    margin-bottom: 10px; 
+    transition: background-color 0.3s ease;
 }
 
-.button-container button {
-  flex: 1;
-  padding: 12px;
-  border: none;
-  border-radius: 4px;
-  font-weight: bold;
-  cursor: pointer;
-  font-size: 16px;
-  transition: background-color 0.2s ease;
+button:hover, a.botao:hover {
+    background-color: var(--cor-laranja-hover);
+    color: white; 
 }
 
-#salvarAlteracoesBtn {
-  background-color: #e0e0e0;
-  color: #333;
-  border: 1px solid #ccc;
-}
-#salvarAlteracoesBtn:hover {
-    background-color: #d0d0d0;
-}
-#salvarAlteracoesBtn:disabled {
-    background-color: #f5f5f5;
-    color: #aaa;
-    cursor: not-allowed;
+/* Estilos específicos para index.html - Tabela de Eventos */
+#eventos-tabela {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
 }
 
+#eventos-tabela th, #eventos-tabela td {
+    border: 1px solid #ddd;
+    padding: 12px;
+    text-align: left;
+}
+
+#eventos-tabela th {
+    background-color: #f2f2f2;
+    font-weight: bold;
+}
+
+#eventos-tabela tr:nth-child(even) {
+    background-color: #f9f9f9;
+}
+
+#eventos-tabela tr:hover {
+    background-color: #f1f1f1;
+}
+
+/* --- NOVO: Estilos específicos para form.html - Tabela de Itens --- */
+#itens-tabela {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 15px;
+}
+
+#itens-tabela th,
+#itens-tabela td {
+    border: 1px solid #ddd;
+    padding: 8px; /* Padding reduzido */
+    text-align: left;
+    vertical-align: middle; /* Alinha conteúdo verticalmente */
+}
+
+#itens-tabela th {
+    background-color: #f8f8f8; /* Cor de fundo do cabeçalho */
+    font-weight: bold;
+}
+
+/* Alinhamento e largura das colunas da tabela de itens */
+#itens-tabela th.col-nome, #itens-tabela td.col-nome {
+    width: 35%; /* Coluna Nome mais larga */
+}
+#itens-tabela th.col-enviado, #itens-tabela td.col-enviado {
+    width: 15%;
+    text-align: center;
+}
+#itens-tabela th.col-editavel, #itens-tabela td.col-editavel {
+    width: 15%; 
+    text-align: center;
+}
+
+#itens-tabela input[type="number"] {
+    width: 60px;
+    padding: 5px;
+    text-align: center;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-sizing: border-box;
+}
+
+/* Botão Finalizar no form.html */
 #finalizarEventoBtn {
-  background-color: #FF6B00;
-  color: white;
-  border: 1px solid #E65C00;
+    background-color: #dc3545; 
 }
 #finalizarEventoBtn:hover {
-    background-color: #E65C00;
+    background-color: #c82333;
 }
 #finalizarEventoBtn:disabled {
-    background-color: #ffb380;
-    color: #fff;
+    background-color: #6c757d; 
     cursor: not-allowed;
-    border-color: #ffb380;
+}
+
+/* Estilos específicos para resumo.html (mantidos) */
+#resumo-container {
+    margin-top: 20px;
+}
+.resumo-item {
+    margin-bottom: 15px;
+    padding: 15px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    background-color: #f9f9f9;
+}
+.resumo-item div {
+    margin-bottom: 8px;
+}
+.resumo-item strong {
+    min-width: 150px;
+    display: inline-block;
+}
+#eventoInfoResumo p {
+    margin-bottom: 10px;
+    font-size: 1.1em;
+}
+
+/* Estilos específicos para criar-evento.html (mantidos) */
+#form-evento label {
+    display: block;
+    margin-bottom: 15px;
+    font-weight: bold;
+}
+#form-evento input[type="text"],
+#form-evento input[type="date"] {
+    width: calc(100% - 22px);
+    padding: 10px;
+    margin-top: 5px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-sizing: border-box;
+}
+#itens-container .item-line {
+    display: flex;
+    align-items: center;
+    margin-bottom: 10px;
+    padding: 10px;
+    border: 1px solid #eee;
+    border-radius: 4px;
+    background-color: #f9f9f9;
+}
+#itens-container .item-line input {
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    margin-right: 10px;
+}
+#itens-container .item-line input[name="item-nome"] {
+    flex-grow: 1;
+}
+#itens-container .item-line input[name="item-quantidade"] {
+    width: 80px;
+}
+#itens-container .item-line button {
+    padding: 8px 12px;
+    background-color: #dc3545;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+}
+#itens-container .item-line button:hover {
+    background-color: #c82333;
+}
+#add-item {
+    background-color: #17a2b8;
+    margin-bottom: 20px;
+}
+#add-item:hover {
+    background-color: #138496;
+}
+button[type="submit"] {
+    width: 100%;
+    padding: 12px;
+    font-size: 18px;
+}
+
+/* --- Responsividade --- */
+
+/* Tabela Index */
+@media screen and (max-width: 768px) {
+    #eventos-tabela thead {
+        display: none;
+    }
+    #eventos-tabela, #eventos-tabela tbody, #eventos-tabela tr, #eventos-tabela td {
+        display: block;
+        width: 100%;
+    }
+    #eventos-tabela tr {
+        margin-bottom: 15px;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+    }
+    #eventos-tabela td {
+        text-align: right;
+        padding-left: 50%;
+        position: relative;
+        border: none;
+        border-bottom: 1px solid #eee;
+    }
+    #eventos-tabela td::before {
+        content: attr(data-label);
+        position: absolute;
+        left: 10px;
+        width: calc(50% - 20px);
+        padding-right: 10px;
+        white-space: nowrap;
+        text-align: left;
+        font-weight: bold;
+    }
+    #eventos-tabela td:last-child {
+        border-bottom: 0;
+    }
+    #eventos-tabela td a.botao {
+        display: block;
+        margin-top: 5px;
+    }
+}
+
+/* --- NOVO: Responsividade Tabela Itens Form --- */
+@media screen and (max-width: 768px) {
+    #itens-tabela thead {
+        display: none; /* Oculta cabeçalho */
+    }
+    #itens-tabela, #itens-tabela tbody, #itens-tabela tr, #itens-tabela td {
+        display: block;
+        width: 100%;
+    }
+    #itens-tabela tr {
+        margin-bottom: 15px;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+        background-color: #f9f9f9; /* Fundo para cada bloco */
+    }
+    #itens-tabela td {
+        text-align: right;
+        padding-left: 50%; 
+        position: relative;
+        border: none;
+        border-bottom: 1px dashed #eee;
+    }
+    #itens-tabela td::before {
+        content: attr(data-label); /* Usa data-label como título */
+        position: absolute;
+        left: 10px;
+        width: calc(50% - 20px); 
+        padding-right: 10px;
+        white-space: nowrap;
+        text-align: left;
+        font-weight: bold;
+    }
+    #itens-tabela td:last-child {
+        border-bottom: 0;
+    }
+    #itens-tabela td.col-nome {
+        font-size: 1.1em; /* Destaca o nome */
+        background-color: #f0f0f0; /* Fundo levemente diferente para nome */
+        padding-top: 10px;
+        padding-bottom: 10px;
+    }
+     #itens-tabela td.col-nome::before {
+         display: none; /* Não precisa de label para o nome no modo bloco */
+     }
+     #itens-tabela td.col-nome {
+         text-align: left; /* Alinha nome à esquerda */
+         padding-left: 10px;
+     }
+     #itens-tabela td.col-enviado::before { content: "Enviado:"; }
+     #itens-tabela td.col-editavel[data-label="Assado"]::before { content: "Assado:"; }
+     #itens-tabela td.col-editavel[data-label="Congelado"]::before { content: "Congelado:"; }
+     #itens-tabela td.col-editavel[data-label="Perdido"]::before { content: "Perdido:"; }
+
+     #itens-tabela input[type="number"] {
+         display: inline-block; /* Input na mesma linha do label implícito */
+         width: 70px;
+         margin-left: 5px;
+     }
+}
+
+/* Itens Criar Evento (mantido) */
+@media screen and (max-width: 600px) {
+    #itens-container .item-line {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    #itens-container .item-line input,
+    #itens-container .item-line button {
+        width: 100%;
+        margin-bottom: 10px;
+        margin-right: 0;
+        box-sizing: border-box;
+    }
+    #itens-container .item-line button {
+        margin-bottom: 0;
+    }
 }
 
