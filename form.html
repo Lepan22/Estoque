@@ -4,216 +4,8 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Detalhes do Evento</title>
-  <link rel="stylesheet" href="assets/style.css">
+  <link rel="stylesheet" href="Assets/stylis.css"> 
   
-  <!-- CSS FOCADO NA CORREÇÃO DO ALINHAMENTO -->
-  <style>
-    /* Estilos gerais */
-    body {
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background-color: #f5f5f5;
-      margin: 0;
-      padding: 0;
-      color: #333;
-      padding-bottom: 100px;
-    }
-    
-    .container {
-      max-width: 1000px;
-      margin: 20px auto;
-      padding: 20px;
-      background: white;
-      border-radius: 8px;
-      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-    }
-    
-    h1 {
-      color: #FF6B00;
-      text-align: center;
-      margin-bottom: 20px;
-      font-size: 24px;
-    }
-    
-    #eventoInfo {
-      background-color: #f9f9f9;
-      padding: 15px;
-      border-radius: 5px;
-      margin-bottom: 20px;
-    }
-    
-    #eventoInfo p {
-      margin: 8px 0;
-    }
-    
-    /* Estilos da tabela - Foco no alinhamento */
-    #itens-tabela {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 15px;
-      table-layout: fixed;
-    }
-    
-    #itens-tabela th {
-      background-color: #FF6B00;
-      color: white;
-      padding: 10px 5px;
-      text-align: center;
-      position: sticky;
-      top: 0;
-      font-size: 14px;
-    }
-    
-    #itens-tabela td {
-      padding: 10px 5px;
-      border-bottom: 1px solid #ddd;
-      vertical-align: middle;
-      text-align: center;
-      font-size: 14px;
-    }
-    
-    #itens-tabela .col-nome {
-      text-align: left;
-      padding-left: 8px;
-      width: 40%;
-    }
-    
-    #itens-tabela .col-quantidade {
-      text-align: center;
-      width: 15%;
-    }
-    
-    #itens-tabela .col-editavel {
-      width: 15%;
-    }
-    
-    #itens-tabela input[type="number"] {
-      width: 100%;
-      max-width: 70px;
-      padding: 6px;
-      border: 1px solid #ddd;
-      border-radius: 4px;
-      text-align: center;
-      font-size: 14px;
-      margin: 0 auto;
-      display: block;
-    }
-    
-    /* Botões */
-    .button-container {
-      display: flex;
-      gap: 10px;
-      margin-top: 20px;
-    }
-    
-    .button-container button {
-      flex: 1;
-      padding: 12px;
-      border: none;
-      border-radius: 4px;
-      font-weight: bold;
-      cursor: pointer;
-      font-size: 16px;
-    }
-    
-    #salvarAlteracoesBtn {
-      background-color: #f0f0f0;
-      color: #333;
-    }
-    
-    #finalizarEventoBtn {
-      background-color: #FF6B00;
-      color: white;
-    }
-    
-    /* Responsividade para celular - AJUSTES ESPECÍFICOS */
-    @media (max-width: 600px) {
-      .container {
-        padding: 10px;
-        margin: 10px;
-        width: calc(100% - 20px);
-        box-sizing: border-box;
-      }
-      
-      h1 {
-        font-size: 20px;
-        margin-bottom: 15px;
-      }
-      
-      h3 {
-        font-size: 16px;
-        margin-bottom: 10px;
-      }
-      
-      #eventoInfo {
-        padding: 10px;
-        margin-bottom: 15px;
-      }
-      
-      #eventoInfo p {
-        margin: 5px 0;
-        font-size: 14px;
-      }
-      
-      #itens-tabela {
-        display: table;
-        width: 100%;
-        table-layout: auto;
-      }
-      
-      #itens-tabela th, 
-      #itens-tabela td {
-        padding: 8px 3px;
-        font-size: 13px;
-        text-align: center;
-      }
-      
-      #itens-tabela .col-nome {
-        text-align: left;
-        padding-left: 6px;
-        width: auto;
-        min-width: 120px;
-      }
-      
-      #itens-tabela .col-quantidade {
-        width: 70px;
-        text-align: center;
-      }
-      
-      #itens-tabela .col-editavel {
-        width: 70px;
-      }
-      
-      #itens-tabela input[type="number"] {
-        width: 60px;
-        padding: 5px;
-        font-size: 13px;
-      }
-      
-      /* Botões fixos no rodapé */
-      .button-container {
-        position: fixed;
-        bottom: 0;
-        left: 0;
-        right: 0;
-        background: white;
-        padding: 8px 10px;
-        box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
-        z-index: 100;
-        margin: 0;
-        gap: 8px;
-      }
-      
-      .button-container button {
-        padding: 10px;
-        font-size: 14px;
-      }
-      
-      /* Ajuste de espaçamento para conteúdo */
-      body {
-        padding-bottom: 100px;
-      }
-    }
-  </style>
 </head>
 
 <body>
@@ -233,7 +25,7 @@
         </tr>
       </thead>
       <tbody id="itens-tbody">
-        <tr><td colspan="6">Carregando itens...</td></tr>
+        <tr><td colspan="5">Carregando itens...</td></tr> 
       </tbody>
     </table>
 
@@ -243,7 +35,7 @@
     </div>
   </div>
 
-  <!-- JavaScript original (mantido sem alterações) -->
+  
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js";
     import { getDatabase, ref, get, update } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-database.js";
@@ -294,7 +86,8 @@
           itensBody.innerHTML = "";
 
           if (currentItens.length === 0) {
-            itensBody.innerHTML = `<tr><td colspan="6">Nenhum item registrado para este evento.</td></tr>`;
+            
+            itensBody.innerHTML = `<tr><td colspan="5" data-label="Status">Nenhum item registrado para este evento.</td></tr>`; 
           } else {
             currentItens.forEach((item, idx) => {
               const tr = document.createElement("tr");
@@ -303,12 +96,13 @@
               const nomeExib = item.nomeItem ?? item.nome ?? "—";
               const quantidadeExib = item.quantidade ?? item.qtd ?? "—";
 
+              
               tr.innerHTML = `
-                <td class="col-nome">${nomeExib}</td>
-                <td class="col-quantidade">${quantidadeExib}</td>
-                <td class="col-editavel"><input type="number" name="assado" value="${item.assado ?? 0}" min="0"></td>
-                <td class="col-editavel"><input type="number" name="congelado" value="${item.congelado ?? 0}" min="0"></td>
-                <td class="col-editavel"><input type="number" name="perdido" value="${item.perdido ?? 0}" min="0"></td>
+                <td class="col-nome" data-label="Nome">${nomeExib}</td>
+                <td class="col-quantidade" data-label="Quantidade">${quantidadeExib}</td>
+                <td class="col-editavel" data-label="Assado"><input type="number" name="assado" value="${item.assado ?? 0}" min="0"></td>
+                <td class="col-editavel" data-label="Congelado"><input type="number" name="congelado" value="${item.congelado ?? 0}" min="0"></td>
+                <td class="col-editavel" data-label="Perdido"><input type="number" name="perdido" value="${item.perdido ?? 0}" min="0"></td>
               `;
               itensBody.appendChild(tr);
             });
@@ -323,7 +117,8 @@
         })
         .catch(err => {
           console.error("Erro ao buscar dados do evento:", err);
-          itensBody.innerHTML = `<tr><td colspan="6">Erro ao carregar itens.</td></tr>`;
+          
+          itensBody.innerHTML = `<tr><td colspan="5" data-label="Erro">Erro ao carregar itens.</td></tr>`; 
         });
     }
 
@@ -334,9 +129,9 @@
         if (isNaN(idx) || !currentItens[idx]) return;
         const orig = currentItens[idx];
 
-        const assado = parseInt(tr.querySelector('input[name="assado"]').value, 10) || 0;
-        const congelado = parseInt(tr.querySelector('input[name="congelado"]').value, 10) || 0;
-        const perdido = parseInt(tr.querySelector('input[name="perdido"]').value, 10) || 0;
+        const assado = parseInt(tr.querySelector('input[name="assado"]").value, 10) || 0;
+        const congelado = parseInt(tr.querySelector('input[name="congelado"]").value, 10) || 0;
+        const perdido = parseInt(tr.querySelector('input[name="perdido"]").value, 10) || 0;
 
         novos.push({ ...orig, assado, congelado, perdido });
       });
