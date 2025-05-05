@@ -28,7 +28,6 @@
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
   <script>
-    // Firebase setup
     const firebaseConfig = {
       apiKey: "SUA_API_KEY",
       authDomain: "SEU_DOMINIO.firebaseapp.com",
@@ -42,20 +41,23 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
-    // ID do evento pela URL
     const urlParams = new URLSearchParams(window.location.search);
     const eventoId = urlParams.get("id");
     const refEvento = db.ref("eventos/" + eventoId);
 
-    // Elementos DOM
     const tbody = document.querySelector("#itens-tabela tbody");
     const titulo = document.getElementById("eventoTitulo");
     const btnFinalizar = document.getElementById("finalizarEventoBtn");
     const btnSalvar = document.getElementById("salvarAlteracoesBtn");
 
-    // Carrega evento
     refEvento.once("value").then(snapshot => {
       const evento = snapshot.val();
+
+      if (!evento) {
+        alert("Evento não encontrado!");
+        return;
+      }
+
       titulo.textContent = evento.nome || "Evento";
 
       if (Array.isArray(evento.itens)) {
@@ -79,12 +81,12 @@
       }
     });
 
-    // Botão salvar alterações (CORRIGIDO)
     btnSalvar.addEventListener("click", () => {
       btnSalvar.disabled = true;
       btnSalvar.textContent = "Salvando...";
 
-      get(refEvento).then(snapshot => {
+      // ✅ Corrigido: usava get(refEvento), agora usa once("value")
+      refEvento.once("value").then(snapshot => {
         const ev = snapshot.val();
         const itensOrig = Array.isArray(ev.itens) ? ev.itens : [];
         const novos = [];
@@ -101,7 +103,7 @@
           novos.push({ ...orig, assado, congelado, perdido });
         });
 
-        update(refEvento, { itens: novos })
+        refEvento.update({ itens: novos })
           .then(() => {
             alert("Alterações salvas com sucesso!");
             btnSalvar.textContent = "Salvar Alterações";
@@ -116,7 +118,6 @@
       });
     });
 
-    // Botão finalizar evento
     btnFinalizar.addEventListener("click", () => {
       btnFinalizar.disabled = true;
       btnFinalizar.textContent = "Finalizando...";
@@ -140,7 +141,7 @@
           btnSalvar.disabled = true;
         })
         .catch(err => {
-          console.error("Erro ao finalizar evento:", err);
+          console.error(err);
           alert("Erro ao finalizar evento.");
         })
         .finally(() => {
