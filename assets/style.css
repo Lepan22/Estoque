@@ -1,5 +1,3 @@
-/* Assets/stylis.css */
-
 /* Estilos gerais */
 body {
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -7,7 +5,7 @@ body {
   margin: 0;
   padding: 0;
   color: #333;
-  padding-bottom: 100px; /* Espaço para botões fixos */
+  padding-bottom: 100px; /* Padding original, pode ser ajustado pelo responsivo */
 }
 
 .container {
@@ -26,8 +24,9 @@ h1 {
   font-size: 24px;
 }
 
+/* Adicionando estilo para h3 que pode estar faltando */
 h3 {
-    font-size: 18px; /* Ajuste opcional */
+    font-size: 18px;
     margin-top: 25px;
     margin-bottom: 10px;
     border-bottom: 1px solid #eee;
@@ -39,12 +38,12 @@ h3 {
   padding: 15px;
   border-radius: 5px;
   margin-bottom: 20px;
-  border: 1px solid #eee;
+  border: 1px solid #eee; /* Adicionado para consistência */
 }
 
 #eventoInfo p {
   margin: 8px 0;
-  line-height: 1.5;
+  line-height: 1.5; /* Melhorar legibilidade */
 }
 
 /* Estilos da tabela - Desktop */
@@ -52,21 +51,23 @@ h3 {
   width: 100%;
   border-collapse: collapse;
   margin-top: 15px;
-  /* table-layout: fixed; /* Removido para flexibilidade */
+  table-layout: fixed; /* Mantido do original */
 }
 
 #itens-tabela th {
   background-color: #FF6B00;
   color: white;
-  padding: 12px 8px; /* Aumentar padding */
+  padding: 10px 5px;
   text-align: center;
-  font-weight: bold; /* Adicionado */
+  /* position: sticky; /* Removido por simplicidade, pode ser re-adicionado se necessário */
+  /* top: 0; */
   font-size: 14px;
-  border-bottom: 2px solid #E65C00; /* Borda mais escura */
+  font-weight: bold;
+  border-bottom: 2px solid #E65C00;
 }
 
 #itens-tabela td {
-  padding: 10px 8px; /* Aumentar padding */
+  padding: 10px 5px;
   border-bottom: 1px solid #ddd;
   vertical-align: middle;
   text-align: center;
@@ -79,7 +80,7 @@ h3 {
 
 #itens-tabela .col-nome {
   text-align: left;
-  padding-left: 10px; /* Aumentar padding */
+  padding-left: 8px;
   width: 40%;
 }
 
@@ -93,23 +94,23 @@ h3 {
 }
 
 #itens-tabela input[type="number"] {
-  width: 90%; /* Usar porcentagem */
+  width: 100%; /* Ajustado para ocupar espaço da célula */
   max-width: 70px;
-  padding: 8px; /* Aumentar padding */
-  border: 1px solid #ccc; /* Borda mais visível */
+  padding: 6px;
+  border: 1px solid #ccc;
   border-radius: 4px;
   text-align: center;
   font-size: 14px;
   margin: 0 auto;
   display: block;
-  box-sizing: border-box; /* Incluir padding na largura */
+  box-sizing: border-box;
 }
 
 /* Botões */
 .button-container {
   display: flex;
   gap: 10px;
-  margin-top: 25px; /* Aumentar margem */
+  margin-top: 20px;
 }
 
 .button-container button {
@@ -120,11 +121,11 @@ h3 {
   font-weight: bold;
   cursor: pointer;
   font-size: 16px;
-  transition: background-color 0.2s ease; /* Transição suave */
+  transition: background-color 0.2s ease;
 }
 
 #salvarAlteracoesBtn {
-  background-color: #e0e0e0; /* Cinza mais claro */
+  background-color: #e0e0e0;
   color: #333;
   border: 1px solid #ccc;
 }
@@ -137,7 +138,6 @@ h3 {
     cursor: not-allowed;
 }
 
-
 #finalizarEventoBtn {
   background-color: #FF6B00;
   color: white;
@@ -147,161 +147,9 @@ h3 {
     background-color: #E65C00;
 }
 #finalizarEventoBtn:disabled {
-    background-color: #ffb380; /* Laranja mais claro quando desabilitado */
+    background-color: #ffb380;
     color: #fff;
     cursor: not-allowed;
     border-color: #ffb380;
-}
-
-
-/* Responsividade para celular (Ex: < 768px) */
-@media (max-width: 768px) {
-  .container {
-    padding: 15px; /* Ajuste */
-    margin: 10px auto; /* Centralizar container em mobile */
-    width: auto; /* Remover width fixo */
-    max-width: 95%; /* Limitar largura máxima */
-    box-shadow: none; /* Remover sombra em mobile se desejado */
-    border-radius: 0;
-  }
-
-  h1 {
-    font-size: 20px;
-    margin-bottom: 15px;
-  }
-
-  h3 {
-    font-size: 16px;
-    margin-bottom: 10px;
-  }
-
-  #eventoInfo {
-    padding: 10px;
-    margin-bottom: 15px;
-  }
-
-  #eventoInfo p {
-    margin: 5px 0;
-    font-size: 14px;
-  }
-
-  /* Transformação da Tabela para Lista */
-  #itens-tabela {
-    border: none; /* Remover borda da tabela */
-  }
-
-  #itens-tabela thead {
-    display: none; /* Ocultar cabeçalho original */
-  }
-
-  #itens-tabela tr {
-    display: block;
-    margin-bottom: 15px; /* Espaço entre "cartões" de item */
-    border: 1px solid #ddd;
-    border-radius: 5px;
-    background-color: #fff; /* Fundo branco para cada item */
-    padding: 10px;
-  }
-   #itens-tabela tr:nth-child(even) td {
-        background-color: transparent; /* Remover zebrado no modo bloco */
-   }
-
-
-  #itens-tabela td {
-    display: block;
-    text-align: right; /* Alinhar valor à direita */
-    font-size: 14px;
-    border-bottom: 1px dotted #eee; /* Linha pontilhada entre campos */
-    padding: 8px 5px 8px 50%; /* Espaço à esquerda para o label */
-    position: relative;
-    min-height: 20px; /* Altura mínima para garantir espaço */
-  }
-
-  #itens-tabela td:last-child {
-    border-bottom: none; /* Remover última linha pontilhada */
-  }
-
-  /* Adicionar Label usando ::before e data-label */
-  #itens-tabela td::before {
-    content: attr(data-label); /* Pega o texto do atributo data-label */
-    position: absolute;
-    left: 10px;
-    width: calc(50% - 20px); /* Largura do label */
-    padding-right: 10px;
-    font-weight: bold;
-    text-align: left; /* Alinhar label à esquerda */
-    white-space: nowrap;
-    color: #555; /* Cor do label */
-  }
-
-  /* Ajustes específicos para colunas */
-   #itens-tabela td.col-nome {
-        text-align: right; /* Manter alinhamento */
-   }
-   #itens-tabela td.col-quantidade {
-        text-align: right; /* Manter alinhamento */
-   }
-   #itens-tabela td.col-editavel {
-        text-align: right; /* Manter alinhamento */
-        padding-top: 5px;
-        padding-bottom: 5px;
-   }
-
-  #itens-tabela input[type="number"] {
-    width: 60px; /* Tamanho fixo pode ser ok aqui */
-    padding: 6px; /* Reduzir padding */
-    font-size: 14px;
-    float: right; /* Flutuar input à direita */
-    margin: -5px 0; /* Ajuste vertical */
-  }
-
-  /* Botões fixos no rodapé */
-  .button-container {
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    background: white;
-    padding: 10px 15px; /* Aumentar padding */
-    box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
-    z-index: 100;
-    margin: 0;
-    gap: 10px; /* Aumentar gap */
-    border-top: 1px solid #eee;
-  }
-
-  .button-container button {
-    padding: 12px; /* Aumentar padding */
-    font-size: 15px; /* Aumentar fonte */
-  }
-
-  /* Ajuste de espaçamento para conteúdo não ser coberto pelos botões */
-  body {
-    padding-bottom: 80px; /* Ajustar padding-bottom do body para altura dos botões + margem */
-  }
-}
-
-/* Ajustes finos para telas muito pequenas (Ex: < 400px) */
-@media (max-width: 400px) {
-    h1 {
-        font-size: 18px;
-    }
-    .button-container button {
-        font-size: 14px;
-        padding: 10px;
-    }
-    #itens-tabela td {
-        font-size: 13px;
-        padding-left: 45%; /* Reduzir espaço do label */
-    }
-    #itens-tabela td::before {
-        width: calc(45% - 15px);
-    }
-    #itens-tabela input[type="number"] {
-        width: 50px;
-    }
-    body {
-        padding-bottom: 70px; /* Ajustar se necessário */
-    }
 }
 
