@@ -1,0 +1,159 @@
+/* assets/form-responsive.css */
+
+/* Responsividade para celular (Ex: < 768px) */
+/* Usando 768px como breakpoint mais comum que 600px */
+@media (max-width: 768px) {
+  body {
+    /* Ajuste de espaçamento para conteúdo não ser coberto pelos botões fixos */
+    padding-bottom: 80px; /* Ajustar conforme altura dos botões + margem */
+  }
+
+  .container {
+    padding: 10px; /* Reduzir padding */
+    margin: 0; /* Remover margens laterais */
+    width: 100%; /* Ocupar largura total */
+    max-width: 100%;
+    box-shadow: none;
+    border-radius: 0;
+    box-sizing: border-box; /* Garantir que padding não aumente a largura */
+  }
+
+  h1 {
+    font-size: 20px;
+    margin-bottom: 15px;
+  }
+
+  h3 {
+    font-size: 16px;
+    margin-bottom: 10px;
+  }
+
+  #eventoInfo {
+    padding: 10px;
+    margin-bottom: 15px;
+  }
+
+  #eventoInfo p {
+    margin: 5px 0;
+    font-size: 14px;
+  }
+
+  /* Transformação da Tabela para Lista */
+  #itens-tabela {
+    border: none;
+  }
+
+  #itens-tabela thead {
+    display: none; /* Ocultar cabeçalho original */
+  }
+
+  #itens-tabela tr {
+    display: block;
+    margin-bottom: 15px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    background-color: #fff;
+    padding: 10px;
+  }
+   #itens-tabela tr:nth-child(even) td {
+        background-color: transparent; /* Remover zebrado no modo bloco */
+   }
+
+  #itens-tabela td {
+    display: block;
+    text-align: right; /* Alinhar valor à direita */
+    font-size: 14px;
+    border-bottom: 1px dotted #eee;
+    padding: 8px 5px 8px 50%; /* Espaço à esquerda para o label */
+    position: relative;
+    min-height: 20px;
+    box-sizing: border-box;
+  }
+
+  #itens-tabela td:last-child {
+    border-bottom: none;
+  }
+
+  /* Adicionar Label usando ::before e data-label */
+  #itens-tabela td::before {
+    content: attr(data-label); /* Pega o texto do atributo data-label */
+    position: absolute;
+    left: 10px;
+    width: calc(50% - 20px); /* Largura do label */
+    padding-right: 10px;
+    font-weight: bold;
+    text-align: left;
+    white-space: nowrap;
+    color: #555;
+  }
+
+  /* Ajustes específicos para colunas no modo bloco */
+   #itens-tabela td.col-nome,
+   #itens-tabela td.col-quantidade,
+   #itens-tabela td.col-editavel {
+        width: auto; /* Resetar largura fixa */
+        text-align: right; /* Manter valor à direita */
+        padding-left: 50%; /* Manter espaço para label */
+   }
+
+   /* Ajuste específico para inputs dentro das células */
+   #itens-tabela td.col-editavel {
+        padding-top: 5px;
+        padding-bottom: 5px;
+   }
+
+  #itens-tabela input[type="number"] {
+    width: 60px; /* Tamanho fixo pode ser ok aqui */
+    padding: 6px;
+    font-size: 14px;
+    float: right; /* Flutuar input à direita */
+    margin: -5px 0; /* Ajuste vertical */
+    /* max-width não é mais necessário com float */
+  }
+
+  /* Botões fixos no rodapé */
+  .button-container {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: white;
+    padding: 10px 15px;
+    box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+    z-index: 100;
+    margin: 0;
+    gap: 10px;
+    border-top: 1px solid #eee;
+    box-sizing: border-box;
+  }
+
+  .button-container button {
+    padding: 12px;
+    font-size: 15px;
+  }
+}
+
+/* Ajustes finos para telas muito pequenas (Ex: < 400px) */
+@media (max-width: 400px) {
+    h1 {
+        font-size: 18px;
+    }
+    .button-container button {
+        font-size: 14px;
+        padding: 10px;
+    }
+    #itens-tabela td {
+        font-size: 13px;
+        padding-left: 45%; /* Reduzir espaço do label */
+    }
+    #itens-tabela td::before {
+        width: calc(45% - 15px);
+    }
+    #itens-tabela input[type="number"] {
+        width: 50px;
+    }
+    body {
+        padding-bottom: 70px; /* Ajustar se necessário */
+    }
+}
+
