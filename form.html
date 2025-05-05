@@ -6,7 +6,7 @@
   <title>Detalhes do Evento</title>
   <link rel="stylesheet" href="assets/style.css">
   
-  <!-- CSS ADICIONAL PARA MELHORIAS DE LAYOUT -->
+  <!-- CSS FOCADO NA CORREÇÃO DO ALINHAMENTO -->
   <style>
     /* Estilos gerais */
     body {
@@ -45,11 +45,12 @@
       margin: 8px 0;
     }
     
-    /* Estilos da tabela */
+    /* Estilos da tabela - Foco no alinhamento */
     #itens-tabela {
       width: 100%;
       border-collapse: collapse;
       margin-top: 15px;
+      table-layout: fixed;
     }
     
     #itens-tabela th {
@@ -73,15 +74,28 @@
     #itens-tabela .col-nome {
       text-align: left;
       padding-left: 8px;
+      width: 40%;
+    }
+    
+    #itens-tabela .col-quantidade {
+      text-align: center;
+      width: 15%;
+    }
+    
+    #itens-tabela .col-editavel {
+      width: 15%;
     }
     
     #itens-tabela input[type="number"] {
-      width: 70px;
+      width: 100%;
+      max-width: 70px;
       padding: 6px;
       border: 1px solid #ddd;
       border-radius: 4px;
       text-align: center;
       font-size: 14px;
+      margin: 0 auto;
+      display: block;
     }
     
     /* Botões */
@@ -111,7 +125,7 @@
       color: white;
     }
     
-    /* Responsividade para celular */
+    /* Responsividade para celular - AJUSTES ESPECÍFICOS */
     @media (max-width: 600px) {
       .container {
         padding: 10px;
@@ -141,30 +155,32 @@
       }
       
       #itens-tabela {
-        display: block;
-        overflow-x: auto;
-        white-space: nowrap;
-        margin-top: 10px;
+        display: table;
+        width: 100%;
+        table-layout: auto;
       }
       
       #itens-tabela th, 
       #itens-tabela td {
-        padding: 8px 4px;
+        padding: 8px 3px;
         font-size: 13px;
-      }
-      
-      #itens-tabela th.col-editavel,
-      #itens-tabela td.col-editavel {
-        min-width: 80px;
+        text-align: center;
       }
       
       #itens-tabela .col-nome {
-        min-width: 120px;
+        text-align: left;
         padding-left: 6px;
+        width: auto;
+        min-width: 120px;
       }
       
       #itens-tabela .col-quantidade {
-        min-width: 80px;
+        width: 70px;
+        text-align: center;
+      }
+      
+      #itens-tabela .col-editavel {
+        width: 70px;
       }
       
       #itens-tabela input[type="number"] {
@@ -227,7 +243,7 @@
     </div>
   </div>
 
-  <!-- JavaScript original (não alterado) -->
+  <!-- JavaScript original (mantido sem alterações) -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js";
     import { getDatabase, ref, get, update } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-database.js";
