@@ -1,174 +1,177 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Registro de Retorno - Estoque</title>
-    <link rel="stylesheet" href="style.css">
-    <style>
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            margin: 0;
-            padding: 0;
-            background-color: #f5f5f5;
-            color: #333;
-        }
-        
-        .container {
-            max-width: 800px;
-            margin: 0 auto;
-            padding: 20px;
-        }
-        
-        header {
-            background-color: #fff;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-            padding: 15px 0;
-            margin-bottom: 30px;
-        }
-        
-        .logo {
-            color: #FF6B00;
-            font-weight: bold;
-            font-size: 24px;
-            text-align: center;
-        }
-        
-        .form-container {
-            background-color: #fff;
-            border-radius: 8px;
-            padding: 25px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-        }
-        
-        .produto-info {
-            background-color: #f9f9f9;
-            padding: 15px;
-            border-radius: 5px;
-            margin-bottom: 20px;
-        }
-        
-        .form-group {
-            margin-bottom: 20px;
-        }
-        
-        label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: 600;
-        }
-        
-        input, select {
-            width: 100%;
-            padding: 12px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            box-sizing: border-box;
-            font-size: 16px;
-        }
-        
-        .quantidade-group {
-            display: flex;
-            gap: 15px;
-            flex-wrap: wrap;
-        }
-        
-        .quantidade-item {
-            flex: 1;
-            min-width: 120px;
-        }
-        
-        button {
-            background-color: #FF6B00;
-            color: white;
-            border: none;
-            padding: 12px 20px;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 16px;
-            width: 100%;
-            font-weight: bold;
-            margin-top: 10px;
-        }
-        
-        @media (max-width: 600px) {
-            .container {
-                padding: 10px;
-            }
-            .form-container {
-                padding: 15px;
-            }
-            .quantidade-group {
-                flex-direction: column;
-                gap: 10px;
-            }
-            .quantidade-item {
-                width: 100%;
-            }
-        }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Detalhes do Evento</title>
+  <link rel="stylesheet" href="assets/style.css">
 </head>
 <body>
-    <header>
-        <div class="container">
-            <div class="logo">CONTROLE DE ESTOQUE</div>
-        </div>
-    </header>
+  <div class="container">
+    <h1>Detalhes do Evento</h1>
+    <div id="eventoInfo"></div>
+    <h3>Itens:</h3>
     
-    <div class="container">
-        <div class="form-container">
-            <h2>Registrar Retorno</h2>
-            <form id="retornoForm">
-                <!-- Dados fixos do produto (não editável) -->
-                <div class="produto-info">
-                    <p><strong>Produto:</strong> <span id="produtoNome">Nome do Produto</span></p>
-                    <p><strong>Quantidade Inicial:</strong> <span id="quantidadeInicial">100</span></p>
-                </div>
-                
-                <!-- Campos para preenchimento -->
-                <div class="quantidade-group">
-                    <div class="quantidade-item">
-                        <label for="congelados">Congelados:</label>
-                        <input type="number" id="congelados" name="congelados" min="0" required>
-                    </div>
-                    
-                    <div class="quantidade-item">
-                        <label for="assados">Assados:</label>
-                        <input type="number" id="assados" name="assados" min="0" required>
-                    </div>
-                    
-                    <div class="quantidade-item">
-                        <label for="perda">Perda:</label>
-                        <input type="number" id="perda" name="perda" min="0" required>
-                    </div>
-                </div>
-                
-                <div class="form-group">
-                    <label for="observacoes">Observações:</label>
-                    <input type="text" id="observacoes" name="observacoes">
-                </div>
-                
-                <button type="submit">Registrar Retorno</button>
-            </form>
-        </div>
+    <table id="itens-tabela">
+      <thead>
+        <tr>
+          <th class="col-nome">Nome</th>
+          <th class="col-quantidade">Quantidade</th>
+          <th class="col-editavel">Assado</th>
+          <th class="col-editavel">Congelado</th>
+          <th class="col-editavel">Perdido</th>
+        </tr>
+      </thead>
+      <tbody id="itens-tbody">
+        <tr><td colspan="6">Carregando itens...</td></tr>
+      </tbody>
+    </table>
+
+    <div class="button-container" style="margin-top: 20px;">
+      <button id="salvarAlteracoesBtn">Salvar Alterações</button>
+      <button id="finalizarEventoBtn">Finalizar Evento e Salvar Alterações</button>
     </div>
-    
-    <script>
-        document.getElementById('retornoForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-            
-            // Aqui você adiciona o código para enviar ao Firebase
-            const dados = {
-                congelados: document.getElementById('congelados').value,
-                assados: document.getElementById('assados').value,
-                perda: document.getElementById('perda').value,
-                observacoes: document.getElementById('observacoes').value
-            };
-            
-            console.log("Dados enviados:", dados);
-            alert("Retorno registrado com sucesso!");
-            this.reset();
+  </div>
+
+  <script type="module">
+    import { initializeApp }               from "https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js";
+    import { getDatabase, ref, get, update } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-database.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyBN-bmzgrlzjmrKMmuClZ8LVll-vJyx-aE",
+      authDomain: "controleestoquelepan.firebaseapp.com",
+      databaseURL: "https://controleestoquelepan-default-rtdb.firebaseio.com",
+      projectId: "controleestoquelepan",
+      storageBucket: "controleestoquelepan.appspot.com",
+      messagingSenderId: "779860276544",
+      appId: "1:779860276544:web:f45844571a8c0bab1576a5",
+    };
+    const app  = initializeApp(firebaseConfig);
+    const db   = getDatabase(app);
+
+    const params     = new URLSearchParams(window.location.search);
+    const eventId    = params.get("id");
+    const refEvento  = ref(db, `eventos/${eventId}`);
+    const itensBody  = document.getElementById("itens-tbody");
+    const btnFinal   = document.getElementById("finalizarEventoBtn");
+    const btnSalvar  = document.getElementById("salvarAlteracoesBtn");
+    let currentItens = [];
+
+    if (!eventId) {
+      alert("ID do Evento não fornecido na URL.");
+      window.location.href = "index.html";
+    }
+
+    function carregarDados() {
+      get(refEvento)
+        .then(snapshot => {
+          if (!snapshot.exists()) {
+            alert("Evento não encontrado.");
+            window.location.href = "index.html";
+            return;
+          }
+
+          const ev = snapshot.val();
+          currentItens = Array.isArray(ev.itens) ? ev.itens : [];
+
+          document.getElementById("eventoInfo").innerHTML = `
+            <p><strong>Nome:</strong> ${ev.nome || "—"}</p>
+            <p><strong>Data:</strong> ${ev.data || "—"}</p>
+            <p><strong>Responsável:</strong> ${ev.responsavel || "—"}</p>
+          `;
+
+          itensBody.innerHTML = "";
+
+          if (currentItens.length === 0) {
+            itensBody.innerHTML = `<tr><td colspan="6">Nenhum item registrado para este evento.</td></tr>`;
+          } else {
+            currentItens.forEach((item, idx) => {
+              const tr = document.createElement("tr");
+              tr.setAttribute("data-item-index", idx);
+
+              const nomeExib       = item.nomeItem ?? item.nome ?? "—";
+              const quantidadeExib = item.quantidade ?? item.qtd ?? "—";
+
+              tr.innerHTML = `
+                <td class="col-nome">${nomeExib}</td>
+                <td class="col-quantidade">${quantidadeExib}</td>
+                <td class="col-editavel"><input type="number" name="assado" value="${item.assado ?? 0}" min="0"></td>
+                <td class="col-editavel"><input type="number" name="congelado" value="${item.congelado ?? 0}" min="0"></td>
+                <td class="col-editavel"><input type="number" name="perdido" value="${item.perdido ?? 0}" min="0"></td>
+              `;
+              itensBody.appendChild(tr);
+            });
+          }
+
+          if (ev.status === "finalizado") {
+            btnFinal.textContent = "Evento Finalizado";
+            btnFinal.disabled    = true;
+            btnSalvar.disabled   = true;
+            itensBody.querySelectorAll("input").forEach(i => i.disabled = true);
+          }
+        })
+        .catch(err => {
+          console.error("Erro ao buscar dados do evento:", err);
+          itensBody.innerHTML = `<tr><td colspan="6">Erro ao carregar itens.</td></tr>`;
         });
-    </script>
+    }
+
+    function coletarItensAtualizados() {
+      const novos = [];
+      document.querySelectorAll("#itens-tabela tbody tr[data-item-index]").forEach(tr => {
+        const idx = parseInt(tr.getAttribute("data-item-index"), 10);
+        if (isNaN(idx) || !currentItens[idx]) return;
+        const orig = currentItens[idx];
+
+        const assado    = parseInt(tr.querySelector('input[name="assado"]').value, 10)    || 0;
+        const congelado = parseInt(tr.querySelector('input[name="congelado"]').value, 10) || 0;
+        const perdido   = parseInt(tr.querySelector('input[name="perdido"]').value, 10)   || 0;
+
+        novos.push({ ...orig, assado, congelado, perdido });
+      });
+      return novos;
+    }
+
+    btnFinal.addEventListener("click", () => {
+      btnFinal.disabled = true;
+      btnFinal.textContent = "Processando...";
+
+      const atualizados = coletarItensAtualizados();
+      update(refEvento, { itens: atualizados, status: "finalizado" })
+        .then(() => {
+          alert("Evento finalizado e alterações salvas!");
+          btnFinal.textContent = "Evento Finalizado";
+          btnSalvar.disabled = true;
+          itensBody.querySelectorAll("input").forEach(i => i.disabled = true);
+        })
+        .catch(err => {
+          console.error("Erro ao salvar alterações:", err);
+          alert("Falha ao salvar. Veja o console.");
+          btnFinal.disabled = false;
+          btnFinal.textContent = "Finalizar Evento e Salvar Alterações";
+        });
+    });
+
+    btnSalvar.addEventListener("click", () => {
+      btnSalvar.disabled = true;
+      btnSalvar.textContent = "Salvando...";
+
+      const atualizados = coletarItensAtualizados();
+      update(refEvento, { itens: atualizados })
+        .then(() => {
+          alert("Alterações salvas com sucesso!");
+        })
+        .catch(err => {
+          console.error("Erro ao salvar alterações:", err);
+          alert("Falha ao salvar. Veja o console.");
+        })
+        .finally(() => {
+          btnSalvar.disabled = false;
+          btnSalvar.textContent = "Salvar Alterações";
+        });
+    });
+
+    carregarDados();
+  </script>
 </body>
 </html>
