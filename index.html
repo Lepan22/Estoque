@@ -3,89 +3,29 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Painel do Gerente</title>
-  <link rel="stylesheet" href="assets/style.css">
-  <script type="module">
-    import { initializeApp }     from "https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js";
-    import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-database.js";
-
-    const firebaseConfig = {
-      apiKey: "AIzaSyBN-bmzgrlzjmrKMmuClZ8LVll-vJyx-aE",
-      authDomain: "controleestoquelepan.firebaseapp.com",
-      databaseURL: "https://controleestoquelepan-default-rtdb.firebaseio.com",
-      projectId: "controleestoquelepan",
-      storageBucket: "controleestoquelepan.appspot.com",
-      messagingSenderId: "779860276544",
-      appId: "1:779860276544:web:f45844571a8c0bab1576a5",
-    };
-    const app = initializeApp(firebaseConfig);
-    const db  = getDatabase(app);
-
-    const tabelaBody = document.getElementById("eventos-tbody");
-    const loadingRow = document.getElementById("loading-row");
-
-    function carregarEventos() {
-      const eventosRef = ref(db, "eventos");
-      onValue(eventosRef, snapshot => {
-        tabelaBody.innerHTML = "";
-        loadingRow.style.display = "none";
-
-        if (!snapshot.exists()) {
-          tabelaBody.innerHTML = '<tr><td colspan="5">Nenhum evento encontrado.</td></tr>';
-          return;
-        }
-
-        const evs = snapshot.val();
-        Object.entries(evs)
-          .map(([id, ev]) => ({ id, ...ev }))
-          .sort((a, b) => new Date(b.data) - new Date(a.data))
-          .forEach(({ id, nome, data, responsavel, status }) => {
-            const tr = document.createElement("tr");
-            tr.innerHTML = `
-              <td data-label="Nome">${nome   || "–"}</td>
-              <td data-label="Data">${data   || "–"}</td>
-              <td data-label="Responsável">${responsavel || "–"}</td>
-              <td data-label="Status">${status || "aberto"}</td>
-              <td data-label="Ações">
-                <a href="form.html?id=${id}" class="botao">Ver Detalhes</a>
-                <a href="assets/criar-evento.html?id=${id}" class="botao editar">✏️ Editar</a>
-                <a href="assets/criar-evento.html?duplicar=${id}" class="botao duplicar">📄 Duplicar</a>
-              </td>
-            `;
-            tabelaBody.appendChild(tr);
-          });
-      }, err => {
-        console.error("Erro ao carregar eventos:", err);
-        loadingRow.style.display = "none";
-        tabelaBody.innerHTML = '<tr><td colspan="5">Erro ao carregar eventos.</td></tr>';
-      });
-    }
-
-    document.addEventListener("DOMContentLoaded", carregarEventos);
-  </script>
+  <title>Eventos</title>
+  <link rel="stylesheet" href="assets/style.css" />
 </head>
 <body>
   <div class="container">
-    <h1>Painel do Gerente</h1>
-    <a href="assets/criar-evento.html" class="botao">➕ Criar Novo Evento</a>
-    <a href="assets/produtos.html"     class="botao-criar">📦 Cadastro de Produto</a>
-
-    <table id="eventos-tabela">
+    <h1>Lista de Eventos</h1>
+    <a href="criar-evento.html" class="btn">Criar Evento</a>
+    <table>
       <thead>
         <tr>
           <th>Nome</th>
           <th>Data</th>
-          <th>Responsável</th>
           <th>Status</th>
+          <th>Responsável</th>
           <th>Ações</th>
         </tr>
       </thead>
-      <tbody id="eventos-tbody">
-        <tr id="loading-row">
-          <td colspan="5">Carregando eventos...</td>
-        </tr>
+      <tbody id="eventos-container">
+        <!-- Eventos renderizados pelo JS -->
       </tbody>
     </table>
   </div>
+
+  <script type="module" src="assets/index.js"></script>
 </body>
 </html>
