@@ -4,17 +4,18 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Detalhes do Evento</title>
-  <link rel="stylesheet" href="Assets/stylis.css"> 
-  
+  <link rel="stylesheet" href="assets/style.css">
+  <link rel="stylesheet" href="assets/form-responsive.css"> <!-- Link para o CSS responsivo dedicado -->
+  <!-- O CSS inline foi removido -->
 </head>
 
 <body>
   <div class="container">
     <h1>Detalhes do Evento</h1>
-    <div id="eventoInfo"></div>
+    <div id="eventoInfo"></div> <!-- ID usado pelo JS -->
     <h3>Itens:</h3>
     
-    <table id="itens-tabela">
+    <table id="itens-tabela"> <!-- ID usado pelo JS -->
       <thead>
         <tr>
           <th class="col-nome">Nome</th>
@@ -24,24 +25,26 @@
           <th class="col-editavel">Perdido</th>
         </tr>
       </thead>
-      <tbody id="itens-tbody">
-        <tr><td colspan="5">Carregando itens...</td></tr> 
+      <tbody id="itens-tbody"> <!-- ID usado pelo JS -->
+        <!-- Conteúdo será gerado pelo JavaScript -->
+        <tr><td colspan="5">Carregando itens...</td></tr> <!-- Colspan ajustado para 5 colunas -->
       </tbody>
     </table>
 
     <div class="button-container">
-      <button id="salvarAlteracoesBtn">Salvar Alterações</button>
-      <button id="finalizarEventoBtn">Finalizar Evento e Salvar Alterações</button>
+      <button id="salvarAlteracoesBtn">Salvar Alterações</button> <!-- ID usado pelo JS -->
+      <button id="finalizarEventoBtn">Finalizar Evento e Salvar Alterações</button> <!-- ID usado pelo JS -->
     </div>
   </div>
 
-  
+  <!-- JavaScript original (mantido inline, com adição dos data-labels) -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js";
     import { getDatabase, ref, get, update } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-database.js";
 
     const firebaseConfig = {
-      apiKey: "AIzaSyBN-bmzgrlzjmrKMmuClZ8LVll-vJyx-aE",
+      // ATENÇÃO: Sua chave de API está exposta aqui. Considere usar regras de segurança do Firebase ou autenticação para proteger seus dados.
+      apiKey: "AIzaSyBN-bmzgrlzjmrKMmuClZ8LVll-vJyx-aE", 
       authDomain: "controleestoquelepan.firebaseapp.com",
       databaseURL: "https://controleestoquelepan-default-rtdb.firebaseio.com",
       projectId: "controleestoquelepan",
@@ -59,10 +62,12 @@
     const btnFinal = document.getElementById("finalizarEventoBtn");
     const btnSalvar = document.getElementById("salvarAlteracoesBtn");
     let currentItens = [];
+    let eventoAtual = {}; // Para guardar o estado do evento (ex: status)
 
     if (!eventId) {
       alert("ID do Evento não fornecido na URL.");
-      window.location.href = "index.html";
+      // Assumindo que index.html está no mesmo diretório ou na raiz
+      window.location.href = "index.html"; 
     }
 
     function carregarDados() {
@@ -74,20 +79,20 @@
             return;
           }
 
-          const ev = snapshot.val();
-          currentItens = Array.isArray(ev.itens) ? ev.itens : [];
+          eventoAtual = snapshot.val(); // Guarda os dados do evento
+          currentItens = Array.isArray(eventoAtual.itens) ? eventoAtual.itens : [];
 
           document.getElementById("eventoInfo").innerHTML = `
-            <p><strong>Nome:</strong> ${ev.nome || "—"}</p>
-            <p><strong>Data:</strong> ${ev.data || "—"}</p>
-            <p><strong>Responsável:</strong> ${ev.responsavel || "—"}</p>
+            <p><strong>Nome:</strong> ${eventoAtual.nome || "—"}</p>
+            <p><strong>Data:</strong> ${eventoAtual.data || "—"}</p>
+            <p><strong>Responsável:</strong> ${eventoAtual.responsavel || "—"}</p>
           `;
 
-          itensBody.innerHTML = "";
+          itensBody.innerHTML = ""; // Limpa a mensagem de carregamento
 
           if (currentItens.length === 0) {
-            
-            itensBody.innerHTML = `<tr><td colspan="5" data-label="Status">Nenhum item registrado para este evento.</td></tr>`; 
+            // Ajustado colspan para 5 e adicionado data-label
+            itensBody.innerHTML = `<tr><td colspan="5" data-label="Status">Nenhum item registrado para este evento.</td></tr>`;
           } else {
             currentItens.forEach((item, idx) => {
               const tr = document.createElement("tr");
@@ -96,7 +101,7 @@
               const nomeExib = item.nomeItem ?? item.nome ?? "—";
               const quantidadeExib = item.quantidade ?? item.qtd ?? "—";
 
-              
+              // *** Adicionados os atributos data-label para cada célula ***
               tr.innerHTML = `
                 <td class="col-nome" data-label="Nome">${nomeExib}</td>
                 <td class="col-quantidade" data-label="Quantidade">${quantidadeExib}</td>
@@ -108,7 +113,8 @@
             });
           }
 
-          if (ev.status === "finalizado") {
+          // Verifica o status do evento para desabilitar campos e botões
+          if (eventoAtual.status === "finalizado") {
             btnFinal.textContent = "Evento Finalizado";
             btnFinal.disabled = true;
             btnSalvar.disabled = true;
@@ -117,66 +123,97 @@
         })
         .catch(err => {
           console.error("Erro ao buscar dados do evento:", err);
-          
-          itensBody.innerHTML = `<tr><td colspan="5" data-label="Erro">Erro ao carregar itens.</td></tr>`; 
+          // Ajustado colspan para 5 e adicionado data-label
+          itensBody.innerHTML = `<tr><td colspan="5" data-label="Erro">Erro ao carregar itens. Verifique o console.</td></tr>`;
         });
     }
 
     function coletarItensAtualizados() {
-      const novos = [];
+      const novosItens = [];
+      // O seletor permanece o mesmo, buscando as linhas dentro do tbody
       document.querySelectorAll("#itens-tabela tbody tr[data-item-index]").forEach(tr => {
         const idx = parseInt(tr.getAttribute("data-item-index"), 10);
-        if (isNaN(idx) || !currentItens[idx]) return;
-        const orig = currentItens[idx];
+        // Verifica se o índice é válido e corresponde a um item existente
+        if (isNaN(idx) || idx < 0 || idx >= currentItens.length) return; 
+        const itemOriginal = currentItens[idx];
 
-        const assado = parseInt(tr.querySelector('input[name="assado"]").value, 10) || 0;
-        const congelado = parseInt(tr.querySelector('input[name="congelado"]").value, 10) || 0;
-        const perdido = parseInt(tr.querySelector('input[name="perdido"]").value, 10) || 0;
+        // Seleciona os inputs dentro da linha atual
+        const inputAssado = tr.querySelector('input[name="assado"]');
+        const inputCongelado = tr.querySelector('input[name="congelado"]');
+        const inputPerdido = tr.querySelector('input[name="perdido"]');
 
-        novos.push({ ...orig, assado, congelado, perdido });
+        // Obtém os valores, garantindo que sejam números e tratando caso o input não exista
+        const assado = inputAssado ? (parseInt(inputAssado.value, 10) || 0) : 0;
+        const congelado = inputCongelado ? (parseInt(inputCongelado.value, 10) || 0) : 0;
+        const perdido = inputPerdido ? (parseInt(inputPerdido.value, 10) || 0) : 0;
+
+        // Cria o novo objeto do item mantendo os dados originais e atualizando os contadores
+        novosItens.push({ ...itemOriginal, assado, congelado, perdido });
       });
-      return novos;
+      return novosItens;
     }
 
+    // Event listener para o botão Finalizar
     btnFinal.addEventListener("click", () => {
+      // Impede múltiplos cliques se já estiver desabilitado
+      if (btnFinal.disabled) return; 
+      
       btnFinal.disabled = true;
       btnFinal.textContent = "Processando...";
+      btnSalvar.disabled = true; // Desabilita também o botão Salvar durante a finalização
 
-      const atualizados = coletarItensAtualizados();
-      update(refEvento, { itens: atualizados, status: "finalizado" })
+      const itensAtualizados = coletarItensAtualizados();
+      update(refEvento, { itens: itensAtualizados, status: "finalizado" })
         .then(() => {
           alert("Evento finalizado e alterações salvas!");
           btnFinal.textContent = "Evento Finalizado";
-          btnSalvar.disabled = true;
+          // Mantém os botões desabilitados
+          // Desabilita os inputs novamente para garantir
           itensBody.querySelectorAll("input").forEach(i => i.disabled = true);
+          eventoAtual.status = "finalizado"; // Atualiza o estado local
         })
         .catch(err => {
-          console.error("Erro ao salvar alterações:", err);
-          alert("Falha ao salvar. Veja o console.");
+          console.error("Erro ao finalizar evento:", err);
+          alert("Falha ao finalizar o evento. Verifique o console para mais detalhes.");
+          // Reabilita os botões em caso de erro
           btnFinal.disabled = false;
           btnFinal.textContent = "Finalizar Evento e Salvar Alterações";
+          // Só reabilita o Salvar se o evento não estava finalizado antes
+          if (eventoAtual.status !== "finalizado") {
+              btnSalvar.disabled = false;
+          }
         });
     });
 
+    // Event listener para o botão Salvar
     btnSalvar.addEventListener("click", () => {
+      // Impede múltiplos cliques se já estiver desabilitado
+      if (btnSalvar.disabled) return; 
+      
       btnSalvar.disabled = true;
       btnSalvar.textContent = "Salvando...";
 
-      const atualizados = coletarItensAtualizados();
-      update(refEvento, { itens: atualizados })
+      const itensAtualizados = coletarItensAtualizados();
+      update(refEvento, { itens: itensAtualizados })
         .then(() => {
           alert("Alterações salvas com sucesso!");
+          // Atualiza a variável local 'currentItens' com os dados salvos
+          currentItens = itensAtualizados;
         })
         .catch(err => {
           console.error("Erro ao salvar alterações:", err);
-          alert("Falha ao salvar. Veja o console.");
+          alert("Falha ao salvar as alterações. Verifique o console para mais detalhes.");
         })
         .finally(() => {
-          btnSalvar.disabled = false;
-          btnSalvar.textContent = "Salvar Alterações";
+          // Reabilita o botão Salvar, a menos que o evento já esteja finalizado
+           if (eventoAtual.status !== "finalizado") {
+             btnSalvar.disabled = false;
+             btnSalvar.textContent = "Salvar Alterações";
+           }
         });
     });
 
+    // Carrega os dados iniciais quando a página é aberta
     carregarDados();
   </script>
 </body>
