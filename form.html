@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Detalhes do Evento</title>
   <link rel="stylesheet" href="assets/style.css">
 </head>
@@ -12,8 +12,7 @@
     <div id="eventoInfo"></div>
     <h3>Itens:</h3>
     
-    <!-- Visualização para desktop -->
-    <table id="itens-tabela" class="desktop-view">
+    <table id="itens-tabela">
       <thead>
         <tr>
           <th class="col-nome">Nome</th>
@@ -28,12 +27,7 @@
       </tbody>
     </table>
 
-    <!-- Visualização para mobile -->
-    <div id="itens-mobile-view" class="mobile-view">
-      <div class="loading-message">Carregando itens...</div>
-    </div>
-
-    <div class="button-container">
+    <div class="button-container" style="margin-top: 20px;">
       <button id="salvarAlteracoesBtn">Salvar Alterações</button>
       <button id="finalizarEventoBtn">Finalizar Evento e Salvar Alterações</button>
     </div>
@@ -59,7 +53,6 @@
     const eventId    = params.get("id");
     const refEvento  = ref(db, `eventos/${eventId}`);
     const itensBody  = document.getElementById("itens-tbody");
-    const mobileView = document.getElementById("itens-mobile-view");
     const btnFinal   = document.getElementById("finalizarEventoBtn");
     const btnSalvar  = document.getElementById("salvarAlteracoesBtn");
     let currentItens = [];
@@ -67,51 +60,6 @@
     if (!eventId) {
       alert("ID do Evento não fornecido na URL.");
       window.location.href = "index.html";
-    }
-
-    function toggleView() {
-      const isMobile = window.innerWidth <= 768;
-      document.querySelector('.desktop-view').style.display = isMobile ? 'none' : 'table';
-      document.querySelector('.mobile-view').style.display = isMobile ? 'block' : 'none';
-    }
-
-    function renderMobileItems() {
-      if (currentItens.length === 0) {
-        mobileView.innerHTML = '<div class="no-items">Nenhum item registrado para este evento.</div>';
-        return;
-      }
-
-      mobileView.innerHTML = '';
-      currentItens.forEach((item, idx) => {
-        const nomeExib = item.nomeItem ?? item.nome ?? "—";
-        const quantidadeExib = item.quantidade ?? item.qtd ?? "—";
-        
-        const itemCard = document.createElement('div');
-        itemCard.className = 'item-card';
-        itemCard.setAttribute('data-item-index', idx);
-        
-        itemCard.innerHTML = `
-          <div class="item-header">
-            <h4>${nomeExib}</h4>
-            <span class="quantity">Qtd: ${quantidadeExib}</span>
-          </div>
-          <div class="item-fields">
-            <div class="field">
-              <label>Assado:</label>
-              <input type="number" name="assado" value="${item.assado ?? 0}" min="0">
-            </div>
-            <div class="field">
-              <label>Congelado:</label>
-              <input type="number" name="congelado" value="${item.congelado ?? 0}" min="0">
-            </div>
-            <div class="field">
-              <label>Perdido:</label>
-              <input type="number" name="perdido" value="${item.perdido ?? 0}" min="0">
-            </div>
-          </div>
-        `;
-        mobileView.appendChild(itemCard);
-      });
     }
 
     function carregarDados() {
@@ -132,7 +80,6 @@
             <p><strong>Responsável:</strong> ${ev.responsavel || "—"}</p>
           `;
 
-          // Renderiza tabela desktop
           itensBody.innerHTML = "";
 
           if (currentItens.length === 0) {
@@ -146,45 +93,35 @@
               const quantidadeExib = item.quantidade ?? item.qtd ?? "—";
 
               tr.innerHTML = `
-                <td class="col-nome" data-label="Nome">${nomeExib}</td>
-                <td class="col-quantidade" data-label="Quantidade">${quantidadeExib}</td>
-                <td class="col-editavel" data-label="Assado"><input type="number" name="assado" value="${item.assado ?? 0}" min="0"></td>
-                <td class="col-editavel" data-label="Congelado"><input type="number" name="congelado" value="${item.congelado ?? 0}" min="0"></td>
-                <td class="col-editavel" data-label="Perdido"><input type="number" name="perdido" value="${item.perdido ?? 0}" min="0"></td>
+                <td class="col-nome">${nomeExib}</td>
+                <td class="col-quantidade">${quantidadeExib}</td>
+                <td class="col-editavel"><input type="number" name="assado" value="${item.assado ?? 0}" min="0"></td>
+                <td class="col-editavel"><input type="number" name="congelado" value="${item.congelado ?? 0}" min="0"></td>
+                <td class="col-editavel"><input type="number" name="perdido" value="${item.perdido ?? 0}" min="0"></td>
               `;
               itensBody.appendChild(tr);
             });
           }
-
-          // Renderiza view mobile
-          renderMobileItems();
-          toggleView();
 
           if (ev.status === "finalizado") {
             btnFinal.textContent = "Evento Finalizado";
             btnFinal.disabled    = true;
             btnSalvar.disabled   = true;
             itensBody.querySelectorAll("input").forEach(i => i.disabled = true);
-            mobileView.querySelectorAll("input").forEach(i => i.disabled = true);
           }
         })
         .catch(err => {
           console.error("Erro ao buscar dados do evento:", err);
           itensBody.innerHTML = `<tr><td colspan="6">Erro ao carregar itens.</td></tr>`;
-          mobileView.innerHTML = '<div class="error-message">Erro ao carregar itens.</div>';
         });
     }
 
     function coletarItensAtualizados() {
       const novos = [];
-      
-      // Coleta da tabela desktop
       document.querySelectorAll("#itens-tabela tbody tr[data-item-index]").forEach(tr => {
         const idx = parseInt(tr.getAttribute("data-item-index"), 10);
-        if (isNaN(idx) return;
-        
+        if (isNaN(idx) || !currentItens[idx]) return;
         const orig = currentItens[idx];
-        if (!orig) return;
 
         const assado    = parseInt(tr.querySelector('input[name="assado"]').value, 10)    || 0;
         const congelado = parseInt(tr.querySelector('input[name="congelado"]').value, 10) || 0;
@@ -192,27 +129,6 @@
 
         novos.push({ ...orig, assado, congelado, perdido });
       });
-
-      // Coleta da view mobile (se existir)
-      if (document.querySelector('.mobile-view').style.display !== 'none') {
-        document.querySelectorAll("#itens-mobile-view .item-card[data-item-index]").forEach(card => {
-          const idx = parseInt(card.getAttribute("data-item-index"), 10);
-          if (isNaN(idx)) return;
-          
-          const orig = currentItens[idx];
-          if (!orig) return;
-
-          const assado    = parseInt(card.querySelector('input[name="assado"]').value, 10)    || 0;
-          const congelado = parseInt(card.querySelector('input[name="congelado"]').value, 10) || 0;
-          const perdido   = parseInt(card.querySelector('input[name="perdido"]').value, 10)   || 0;
-
-          // Se já não foi adicionado pela tabela desktop
-          if (!novos.some(item => JSON.stringify(item) === JSON.stringify({...orig, assado, congelado, perdido}))) {
-            novos.push({ ...orig, assado, congelado, perdido });
-          }
-        });
-      }
-
       return novos;
     }
 
@@ -227,7 +143,6 @@
           btnFinal.textContent = "Evento Finalizado";
           btnSalvar.disabled = true;
           itensBody.querySelectorAll("input").forEach(i => i.disabled = true);
-          mobileView.querySelectorAll("input").forEach(i => i.disabled = true);
         })
         .catch(err => {
           console.error("Erro ao salvar alterações:", err);
@@ -256,8 +171,6 @@
         });
     });
 
-    // Inicialização
-    window.addEventListener('resize', toggleView);
     carregarDados();
   </script>
 </body>
