@@ -7,14 +7,7 @@
   <link rel="stylesheet" href="assets/style.css">
   <script type="module">
     import { initializeApp }     from "https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js";
-    import {
-      getDatabase,
-      ref,
-      onValue,
-      get,
-      push,
-      set
-    } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-database.js";
+    import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-database.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyBN-bmzgrlzjmrKMmuClZ8LVll-vJyx-aE",
@@ -54,42 +47,12 @@
               <td data-label="Responsável">${responsavel || "–"}</td>
               <td data-label="Status">${status || "aberto"}</td>
               <td data-label="Ações">
-                <a href="form.html?id=${id}" class="botao">Ver Detalhes</a>
-                <a href="assets/criar-evento.html?id=${id}" class="botao editar">✏️ Editar</a>
-                <button class="botao duplicar" data-id="${id}">📄 Duplicar</button>
+                <a href="form.html?id=${id}"               class="botao">Ver Detalhes</a>
+                <a href="assets/criar-evento.html?id=${id}"       class="botao editar">✏️ Editar</a>
               </td>
             `;
             tabelaBody.appendChild(tr);
           });
-
-        document.querySelectorAll(".duplicar").forEach(botao => {
-          botao.addEventListener("click", async e => {
-            const id = e.target.dataset.id;
-            if (!id) return;
-
-            try {
-              const snapshot = await get(ref(db, `eventos/${id}`));
-              if (!snapshot.exists()) {
-                alert("Evento não encontrado.");
-                return;
-              }
-
-              const dados = snapshot.val();
-              const novoRef = push(ref(db, "eventos"));
-              await set(novoRef, {
-                ...dados,
-                status: "aberto",
-                nome: `${dados.nome} (cópia)`
-              });
-
-              alert("Evento duplicado com sucesso!");
-              carregarEventos();
-            } catch (error) {
-              console.error("Erro ao duplicar:", error);
-              alert("Erro ao duplicar o evento.");
-            }
-          });
-        });
       }, err => {
         console.error("Erro ao carregar eventos:", err);
         loadingRow.style.display = "none";
