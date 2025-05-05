@@ -47,8 +47,9 @@
               <td data-label="Responsável">${responsavel || "–"}</td>
               <td data-label="Status">${status || "aberto"}</td>
               <td data-label="Ações">
-                <a href="form.html?id=${id}"               class="botao">Ver Detalhes</a>
-                <a href="assets/criar-evento.html?id=${id}"       class="botao editar">✏️ Editar</a>
+                <a href="form.html?id=${id}" class="botao">Ver Detalhes</a>
+                <a href="assets/criar-evento.html?id=${id}" class="botao editar">✏️ Editar</a>
+                <a href="assets/criar-evento.html?duplicar=${id}" class="botao duplicar">📄 Duplicar</a>
               </td>
             `;
             tabelaBody.appendChild(tr);
