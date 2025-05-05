@@ -5,148 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Detalhes do Evento</title>
   <link rel="stylesheet" href="assets/style.css">
-  <style>
-    /* ESTILOS OTIMIZADOS - APENAS LAYOUT */
-    body {
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      line-height: 1.6;
-      color: #333;
-      background-color: #f5f5f5;
-      margin: 0;
-      padding: 0;
-    }
-    
-    .container {
-      max-width: 1000px;
-      margin: 0 auto;
-      padding: 20px;
-      background-color: white;
-      box-shadow: 0 0 10px rgba(0,0,0,0.1);
-      min-height: 100vh;
-    }
-    
-    h1 {
-      color: #FF6B00;
-      text-align: center;
-      margin-bottom: 25px;
-      font-size: 28px;
-    }
-    
-    h3 {
-      color: #555;
-      margin-top: 30px;
-      font-size: 20px;
-    }
-    
-    #eventoInfo {
-      background-color: #f9f9f9;
-      padding: 15px;
-      border-radius: 5px;
-      margin-bottom: 20px;
-    }
-    
-    #eventoInfo p {
-      margin: 8px 0;
-    }
-    
-    #eventoInfo strong {
-      color: #555;
-    }
-    
-    #itens-tabela {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 15px;
-    }
-    
-    #itens-tabela th {
-      background-color: #FF6B00;
-      color: white;
-      padding: 12px;
-      text-align: left;
-    }
-    
-    #itens-tabela td {
-      padding: 12px;
-      border-bottom: 1px solid #ddd;
-    }
-    
-    #itens-tabela tr:hover {
-      background-color: #f5f5f5;
-    }
-    
-    #itens-tabela input[type="number"] {
-      width: 80px;
-      padding: 8px;
-      border: 1px solid #ddd;
-      border-radius: 4px;
-    }
-    
-    .button-container {
-      display: flex;
-      gap: 15px;
-      margin-top: 30px;
-      flex-wrap: wrap;
-    }
-    
-    .button-container button {
-      flex: 1;
-      min-width: 200px;
-      padding: 12px;
-      border: none;
-      border-radius: 4px;
-      font-weight: bold;
-      cursor: pointer;
-      font-size: 16px;
-      transition: background-color 0.3s;
-    }
-    
-    #salvarAlteracoesBtn {
-      background-color: #f0f0f0;
-      color: #333;
-    }
-    
-    #salvarAlteracoesBtn:hover {
-      background-color: #e0e0e0;
-    }
-    
-    #finalizarEventoBtn {
-      background-color: #FF6B00;
-      color: white;
-    }
-    
-    #finalizarEventoBtn:hover {
-      background-color: #E05E00;
-    }
-    
-    #finalizarEventoBtn:disabled {
-      background-color: #cccccc;
-      cursor: not-allowed;
-    }
-    
-    /* RESPONSIVIDADE */
-    @media (max-width: 768px) {
-      .container {
-        padding: 15px;
-      }
-      
-      #itens-tabela {
-        display: block;
-        overflow-x: auto;
-      }
-      
-      .col-editavel input {
-        width: 60px !important;
-      }
-      
-      .button-container {
-        flex-direction: column;
-      }
-    }
-  </style>
 </head>
 <body>
-  <!-- CONTEÚDO ORIGINAL (MANTIDO INTACTO) -->
   <div class="container">
     <h1>Detalhes do Evento</h1>
     <div id="eventoInfo"></div>
@@ -167,15 +27,14 @@
       </tbody>
     </table>
 
-    <div class="button-container">
+    <div class="button-container" style="margin-top: 20px;">
       <button id="salvarAlteracoesBtn">Salvar Alterações</button>
       <button id="finalizarEventoBtn">Finalizar Evento e Salvar Alterações</button>
     </div>
   </div>
 
-  <!-- SCRIPTS ORIGINAIS (MANTIDOS SEM ALTERAÇÕES) -->
   <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js";
+    import { initializeApp }               from "https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js";
     import { getDatabase, ref, get, update } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-database.js";
 
     const firebaseConfig = {
@@ -187,15 +46,15 @@
       messagingSenderId: "779860276544",
       appId: "1:779860276544:web:f45844571a8c0bab1576a5",
     };
-    const app = initializeApp(firebaseConfig);
-    const db = getDatabase(app);
+    const app  = initializeApp(firebaseConfig);
+    const db   = getDatabase(app);
 
-    const params = new URLSearchParams(window.location.search);
-    const eventId = params.get("id");
-    const refEvento = ref(db, `eventos/${eventId}`);
-    const itensBody = document.getElementById("itens-tbody");
-    const btnFinal = document.getElementById("finalizarEventoBtn");
-    const btnSalvar = document.getElementById("salvarAlteracoesBtn");
+    const params     = new URLSearchParams(window.location.search);
+    const eventId    = params.get("id");
+    const refEvento  = ref(db, `eventos/${eventId}`);
+    const itensBody  = document.getElementById("itens-tbody");
+    const btnFinal   = document.getElementById("finalizarEventoBtn");
+    const btnSalvar  = document.getElementById("salvarAlteracoesBtn");
     let currentItens = [];
 
     if (!eventId) {
@@ -230,7 +89,7 @@
               const tr = document.createElement("tr");
               tr.setAttribute("data-item-index", idx);
 
-              const nomeExib = item.nomeItem ?? item.nome ?? "—";
+              const nomeExib       = item.nomeItem ?? item.nome ?? "—";
               const quantidadeExib = item.quantidade ?? item.qtd ?? "—";
 
               tr.innerHTML = `
@@ -246,8 +105,8 @@
 
           if (ev.status === "finalizado") {
             btnFinal.textContent = "Evento Finalizado";
-            btnFinal.disabled = true;
-            btnSalvar.disabled = true;
+            btnFinal.disabled    = true;
+            btnSalvar.disabled   = true;
             itensBody.querySelectorAll("input").forEach(i => i.disabled = true);
           }
         })
@@ -264,9 +123,9 @@
         if (isNaN(idx) || !currentItens[idx]) return;
         const orig = currentItens[idx];
 
-        const assado = parseInt(tr.querySelector('input[name="assado"]').value, 10) || 0;
+        const assado    = parseInt(tr.querySelector('input[name="assado"]').value, 10)    || 0;
         const congelado = parseInt(tr.querySelector('input[name="congelado"]').value, 10) || 0;
-        const perdido = parseInt(tr.querySelector('input[name="perdido"]').value, 10) || 0;
+        const perdido   = parseInt(tr.querySelector('input[name="perdido"]').value, 10)   || 0;
 
         novos.push({ ...orig, assado, congelado, perdido });
       });
@@ -302,4 +161,17 @@
         .then(() => {
           alert("Alterações salvas com sucesso!");
         })
-        .catch(err
+        .catch(err => {
+          console.error("Erro ao salvar alterações:", err);
+          alert("Falha ao salvar. Veja o console.");
+        })
+        .finally(() => {
+          btnSalvar.disabled = false;
+          btnSalvar.textContent = "Salvar Alterações";
+        });
+    });
+
+    carregarDados();
+  </script>
+</body>
+</html>
