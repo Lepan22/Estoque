@@ -1,335 +1,307 @@
-/* Estilos gerais (mantidos de style_v2.css) */
+/* Assets/stylis.css */
+
+/* Estilos gerais */
 body {
-    font-family: Arial, sans-serif;
-    margin: 0;
-    padding: 0;
-    background-color: #f4f4f4;
-    color: #333;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background-color: #f5f5f5;
+  margin: 0;
+  padding: 0;
+  color: #333;
+  padding-bottom: 100px; /* Espaço para botões fixos */
 }
 
 .container {
-    width: 90%;
-    max-width: 1200px;
-    margin: 20px auto;
-    padding: 20px;
-    background-color: #fff;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-    border-radius: 8px;
+  max-width: 1000px;
+  margin: 20px auto;
+  padding: 20px;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
 }
 
-h1, h2, h3 {
-    color: #333;
+h1 {
+  color: #FF6B00;
+  text-align: center;
+  margin-bottom: 20px;
+  font-size: 24px;
 }
 
-/* Cor Laranja */
-:root {
-    --cor-laranja: #FFA500; 
-    --cor-laranja-hover: #E69500;
+h3 {
+    font-size: 18px; /* Ajuste opcional */
+    margin-top: 25px;
+    margin-bottom: 10px;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 5px;
 }
 
-/* Botões */
-button, a.botao {
-    display: inline-block;
-    padding: 10px 20px;
-    background-color: var(--cor-laranja);
-    color: white;
-    border: none;
-    border-radius: 5px;
-    font-size: 16px;
-    cursor: pointer;
-    text-decoration: none;
-    text-align: center;
-    margin-right: 10px;
-    margin-bottom: 10px; 
-    transition: background-color 0.3s ease;
+#eventoInfo {
+  background-color: #f9f9f9;
+  padding: 15px;
+  border-radius: 5px;
+  margin-bottom: 20px;
+  border: 1px solid #eee;
 }
 
-button:hover, a.botao:hover {
-    background-color: var(--cor-laranja-hover);
-    color: white; 
+#eventoInfo p {
+  margin: 8px 0;
+  line-height: 1.5;
 }
 
-/* Estilos específicos para index.html - Tabela de Eventos */
-#eventos-tabela {
-    width: 100%;
-    border-collapse: collapse;
-    margin-top: 20px;
-}
-
-#eventos-tabela th, #eventos-tabela td {
-    border: 1px solid #ddd;
-    padding: 12px;
-    text-align: left;
-}
-
-#eventos-tabela th {
-    background-color: #f2f2f2;
-    font-weight: bold;
-}
-
-#eventos-tabela tr:nth-child(even) {
-    background-color: #f9f9f9;
-}
-
-#eventos-tabela tr:hover {
-    background-color: #f1f1f1;
-}
-
-/* --- NOVO: Estilos específicos para form.html - Tabela de Itens --- */
+/* Estilos da tabela - Desktop */
 #itens-tabela {
-    width: 100%;
-    border-collapse: collapse;
-    margin-top: 15px;
-}
-
-#itens-tabela th,
-#itens-tabela td {
-    border: 1px solid #ddd;
-    padding: 8px; /* Padding reduzido */
-    text-align: left;
-    vertical-align: middle; /* Alinha conteúdo verticalmente */
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 15px;
+  /* table-layout: fixed; /* Removido para flexibilidade */
 }
 
 #itens-tabela th {
-    background-color: #f8f8f8; /* Cor de fundo do cabeçalho */
-    font-weight: bold;
+  background-color: #FF6B00;
+  color: white;
+  padding: 12px 8px; /* Aumentar padding */
+  text-align: center;
+  font-weight: bold; /* Adicionado */
+  font-size: 14px;
+  border-bottom: 2px solid #E65C00; /* Borda mais escura */
 }
 
-/* Alinhamento e largura das colunas da tabela de itens */
-#itens-tabela th.col-nome, #itens-tabela td.col-nome {
-    width: 35%; /* Coluna Nome mais larga */
+#itens-tabela td {
+  padding: 10px 8px; /* Aumentar padding */
+  border-bottom: 1px solid #ddd;
+  vertical-align: middle;
+  text-align: center;
+  font-size: 14px;
 }
-#itens-tabela th.col-enviado, #itens-tabela td.col-enviado {
-    width: 15%;
-    text-align: center;
+
+#itens-tabela tr:nth-child(even) td {
+    background-color: #fdfdfd; /* Zebrado suave */
 }
-#itens-tabela th.col-editavel, #itens-tabela td.col-editavel {
-    width: 15%; 
-    text-align: center;
+
+#itens-tabela .col-nome {
+  text-align: left;
+  padding-left: 10px; /* Aumentar padding */
+  width: 40%;
+}
+
+#itens-tabela .col-quantidade {
+  text-align: center;
+  width: 15%;
+}
+
+#itens-tabela .col-editavel {
+  width: 15%;
 }
 
 #itens-tabela input[type="number"] {
-    width: 60px;
-    padding: 5px;
-    text-align: center;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    box-sizing: border-box;
+  width: 90%; /* Usar porcentagem */
+  max-width: 70px;
+  padding: 8px; /* Aumentar padding */
+  border: 1px solid #ccc; /* Borda mais visível */
+  border-radius: 4px;
+  text-align: center;
+  font-size: 14px;
+  margin: 0 auto;
+  display: block;
+  box-sizing: border-box; /* Incluir padding na largura */
 }
 
-/* Botão Finalizar no form.html */
-#finalizarEventoBtn {
-    background-color: #dc3545; 
+/* Botões */
+.button-container {
+  display: flex;
+  gap: 10px;
+  margin-top: 25px; /* Aumentar margem */
 }
-#finalizarEventoBtn:hover {
-    background-color: #c82333;
+
+.button-container button {
+  flex: 1;
+  padding: 12px;
+  border: none;
+  border-radius: 4px;
+  font-weight: bold;
+  cursor: pointer;
+  font-size: 16px;
+  transition: background-color 0.2s ease; /* Transição suave */
 }
-#finalizarEventoBtn:disabled {
-    background-color: #6c757d; 
+
+#salvarAlteracoesBtn {
+  background-color: #e0e0e0; /* Cinza mais claro */
+  color: #333;
+  border: 1px solid #ccc;
+}
+#salvarAlteracoesBtn:hover {
+    background-color: #d0d0d0;
+}
+#salvarAlteracoesBtn:disabled {
+    background-color: #f5f5f5;
+    color: #aaa;
     cursor: not-allowed;
 }
 
-/* Estilos específicos para resumo.html (mantidos) */
-#resumo-container {
-    margin-top: 20px;
+
+#finalizarEventoBtn {
+  background-color: #FF6B00;
+  color: white;
+  border: 1px solid #E65C00;
 }
-.resumo-item {
-    margin-bottom: 15px;
-    padding: 15px;
-    border: 1px solid #ddd;
-    border-radius: 8px;
-    background-color: #f9f9f9;
+#finalizarEventoBtn:hover {
+    background-color: #E65C00;
 }
-.resumo-item div {
-    margin-bottom: 8px;
-}
-.resumo-item strong {
-    min-width: 150px;
-    display: inline-block;
-}
-#eventoInfoResumo p {
-    margin-bottom: 10px;
-    font-size: 1.1em;
+#finalizarEventoBtn:disabled {
+    background-color: #ffb380; /* Laranja mais claro quando desabilitado */
+    color: #fff;
+    cursor: not-allowed;
+    border-color: #ffb380;
 }
 
-/* Estilos específicos para criar-evento.html (mantidos) */
-#form-evento label {
-    display: block;
+
+/* Responsividade para celular (Ex: < 768px) */
+@media (max-width: 768px) {
+  .container {
+    padding: 15px; /* Ajuste */
+    margin: 10px auto; /* Centralizar container em mobile */
+    width: auto; /* Remover width fixo */
+    max-width: 95%; /* Limitar largura máxima */
+    box-shadow: none; /* Remover sombra em mobile se desejado */
+    border-radius: 0;
+  }
+
+  h1 {
+    font-size: 20px;
     margin-bottom: 15px;
-    font-weight: bold;
-}
-#form-evento input[type="text"],
-#form-evento input[type="date"] {
-    width: calc(100% - 22px);
-    padding: 10px;
-    margin-top: 5px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    box-sizing: border-box;
-}
-#itens-container .item-line {
-    display: flex;
-    align-items: center;
+  }
+
+  h3 {
+    font-size: 16px;
     margin-bottom: 10px;
+  }
+
+  #eventoInfo {
     padding: 10px;
-    border: 1px solid #eee;
-    border-radius: 4px;
-    background-color: #f9f9f9;
-}
-#itens-container .item-line input {
-    padding: 8px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    margin-right: 10px;
-}
-#itens-container .item-line input[name="item-nome"] {
-    flex-grow: 1;
-}
-#itens-container .item-line input[name="item-quantidade"] {
-    width: 80px;
-}
-#itens-container .item-line button {
-    padding: 8px 12px;
-    background-color: #dc3545;
-    color: white;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
+    margin-bottom: 15px;
+  }
+
+  #eventoInfo p {
+    margin: 5px 0;
     font-size: 14px;
-}
-#itens-container .item-line button:hover {
-    background-color: #c82333;
-}
-#add-item {
-    background-color: #17a2b8;
-    margin-bottom: 20px;
-}
-#add-item:hover {
-    background-color: #138496;
-}
-button[type="submit"] {
-    width: 100%;
-    padding: 12px;
-    font-size: 18px;
+  }
+
+  /* Transformação da Tabela para Lista */
+  #itens-tabela {
+    border: none; /* Remover borda da tabela */
+  }
+
+  #itens-tabela thead {
+    display: none; /* Ocultar cabeçalho original */
+  }
+
+  #itens-tabela tr {
+    display: block;
+    margin-bottom: 15px; /* Espaço entre "cartões" de item */
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    background-color: #fff; /* Fundo branco para cada item */
+    padding: 10px;
+  }
+   #itens-tabela tr:nth-child(even) td {
+        background-color: transparent; /* Remover zebrado no modo bloco */
+   }
+
+
+  #itens-tabela td {
+    display: block;
+    text-align: right; /* Alinhar valor à direita */
+    font-size: 14px;
+    border-bottom: 1px dotted #eee; /* Linha pontilhada entre campos */
+    padding: 8px 5px 8px 50%; /* Espaço à esquerda para o label */
+    position: relative;
+    min-height: 20px; /* Altura mínima para garantir espaço */
+  }
+
+  #itens-tabela td:last-child {
+    border-bottom: none; /* Remover última linha pontilhada */
+  }
+
+  /* Adicionar Label usando ::before e data-label */
+  #itens-tabela td::before {
+    content: attr(data-label); /* Pega o texto do atributo data-label */
+    position: absolute;
+    left: 10px;
+    width: calc(50% - 20px); /* Largura do label */
+    padding-right: 10px;
+    font-weight: bold;
+    text-align: left; /* Alinhar label à esquerda */
+    white-space: nowrap;
+    color: #555; /* Cor do label */
+  }
+
+  /* Ajustes específicos para colunas */
+   #itens-tabela td.col-nome {
+        text-align: right; /* Manter alinhamento */
+   }
+   #itens-tabela td.col-quantidade {
+        text-align: right; /* Manter alinhamento */
+   }
+   #itens-tabela td.col-editavel {
+        text-align: right; /* Manter alinhamento */
+        padding-top: 5px;
+        padding-bottom: 5px;
+   }
+
+  #itens-tabela input[type="number"] {
+    width: 60px; /* Tamanho fixo pode ser ok aqui */
+    padding: 6px; /* Reduzir padding */
+    font-size: 14px;
+    float: right; /* Flutuar input à direita */
+    margin: -5px 0; /* Ajuste vertical */
+  }
+
+  /* Botões fixos no rodapé */
+  .button-container {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: white;
+    padding: 10px 15px; /* Aumentar padding */
+    box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+    z-index: 100;
+    margin: 0;
+    gap: 10px; /* Aumentar gap */
+    border-top: 1px solid #eee;
+  }
+
+  .button-container button {
+    padding: 12px; /* Aumentar padding */
+    font-size: 15px; /* Aumentar fonte */
+  }
+
+  /* Ajuste de espaçamento para conteúdo não ser coberto pelos botões */
+  body {
+    padding-bottom: 80px; /* Ajustar padding-bottom do body para altura dos botões + margem */
+  }
 }
 
-/* --- Responsividade --- */
-
-/* Tabela Index */
-@media screen and (max-width: 768px) {
-    #eventos-tabela thead {
-        display: none;
+/* Ajustes finos para telas muito pequenas (Ex: < 400px) */
+@media (max-width: 400px) {
+    h1 {
+        font-size: 18px;
     }
-    #eventos-tabela, #eventos-tabela tbody, #eventos-tabela tr, #eventos-tabela td {
-        display: block;
-        width: 100%;
-    }
-    #eventos-tabela tr {
-        margin-bottom: 15px;
-        border: 1px solid #ddd;
-        border-radius: 5px;
-    }
-    #eventos-tabela td {
-        text-align: right;
-        padding-left: 50%;
-        position: relative;
-        border: none;
-        border-bottom: 1px solid #eee;
-    }
-    #eventos-tabela td::before {
-        content: attr(data-label);
-        position: absolute;
-        left: 10px;
-        width: calc(50% - 20px);
-        padding-right: 10px;
-        white-space: nowrap;
-        text-align: left;
-        font-weight: bold;
-    }
-    #eventos-tabela td:last-child {
-        border-bottom: 0;
-    }
-    #eventos-tabela td a.botao {
-        display: block;
-        margin-top: 5px;
-    }
-}
-
-/* --- NOVO: Responsividade Tabela Itens Form --- */
-@media screen and (max-width: 768px) {
-    #itens-tabela thead {
-        display: none; /* Oculta cabeçalho */
-    }
-    #itens-tabela, #itens-tabela tbody, #itens-tabela tr, #itens-tabela td {
-        display: block;
-        width: 100%;
-    }
-    #itens-tabela tr {
-        margin-bottom: 15px;
-        border: 1px solid #ddd;
-        border-radius: 5px;
-        background-color: #f9f9f9; /* Fundo para cada bloco */
+    .button-container button {
+        font-size: 14px;
+        padding: 10px;
     }
     #itens-tabela td {
-        text-align: right;
-        padding-left: 50%; 
-        position: relative;
-        border: none;
-        border-bottom: 1px dashed #eee;
+        font-size: 13px;
+        padding-left: 45%; /* Reduzir espaço do label */
     }
     #itens-tabela td::before {
-        content: attr(data-label); /* Usa data-label como título */
-        position: absolute;
-        left: 10px;
-        width: calc(50% - 20px); 
-        padding-right: 10px;
-        white-space: nowrap;
-        text-align: left;
-        font-weight: bold;
+        width: calc(45% - 15px);
     }
-    #itens-tabela td:last-child {
-        border-bottom: 0;
+    #itens-tabela input[type="number"] {
+        width: 50px;
     }
-    #itens-tabela td.col-nome {
-        font-size: 1.1em; /* Destaca o nome */
-        background-color: #f0f0f0; /* Fundo levemente diferente para nome */
-        padding-top: 10px;
-        padding-bottom: 10px;
-    }
-     #itens-tabela td.col-nome::before {
-         display: none; /* Não precisa de label para o nome no modo bloco */
-     }
-     #itens-tabela td.col-nome {
-         text-align: left; /* Alinha nome à esquerda */
-         padding-left: 10px;
-     }
-     #itens-tabela td.col-enviado::before { content: "Enviado:"; }
-     #itens-tabela td.col-editavel[data-label="Assado"]::before { content: "Assado:"; }
-     #itens-tabela td.col-editavel[data-label="Congelado"]::before { content: "Congelado:"; }
-     #itens-tabela td.col-editavel[data-label="Perdido"]::before { content: "Perdido:"; }
-
-     #itens-tabela input[type="number"] {
-         display: inline-block; /* Input na mesma linha do label implícito */
-         width: 70px;
-         margin-left: 5px;
-     }
-}
-
-/* Itens Criar Evento (mantido) */
-@media screen and (max-width: 600px) {
-    #itens-container .item-line {
-        flex-direction: column;
-        align-items: stretch;
-    }
-    #itens-container .item-line input,
-    #itens-container .item-line button {
-        width: 100%;
-        margin-bottom: 10px;
-        margin-right: 0;
-        box-sizing: border-box;
-    }
-    #itens-container .item-line button {
-        margin-bottom: 0;
+    body {
+        padding-bottom: 70px; /* Ajustar se necessário */
     }
 }
 
