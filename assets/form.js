@@ -1,153 +1,177 @@
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="pt-BR">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Evento</title>
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+  <title>Detalhes do Evento</title>
+  <link rel="stylesheet" href="assets/style.css">
 </head>
-<body class="container py-4">
+<body>
+  <div class="container">
+    <h1>Detalhes do Evento</h1>
+    <div id="eventoInfo"></div>
+    <h3>Itens:</h3>
+    
+    <table id="itens-tabela">
+      <thead>
+        <tr>
+          <th class="col-nome">Nome</th>
+          <th class="col-quantidade">Quantidade</th>
+          <th class="col-editavel">Assado</th>
+          <th class="col-editavel">Congelado</th>
+          <th class="col-editavel">Perdido</th>
+        </tr>
+      </thead>
+      <tbody id="itens-tbody">
+        <tr><td colspan="6">Carregando itens...</td></tr>
+      </tbody>
+    </table>
 
-  <h2 id="eventoTitulo">Evento</h2>
+    <div class="button-container" style="margin-top: 20px;">
+      <button id="salvarAlteracoesBtn">Salvar Alterações</button>
+      <button id="finalizarEventoBtn">Finalizar Evento e Salvar Alterações</button>
+    </div>
+  </div>
 
-  <table id="itens-tabela" class="table table-bordered mt-3">
-    <thead>
-      <tr>
-        <th>Produto</th>
-        <th>Assado</th>
-        <th>Congelado</th>
-        <th>Perdido</th>
-      </tr>
-    </thead>
-    <tbody></tbody>
-  </table>
+  <script type="module">
+    import { initializeApp }               from "https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js";
+    import { getDatabase, ref, get, update } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-database.js";
 
-  <button id="salvarAlteracoesBtn" class="btn btn-primary">Salvar Alterações</button>
-  <button id="finalizarEventoBtn" class="btn btn-danger ms-2">Finalizar Evento e Salvar Alterações</button>
-
-  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
-  <script>
     const firebaseConfig = {
-      apiKey: "SUA_API_KEY",
-      authDomain: "SEU_DOMINIO.firebaseapp.com",
-      databaseURL: "https://SEU_DOMINIO.firebaseio.com",
-      projectId: "SEU_PROJETO",
-      storageBucket: "SEU_BUCKET.appspot.com",
-      messagingSenderId: "ID_MSG",
-      appId: "ID_APP"
+      apiKey: "AIzaSyBN-bmzgrlzjmrKMmuClZ8LVll-vJyx-aE",
+      authDomain: "controleestoquelepan.firebaseapp.com",
+      databaseURL: "https://controleestoquelepan-default-rtdb.firebaseio.com",
+      projectId: "controleestoquelepan",
+      storageBucket: "controleestoquelepan.appspot.com",
+      messagingSenderId: "779860276544",
+      appId: "1:779860276544:web:f45844571a8c0bab1576a5",
     };
+    const app  = initializeApp(firebaseConfig);
+    const db   = getDatabase(app);
 
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.database();
+    const params     = new URLSearchParams(window.location.search);
+    const eventId    = params.get("id");
+    const refEvento  = ref(db, `eventos/${eventId}`);
+    const itensBody  = document.getElementById("itens-tbody");
+    const btnFinal   = document.getElementById("finalizarEventoBtn");
+    const btnSalvar  = document.getElementById("salvarAlteracoesBtn");
+    let currentItens = [];
 
-    const urlParams = new URLSearchParams(window.location.search);
-    const eventoId = urlParams.get("id");
-    const refEvento = db.ref("eventos/" + eventoId);
+    if (!eventId) {
+      alert("ID do Evento não fornecido na URL.");
+      window.location.href = "index.html";
+    }
 
-    const tbody = document.querySelector("#itens-tabela tbody");
-    const titulo = document.getElementById("eventoTitulo");
-    const btnFinalizar = document.getElementById("finalizarEventoBtn");
-    const btnSalvar = document.getElementById("salvarAlteracoesBtn");
+    function carregarDados() {
+      get(refEvento)
+        .then(snapshot => {
+          if (!snapshot.exists()) {
+            alert("Evento não encontrado.");
+            window.location.href = "index.html";
+            return;
+          }
 
-    refEvento.once("value").then(snapshot => {
-      const evento = snapshot.val();
+          const ev = snapshot.val();
+          currentItens = Array.isArray(ev.itens) ? ev.itens : [];
 
-      if (!evento) {
-        alert("Evento não encontrado!");
-        return;
-      }
-
-      titulo.textContent = evento.nome || "Evento";
-
-      if (Array.isArray(evento.itens)) {
-        evento.itens.forEach((item, index) => {
-          const tr = document.createElement("tr");
-          tr.setAttribute("data-item-index", index);
-          tr.innerHTML = `
-            <td>${item.produto}</td>
-            <td><input type="number" class="form-control" name="assado" value="${item.assado || 0}"/></td>
-            <td><input type="number" class="form-control" name="congelado" value="${item.congelado || 0}"/></td>
-            <td><input type="number" class="form-control" name="perdido" value="${item.perdido || 0}"/></td>
+          document.getElementById("eventoInfo").innerHTML = `
+            <p><strong>Nome:</strong> ${ev.nome || "—"}</p>
+            <p><strong>Data:</strong> ${ev.data || "—"}</p>
+            <p><strong>Responsável:</strong> ${ev.responsavel || "—"}</p>
           `;
-          tbody.appendChild(tr);
-        });
-      }
 
-      if (evento.finalizado) {
-        document.querySelectorAll("input").forEach(input => input.disabled = true);
-        btnFinalizar.disabled = true;
-        btnSalvar.disabled = true;
-      }
+          itensBody.innerHTML = "";
+
+          if (currentItens.length === 0) {
+            itensBody.innerHTML = `<tr><td colspan="6">Nenhum item registrado para este evento.</td></tr>`;
+          } else {
+            currentItens.forEach((item, idx) => {
+              const tr = document.createElement("tr");
+              tr.setAttribute("data-item-index", idx);
+
+              const nomeExib       = item.nomeItem ?? item.nome ?? "—";
+              const quantidadeExib = item.quantidade ?? item.qtd ?? "—";
+
+              tr.innerHTML = `
+                <td class="col-nome">${nomeExib}</td>
+                <td class="col-quantidade">${quantidadeExib}</td>
+                <td class="col-editavel"><input type="number" name="assado" value="${item.assado ?? 0}" min="0"></td>
+                <td class="col-editavel"><input type="number" name="congelado" value="${item.congelado ?? 0}" min="0"></td>
+                <td class="col-editavel"><input type="number" name="perdido" value="${item.perdido ?? 0}" min="0"></td>
+              `;
+              itensBody.appendChild(tr);
+            });
+          }
+
+          if (ev.status === "finalizado") {
+            btnFinal.textContent = "Evento Finalizado";
+            btnFinal.disabled    = true;
+            btnSalvar.disabled   = true;
+            itensBody.querySelectorAll("input").forEach(i => i.disabled = true);
+          }
+        })
+        .catch(err => {
+          console.error("Erro ao buscar dados do evento:", err);
+          itensBody.innerHTML = `<tr><td colspan="6">Erro ao carregar itens.</td></tr>`;
+        });
+    }
+
+    function coletarItensAtualizados() {
+      const novos = [];
+      document.querySelectorAll("#itens-tabela tbody tr[data-item-index]").forEach(tr => {
+        const idx = parseInt(tr.getAttribute("data-item-index"), 10);
+        if (isNaN(idx) || !currentItens[idx]) return;
+        const orig = currentItens[idx];
+
+        const assado    = parseInt(tr.querySelector('input[name="assado"]').value, 10)    || 0;
+        const congelado = parseInt(tr.querySelector('input[name="congelado"]').value, 10) || 0;
+        const perdido   = parseInt(tr.querySelector('input[name="perdido"]').value, 10)   || 0;
+
+        novos.push({ ...orig, assado, congelado, perdido });
+      });
+      return novos;
+    }
+
+    btnFinal.addEventListener("click", () => {
+      btnFinal.disabled = true;
+      btnFinal.textContent = "Processando...";
+
+      const atualizados = coletarItensAtualizados();
+      update(refEvento, { itens: atualizados, status: "finalizado" })
+        .then(() => {
+          alert("Evento finalizado e alterações salvas!");
+          btnFinal.textContent = "Evento Finalizado";
+          btnSalvar.disabled = true;
+          itensBody.querySelectorAll("input").forEach(i => i.disabled = true);
+        })
+        .catch(err => {
+          console.error("Erro ao salvar alterações:", err);
+          alert("Falha ao salvar. Veja o console.");
+          btnFinal.disabled = false;
+          btnFinal.textContent = "Finalizar Evento e Salvar Alterações";
+        });
     });
 
     btnSalvar.addEventListener("click", () => {
       btnSalvar.disabled = true;
       btnSalvar.textContent = "Salvando...";
 
-      // ✅ Corrigido: usava get(refEvento), agora usa once("value")
-      refEvento.once("value").then(snapshot => {
-        const ev = snapshot.val();
-        const itensOrig = Array.isArray(ev.itens) ? ev.itens : [];
-        const novos = [];
-
-        document.querySelectorAll("#itens-tabela tbody tr[data-item-index]").forEach(tr => {
-          const idx = parseInt(tr.getAttribute("data-item-index"), 10);
-          if (isNaN(idx) || !itensOrig[idx]) return;
-          const orig = itensOrig[idx];
-
-          const assado = parseInt(tr.querySelector('input[name="assado"]').value, 10) || 0;
-          const congelado = parseInt(tr.querySelector('input[name="congelado"]').value, 10) || 0;
-          const perdido = parseInt(tr.querySelector('input[name="perdido"]').value, 10) || 0;
-
-          novos.push({ ...orig, assado, congelado, perdido });
-        });
-
-        refEvento.update({ itens: novos })
-          .then(() => {
-            alert("Alterações salvas com sucesso!");
-            btnSalvar.textContent = "Salvar Alterações";
-            btnSalvar.disabled = false;
-          })
-          .catch(err => {
-            console.error("Erro ao salvar alterações:", err);
-            alert("Falha ao salvar. Veja o console.");
-            btnSalvar.textContent = "Salvar Alterações";
-            btnSalvar.disabled = false;
-          });
-      });
-    });
-
-    btnFinalizar.addEventListener("click", () => {
-      btnFinalizar.disabled = true;
-      btnFinalizar.textContent = "Finalizando...";
-
-      const novos = [];
-
-      document.querySelectorAll("#itens-tabela tbody tr[data-item-index]").forEach(tr => {
-        const idx = parseInt(tr.getAttribute("data-item-index"), 10);
-        const produto = tr.querySelector("td").textContent.trim();
-        const assado = parseInt(tr.querySelector('input[name="assado"]').value, 10) || 0;
-        const congelado = parseInt(tr.querySelector('input[name="congelado"]').value, 10) || 0;
-        const perdido = parseInt(tr.querySelector('input[name="perdido"]').value, 10) || 0;
-
-        novos.push({ produto, assado, congelado, perdido });
-      });
-
-      refEvento.update({ itens: novos, finalizado: true })
+      const atualizados = coletarItensAtualizados();
+      update(refEvento, { itens: atualizados })
         .then(() => {
-          alert("Evento finalizado.");
-          document.querySelectorAll("input").forEach(input => input.disabled = true);
-          btnSalvar.disabled = true;
+          alert("Alterações salvas com sucesso!");
         })
         .catch(err => {
-          console.error(err);
-          alert("Erro ao finalizar evento.");
+          console.error("Erro ao salvar alterações:", err);
+          alert("Falha ao salvar. Veja o console.");
         })
         .finally(() => {
-          btnFinalizar.textContent = "Finalizar Evento e Salvar Alterações";
+          btnSalvar.disabled = false;
+          btnSalvar.textContent = "Salvar Alterações";
         });
     });
+
+    carregarDados();
   </script>
 </body>
 </html>
