@@ -1,31 +1,32 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Eventos</title>
-  <link rel="stylesheet" href="assets/style.css" />
-</head>
-<body>
-  <div class="container">
-    <h1>Lista de Eventos</h1>
-    <a href="criar-evento.html" class="btn">Criar Evento</a>
-    <table>
-      <thead>
-        <tr>
-          <th>Nome</th>
-          <th>Data</th>
-          <th>Status</th>
-          <th>Responsável</th>
-          <th>Ações</th>
-        </tr>
-      </thead>
-      <tbody id="eventos-container">
-        <!-- Eventos renderizados pelo JS -->
-      </tbody>
-    </table>
-  </div>
+<html lang="pt-br">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Controle de Eventos</title>
+    <link rel="stylesheet" href="assets/style.css" />
+    <script type="module" src="assets/index.js" defer></script>
+  </head>
+  <body>
+    <header>
+      <h1>Controle de Eventos</h1>
+      <a href="assets/criar-evento.html" class="botao">➕ Criar Novo Evento</a>
+    </header>
 
-  <script type="module" src="assets/index.js"></script>
-</body>
+    <main>
+      <table>
+        <thead>
+          <tr>
+            <th>Nome</th>
+            <th>Data</th>
+            <th>Status</th>
+            <th>Ações</th>
+          </tr>
+        </thead>
+        <tbody id="eventosContainer">
+          <!-- Eventos carregados dinamicamente -->
+        </tbody>
+      </table>
+    </main>
+  </body>
 </html>
