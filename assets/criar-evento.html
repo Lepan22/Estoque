@@ -33,13 +33,6 @@
       <div id="itens-container"></div>
       <button type="button" id="add-item" class="botao">➕ Adicionar Item</button>
 
-      <div id="finalizar-container" style="display: none; margin-top: 15px; padding: 10px; border: 1px solid #ccc; border-radius: 5px;">
-        <label for="finalizarEvento" style="display: flex; align-items: center;">
-          <input type="checkbox" id="finalizarEvento" name="finalizarEvento" style="margin-right: 10px;" />
-          <strong>Marcar como FINALIZADO</strong> (Atenção: Isto calculará e salvará os totais de venda/perda. Certifique-se que as quantidades de retorno - Congelado, Assado, Perdido - foram inseridas corretamente para cada item abaixo.)
-        </label>
-      </div>
-
       <button type="submit" id="submit-btn" class="botao">Criar Evento</button>
     </form>
   </div>
@@ -80,13 +73,8 @@
     const addEquipeBtn = document.getElementById("add-equipe");
     const logisticaCt = document.getElementById("logistica-container");
     const addLogisticaBtn = document.getElementById("add-logistica");
-    const finalizarContainer = document.getElementById("finalizar-container");
-    const finalizarEventoCheckbox = document.getElementById("finalizarEvento");
 
-    let produtosData = {}; // Para armazenar custo e precoVenda dos produtos
-    let eventoOriginalData = null; // Para armazenar dados originais do evento em modo de edição
-
-    // 1) Carrega produtos no datalist e armazena dados completos
+    // 1) Carrega produtos no datalist
     get(ref(db, "produtos"))
       .then(snap => {
         const prods = snap.val() || {};
@@ -94,17 +82,13 @@
           const opt = document.createElement("option");
           opt.value = p.nome;
           datalist.appendChild(opt);
-          produtosData[p.nome] = { custo: parseFloat(p.custo) || 0, precoVenda: parseFloat(p.precoVenda) || 0 };
         });
       });
 
     // 2) Função de adicionar linha de item
-    function novaLinha(item = {}, currentEventStatus = "aberto") {
+    function novaLinha(item = {}) {
       const div = document.createElement("div");
       div.className = "item-line";
-      div.style.border = "1px dashed #eee";
-      div.style.padding = "10px";
-      div.style.marginBottom = "10px";
 
       const nome = document.createElement("input");
       nome.type = "text"; nome.name = "item-nome";
@@ -112,72 +96,24 @@
       nome.placeholder = "Produto";
       nome.required = true;
       nome.value = item.nomeItem || item.nome || "";
-      if (isEdit && currentEventStatus === "finalizado") nome.disabled = true;
 
       const qtd = document.createElement("input");
       qtd.type = "number"; qtd.name = "item-quantidade";
-      qtd.placeholder = "Qtd Enviada"; qtd.min = "0"; qtd.required = true; // Min 0, pode ser que não envie nada de um item planejado
+      qtd.placeholder = "Qtd"; qtd.min = "1"; qtd.required = true;
       qtd.value = item.quantidade ?? item.qtd ?? "";
-      if (isEdit && currentEventStatus === "finalizado") qtd.disabled = true;
 
       const rem = document.createElement("button");
       rem.type = "button"; rem.textContent = "❌";
       rem.addEventListener("click", () => div.remove());
-      if (isEdit && currentEventStatus === "finalizado") rem.style.display = "none";
-      
-      div.append(nome, qtd);
 
-      // Adicionar campos de retorno apenas se estiver editando e o evento não estiver finalizado
-      if (isEdit && currentEventStatus !== "finalizado") {
-        const retornoDiv = document.createElement("div");
-        retornoDiv.style.marginTop = "5px";
-        retornoDiv.style.paddingLeft = "15px";
-
-        const congeladoLabel = document.createElement("label");
-        congeladoLabel.textContent = "Congelado: ";
-        const congeladoInput = document.createElement("input");
-        congeladoInput.type = "number"; congeladoInput.name = "item-congelado";
-        congeladoInput.min = "0"; congeladoInput.placeholder = "Qtd";
-        congeladoInput.value = item.congelado || 0;
-        congeladoLabel.append(congeladoInput);
-
-        const assadoLabel = document.createElement("label");
-        assadoLabel.textContent = "Assado: ";
-        const assadoInput = document.createElement("input");
-        assadoInput.type = "number"; assadoInput.name = "item-assado";
-        assadoInput.min = "0"; assadoInput.placeholder = "Qtd";
-        assadoInput.value = item.assado || 0;
-        assadoLabel.append(assadoInput);
-
-        const perdidoLabel = document.createElement("label");
-        perdidoLabel.textContent = "Perdido: ";
-        const perdidoInput = document.createElement("input");
-        perdidoInput.type = "number"; perdidoInput.name = "item-perdido";
-        perdidoInput.min = "0"; perdidoInput.placeholder = "Qtd";
-        perdidoInput.value = item.perdido || 0;
-        perdidoLabel.append(perdidoInput);
-        
-        retornoDiv.append(congeladoLabel, document.createElement("br"), assadoLabel, document.createElement("br"), perdidoLabel);
-        div.append(retornoDiv);
-      } else if (isEdit && currentEventStatus === "finalizado") {
-        // Mostrar valores de retorno se já finalizado, mas não editáveis aqui
-        const displayRetornoDiv = document.createElement("div");
-        displayRetornoDiv.style.marginTop = "5px";
-        displayRetornoDiv.style.paddingLeft = "15px";
-        displayRetornoDiv.innerHTML = `
-          <small>Congelado: ${item.congelado || 0}, Assado: ${item.assado || 0}, Perdido: ${item.perdido || 0}</small><br/>
-          <small>Vendido (calculado na finalização): ${item.vendido || 0}</small>
-        `;
-        div.append(displayRetornoDiv);
-      }
-      div.append(rem);
+      div.append(nome, qtd, rem);
       itensCt.appendChild(div);
     }
 
-    addItem.addEventListener("click", () => novaLinha()); // Para novos eventos, status é 'aberto' por padrão
+    addItem.addEventListener("click", () => novaLinha());
 
     // Funções para adicionar linhas de Equipe e Logística
-    function novaLinhaDetalhe(container, nomeCampo, placeholderNome, nomeValor, placeholderValor, item = {}, isDisabled = false) {
+    function novaLinhaDetalhe(container, nomeCampo, placeholderNome, nomeValor, placeholderValor, item = {}) {
       const div = document.createElement("div");
       div.className = "detalhe-line"; // Classe genérica para estilização
 
@@ -187,7 +123,6 @@
       nomeInput.placeholder = placeholderNome;
       nomeInput.required = true;
       nomeInput.value = item.nome || "";
-      nomeInput.disabled = isDisabled;
 
       const valorInput = document.createElement("input");
       valorInput.type = "text"; // Pode ser 'number' ou outro se necessário
@@ -195,124 +130,40 @@
       valorInput.placeholder = placeholderValor;
       valorInput.required = true;
       valorInput.value = item.valor || "";
-      valorInput.disabled = isDisabled;
 
       const remBtn = document.createElement("button");
       remBtn.type = "button";
       remBtn.textContent = "❌";
       remBtn.addEventListener("click", () => div.remove());
-      if (isDisabled) remBtn.style.display = "none";
 
       div.append(nomeInput, valorInput, remBtn);
       container.appendChild(div);
     }
 
-    addEquipeBtn.addEventListener("click", () => novaLinhaDetalhe(equipeCt, "equipe-nome", "Nome Membro", "equipe-valor", "Valor"));
-    addLogisticaBtn.addEventListener("click", () => novaLinhaDetalhe(logisticaCt, "logistica-nome", "Item Logística", "logistica-valor", "Valor"));
+    addEquipeBtn.addEventListener("click", () => novaLinhaDetalhe(equipeCt, "equipe-nome", "Nome Membro", "equipe-valor", "Função/Cargo"));
+    addLogisticaBtn.addEventListener("click", () => novaLinhaDetalhe(logisticaCt, "logistica-nome", "Item Logística", "logistica-valor", "Detalhe/Valor"));
 
 
+    // 3) Se for edição, carrega dados existentes
     if (isEdit) {
       titleH2.textContent   = "Editar Evento";
       submitBtn.textContent = "Salvar Alterações";
-      finalizarContainer.style.display = "block"; // Mostrar container de finalização
-
       get(child(ref(db), `eventos/${eventId}`))
         .then(snap => {
-          if (!snap.exists()) {
-            alert("Evento não encontrado para edição.");
-            return;
-          }
-          eventoOriginalData = snap.val(); // Armazenar dados originais
-          const ev = eventoOriginalData;
-          
+          if (!snap.exists()) return;
+          const ev = snap.val();
           form.nome.value        = ev.nome;
           form.data.value        = ev.data;
           form.responsavel.value = ev.responsavel;
-
-          const eventoFinalizado = ev.status === "finalizado";
-
-          // Habilitar/Desabilitar campos e botões com base no status
-          form.querySelectorAll("input, textarea, select").forEach(el => {
-            if (el.id !== "finalizarEvento" && el.id !== "submit-btn") { // Não mexer no checkbox de finalizar nem no submit principal ainda
-                 el.disabled = eventoFinalizado;
-            }
-          });
-
-          addEquipeBtn.style.display = eventoFinalizado ? "none" : "inline-block";
-          addLogisticaBtn.style.display = eventoFinalizado ? "none" : "inline-block";
-          addItem.style.display = eventoFinalizado ? "none" : "inline-block";
-          
-          if (eventoFinalizado) {
-            finalizarEventoCheckbox.checked = true;
-            finalizarEventoCheckbox.disabled = true;
-            submitBtn.textContent = "Evento Finalizado";
-            submitBtn.disabled = true; 
-          } else {
-            finalizarEventoCheckbox.checked = false;
-            finalizarEventoCheckbox.disabled = false;
-            submitBtn.disabled = false;
-          }
-
-          (ev.equipe || []).forEach(eq => novaLinhaDetalhe(equipeCt, "equipe-nome", "Nome Membro", "equipe-valor", "Valor", eq, eventoFinalizado));
-          (ev.logistica || []).forEach(lg => novaLinhaDetalhe(logisticaCt, "logistica-nome", "Item Logística", "logistica-valor", "Valor", lg, eventoFinalizado));
-          (ev.itens || []).forEach(it => novaLinha(it, ev.status)); 
+          (ev.equipe || []).forEach(eq => novaLinhaDetalhe(equipeCt, "equipe-nome", "Nome Membro", "equipe-valor", "Função/Cargo", eq));
+          (ev.logistica || []).forEach(lg => novaLinhaDetalhe(logisticaCt, "logistica-nome", "Item Logística", "logistica-valor", "Detalhe/Valor", lg));
+          (ev.itens || []).forEach(it => novaLinha(it));
         });
     }
 
     // 4) Submit: push ou update
-    form.addEventListener("submit", async e => { // Tornar async para aguardar produtosData se necessário
+    form.addEventListener("submit", e => {
       e.preventDefault();
-
-      // Garantir que produtosData está carregado
-      if (Object.keys(produtosData).length === 0) {
-          const produtosSnapshot = await get(ref(db, "produtos"));
-          const prods = produtosSnapshot.val() || {};
-          Object.values(prods).forEach(p => {
-            produtosData[p.nome] = { custo: parseFloat(p.custo) || 0, precoVenda: parseFloat(p.precoVenda) || 0 };
-          });
-          if (Object.keys(produtosData).length === 0) {
-              alert("Dados de produtos ainda não carregados. Tente novamente em alguns segundos.");
-              return;
-          }
-      }
-
-      let totalVendaCalculada = 0;
-      let totalPerdaCalculada = 0;
-
-      const itensArray = Array.from(itensCt.children).map(div => {
-        const nomeItem = div.querySelector('[name="item-nome"]').value;
-        const quantidade = +div.querySelector('[name="item-quantidade"]').value;
-        let congelado = 0, assado = 0, perdido = 0, vendido = 0;
-
-        const produtoInfo = produtosData[nomeItem] || { custo: 0, precoVenda: 0 };
-
-        if (isEdit) { // Campos de retorno só existem na edição
-            const congeladoInput = div.querySelector('[name="item-congelado"]');
-            const assadoInput = div.querySelector('[name="item-assado"]');
-            const perdidoInput = div.querySelector('[name="item-perdido"]');
-
-            congelado = congeladoInput ? +congeladoInput.value : (eventoData?.itens?.find(i => i.nomeItem === nomeItem)?.congelado || 0); // Pega do input ou do dado original se finalizado
-            assado = assadoInput ? +assadoInput.value : (eventoData?.itens?.find(i => i.nomeItem === nomeItem)?.assado || 0);
-            perdido = perdidoInput ? +perdidoInput.value : (eventoData?.itens?.find(i => i.nomeItem === nomeItem)?.perdido || 0);
-        }
-        
-        vendido = Math.max(0, quantidade - (congelado + assado + perdido));
-        
-        if (finalizarEventoCheckbox.checked) { // Calcular totais apenas se estiver finalizando
-            totalVendaCalculada += vendido * produtoInfo.precoVenda;
-            totalPerdaCalculada += perdido * produtoInfo.custo;
-        }
-
-        return {
-          nomeItem,
-          quantidade,
-          congelado,
-          assado,
-          perdido,
-          vendido // Salvar quantidade vendida por item
-        };
-      });
-
       const evObj = {
         nome:        form.nome.value,
         data:        form.data.value,
@@ -325,14 +176,12 @@
           nome:  div.querySelector('[name="logistica-nome"]').value,
           valor: div.querySelector('[name="logistica-valor"]').value
         })),
-        itens: itensArray,
-        status: finalizarEventoCheckbox.checked ? "finalizado" : "aberto"
+        itens: Array.from(itensCt.children).map(div => ({
+          nomeItem:   div.querySelector('[name="item-nome"]').value,
+          quantidade: +div.querySelector('[name="item-quantidade"]').value
+        })),
+        status: "aberto"
       };
-
-      if (finalizarEventoCheckbox.checked) {
-        evObj.totalVendaCalculada = totalVendaCalculada;
-        evObj.totalPerdaCalculada = totalPerdaCalculada;
-      }
 
       const action = isEdit
         ? update(ref(db, `eventos/${eventId}`), evObj)
@@ -344,6 +193,7 @@
           console.error(err);
           alert("Falha ao salvar.");
         });
-    });/script>
+    });
+  </script>
 </body>
 </html>
