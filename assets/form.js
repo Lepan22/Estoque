@@ -5,7 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Detalhes do Evento</title>
   <link rel="stylesheet" href="assets/style.css">
+  <link rel="stylesheet" href="assets/form-responsive.css">
 </head>
+
 <body>
   <div class="container">
     <h1>Detalhes do Evento</h1>
@@ -20,25 +22,27 @@
           <th class="col-editavel">Assado</th>
           <th class="col-editavel">Congelado</th>
           <th class="col-editavel">Perdido</th>
+          <th class="col-calculado">Valor de Vendas</th>
+          <th class="col-calculado">Valor de Perda</th>
         </tr>
       </thead>
       <tbody id="itens-tbody">
-        <tr><td colspan="6">Carregando itens...</td></tr>
+        <tr><td colspan="7">Carregando itens...</td></tr>
       </tbody>
     </table>
 
-    <div class="button-container" style="margin-top: 20px;">
+    <div class="button-container">
       <button id="salvarAlteracoesBtn">Salvar Alterações</button>
       <button id="finalizarEventoBtn">Finalizar Evento e Salvar Alterações</button>
     </div>
   </div>
 
   <script type="module">
-    import { initializeApp }               from "https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js";
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js";
     import { getDatabase, ref, get, update } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-database.js";
 
     const firebaseConfig = {
-      apiKey: "AIzaSyBN-bmzgrlzjmrKMmuClZ8LVll-vJyx-aE",
+      apiKey: "AIzaSyBN-bmzgrlzjmrKMmuClZ8LVll-vJyx-aE", 
       authDomain: "controleestoquelepan.firebaseapp.com",
       databaseURL: "https://controleestoquelepan-default-rtdb.firebaseio.com",
       projectId: "controleestoquelepan",
@@ -46,128 +50,212 @@
       messagingSenderId: "779860276544",
       appId: "1:779860276544:web:f45844571a8c0bab1576a5",
     };
-    const app  = initializeApp(firebaseConfig);
-    const db   = getDatabase(app);
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
 
-    const params     = new URLSearchParams(window.location.search);
-    const eventId    = params.get("id");
-    const refEvento  = ref(db, `eventos/${eventId}`);
-    const itensBody  = document.getElementById("itens-tbody");
-    const btnFinal   = document.getElementById("finalizarEventoBtn");
-    const btnSalvar  = document.getElementById("salvarAlteracoesBtn");
+    const params = new URLSearchParams(window.location.search);
+    const eventId = params.get("id");
+    const refEvento = ref(db, `eventos/${eventId}`);
+    const itensBody = document.getElementById("itens-tbody");
+    const btnFinal = document.getElementById("finalizarEventoBtn");
+    const btnSalvar = document.getElementById("salvarAlteracoesBtn");
     let currentItens = [];
+    let eventoAtual = {};
+    let produtosMap = {}; // Para armazenar os dados dos produtos (nome: {valorVenda, custo})
 
     if (!eventId) {
       alert("ID do Evento não fornecido na URL.");
-      window.location.href = "index.html";
+      window.location.href = "index.html"; 
+    }
+
+    // Função para formatar como moeda
+    function formatCurrency(value) {
+      return (value || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+    }
+
+    // Função para atualizar os cálculos de uma linha específica
+    function atualizarCalculosLinha(trElement) {
+      const itemIndex = parseInt(trElement.getAttribute("data-item-index"), 10);
+      if (isNaN(itemIndex) || itemIndex < 0 || itemIndex >= currentItens.length) return;
+
+      const item = currentItens[itemIndex];
+      const produtoInfo = produtosMap[item.nomeItem || item.nome] || { valorVenda: 0, custo: 0 };
+      const valorVendaProduto = parseFloat(produtoInfo.valorVenda) || 0;
+      const custoProduto = parseFloat(produtoInfo.custo) || 0;
+
+      const quantidadeEnviada = parseInt(item.quantidade || item.qtd || 0);
+      const assado = parseInt(trElement.querySelector('input[name="assado"]').value, 10) || 0;
+      const congelado = parseInt(trElement.querySelector('input[name="congelado"]').value, 10) || 0;
+      const perdido = parseInt(trElement.querySelector('input[name="perdido"]').value, 10) || 0;
+
+      const quantidadeVendida = quantidadeEnviada - (assado + congelado + perdido);
+      const valorVendasCalc = quantidadeVendida * valorVendaProduto;
+      const valorPerdaCalc = perdido * custoProduto;
+
+      trElement.querySelector('.col-valor-vendas').textContent = formatCurrency(valorVendasCalc);
+      trElement.querySelector('.col-valor-perda').textContent = formatCurrency(valorPerdaCalc);
     }
 
     function carregarDados() {
-      get(refEvento)
-        .then(snapshot => {
-          if (!snapshot.exists()) {
+      const eventoPromise = get(refEvento);
+      const produtosPromise = get(ref(db, 'produtos'));
+
+      Promise.all([eventoPromise, produtosPromise])
+        .then(([snapshotEvento, snapshotProdutos]) => {
+          if (!snapshotEvento.exists()) {
             alert("Evento não encontrado.");
             window.location.href = "index.html";
             return;
           }
 
-          const ev = snapshot.val();
-          currentItens = Array.isArray(ev.itens) ? ev.itens : [];
+          eventoAtual = snapshotEvento.val();
+          currentItens = Array.isArray(eventoAtual.itens) ? eventoAtual.itens : [];
+
+          produtosMap = {}; 
+          if (snapshotProdutos.exists()) {
+            const produtosData = snapshotProdutos.val();
+            Object.values(produtosData).forEach(produto => {
+              if (produto.nome) {
+                produtosMap[produto.nome] = {
+                  valorVenda: parseFloat(produto.valorVenda) || 0,
+                  custo: parseFloat(produto.custo) || 0
+                };
+              }
+            });
+          }
 
           document.getElementById("eventoInfo").innerHTML = `
-            <p><strong>Nome:</strong> ${ev.nome || "—"}</p>
-            <p><strong>Data:</strong> ${ev.data || "—"}</p>
-            <p><strong>Responsável:</strong> ${ev.responsavel || "—"}</p>
+            <p><strong>Nome:</strong> ${eventoAtual.nome || "—"}</p>
+            <p><strong>Data:</strong> ${eventoAtual.data || "—"}</p>
+            <p><strong>Responsável:</strong> ${eventoAtual.responsavel || "—"}</p>
           `;
 
           itensBody.innerHTML = "";
 
           if (currentItens.length === 0) {
-            itensBody.innerHTML = `<tr><td colspan="6">Nenhum item registrado para este evento.</td></tr>`;
+            itensBody.innerHTML = `<tr><td colspan="7" data-label="Status">Nenhum item registrado para este evento.</td></tr>`;
           } else {
             currentItens.forEach((item, idx) => {
               const tr = document.createElement("tr");
               tr.setAttribute("data-item-index", idx);
 
-              const nomeExib       = item.nomeItem ?? item.nome ?? "—";
-              const quantidadeExib = item.quantidade ?? item.qtd ?? "—";
+              const nomeExib = item.nomeItem || item.nome || "—";
+              const quantidadeExib = item.quantidade || item.qtd || "—";
+              
+              const produtoInfo = produtosMap[nomeExib] || { valorVenda: 0, custo: 0 };
+              const valorVendaProduto = produtoInfo.valorVenda;
+              const custoProduto = produtoInfo.custo;
+
+              const quantidadeEnviadaNum = parseInt(quantidadeExib, 10) || 0;
+              const assadoNum = parseInt(item.assado, 10) || 0;
+              const congeladoNum = parseInt(item.congelado, 10) || 0;
+              const perdidoNum = parseInt(item.perdido, 10) || 0;
+
+              const quantidadeVendida = quantidadeEnviadaNum - (assadoNum + congeladoNum + perdidoNum);
+              const valorVendasCalc = quantidadeVendida * valorVendaProduto;
+              const valorPerdaCalc = perdidoNum * custoProduto;
 
               tr.innerHTML = `
-                <td class="col-nome">${nomeExib}</td>
-                <td class="col-quantidade">${quantidadeExib}</td>
-                <td class="col-editavel"><input type="number" name="assado" value="${item.assado ?? 0}" min="0"></td>
-                <td class="col-editavel"><input type="number" name="congelado" value="${item.congelado ?? 0}" min="0"></td>
-                <td class="col-editavel"><input type="number" name="perdido" value="${item.perdido ?? 0}" min="0"></td>
+                <td class="col-nome" data-label="Nome">${nomeExib}</td>
+                <td class="col-quantidade" data-label="Quantidade">${quantidadeExib}</td>
+                <td class="col-editavel" data-label="Assado"><input type="number" name="assado" value="${assadoNum}" min="0"></td>
+                <td class="col-editavel" data-label="Congelado"><input type="number" name="congelado" value="${congeladoNum}" min="0"></td>
+                <td class="col-editavel" data-label="Perdido"><input type="number" name="perdido" value="${perdidoNum}" min="0"></td>
+                <td class="col-calculado col-valor-vendas" data-label="Valor de Vendas">${formatCurrency(valorVendasCalc)}</td>
+                <td class="col-calculado col-valor-perda" data-label="Valor de Perda">${formatCurrency(valorPerdaCalc)}</td>
               `;
               itensBody.appendChild(tr);
+
+              tr.querySelectorAll('input[name="assado"], input[name="congelado"], input[name="perdido"]').forEach(input => {
+                input.addEventListener('input', () => atualizarCalculosLinha(tr));
+              });
             });
           }
 
-          if (ev.status === "finalizado") {
+          if (eventoAtual.status === "finalizado") {
             btnFinal.textContent = "Evento Finalizado";
-            btnFinal.disabled    = true;
-            btnSalvar.disabled   = true;
+            btnFinal.disabled = true;
+            btnSalvar.disabled = true;
             itensBody.querySelectorAll("input").forEach(i => i.disabled = true);
           }
         })
         .catch(err => {
-          console.error("Erro ao buscar dados do evento:", err);
-          itensBody.innerHTML = `<tr><td colspan="6">Erro ao carregar itens.</td></tr>`;
+          console.error("Erro ao buscar dados do evento e/ou produtos:", err);
+          itensBody.innerHTML = `<tr><td colspan="7" data-label="Erro">Erro ao carregar itens. Verifique o console.</td></tr>`;
         });
     }
 
     function coletarItensAtualizados() {
-      const novos = [];
+      const novosItens = [];
       document.querySelectorAll("#itens-tabela tbody tr[data-item-index]").forEach(tr => {
         const idx = parseInt(tr.getAttribute("data-item-index"), 10);
-        if (isNaN(idx) || !currentItens[idx]) return;
-        const orig = currentItens[idx];
+        if (isNaN(idx) || idx < 0 || idx >= currentItens.length) return; 
+        const itemOriginal = currentItens[idx];
 
-        const assado    = parseInt(tr.querySelector('input[name="assado"]').value, 10)    || 0;
-        const congelado = parseInt(tr.querySelector('input[name="congelado"]').value, 10) || 0;
-        const perdido   = parseInt(tr.querySelector('input[name="perdido"]').value, 10)   || 0;
+        const inputAssado = tr.querySelector('input[name="assado"]');
+        const inputCongelado = tr.querySelector('input[name="congelado"]');
+        const inputPerdido = tr.querySelector('input[name="perdido"]');
 
-        novos.push({ ...orig, assado, congelado, perdido });
+        const assado = inputAssado ? (parseInt(inputAssado.value, 10) || 0) : 0;
+        const congelado = inputCongelado ? (parseInt(inputCongelado.value, 10) || 0) : 0;
+        const perdido = inputPerdido ? (parseInt(inputPerdido.value, 10) || 0) : 0;
+
+        novosItens.push({ ...itemOriginal, assado, congelado, perdido });
       });
-      return novos;
+      return novosItens;
     }
 
     btnFinal.addEventListener("click", () => {
+      if (btnFinal.disabled) return; 
+      
       btnFinal.disabled = true;
       btnFinal.textContent = "Processando...";
+      btnSalvar.disabled = true;
 
-      const atualizados = coletarItensAtualizados();
-      update(refEvento, { itens: atualizados, status: "finalizado" })
+      const itensAtualizados = coletarItensAtualizados();
+      update(refEvento, { itens: itensAtualizados, status: "finalizado" })
         .then(() => {
           alert("Evento finalizado e alterações salvas!");
           btnFinal.textContent = "Evento Finalizado";
-          btnSalvar.disabled = true;
           itensBody.querySelectorAll("input").forEach(i => i.disabled = true);
+          eventoAtual.status = "finalizado";
         })
         .catch(err => {
-          console.error("Erro ao salvar alterações:", err);
-          alert("Falha ao salvar. Veja o console.");
+          console.error("Erro ao finalizar evento:", err);
+          alert("Falha ao finalizar o evento. Verifique o console para mais detalhes.");
           btnFinal.disabled = false;
           btnFinal.textContent = "Finalizar Evento e Salvar Alterações";
+          if (eventoAtual.status !== "finalizado") {
+              btnSalvar.disabled = false;
+          }
         });
     });
 
     btnSalvar.addEventListener("click", () => {
+      if (btnSalvar.disabled) return; 
+      
       btnSalvar.disabled = true;
       btnSalvar.textContent = "Salvando...";
 
-      const atualizados = coletarItensAtualizados();
-      update(refEvento, { itens: atualizados })
+      const itensAtualizados = coletarItensAtualizados();
+      update(refEvento, { itens: itensAtualizados })
         .then(() => {
           alert("Alterações salvas com sucesso!");
+          currentItens = itensAtualizados; // Atualiza currentItens com os dados salvos para que os cálculos reflitam o estado salvo.
+          // Dispara a atualização dos cálculos para todas as linhas visíveis, caso os valores de 'assado', 'congelado', 'perdido' tenham sido alterados e salvos.
+          document.querySelectorAll("#itens-tabela tbody tr[data-item-index]").forEach(tr => {
+             atualizarCalculosLinha(tr);
+          });
         })
         .catch(err => {
           console.error("Erro ao salvar alterações:", err);
-          alert("Falha ao salvar. Veja o console.");
+          alert("Falha ao salvar as alterações. Verifique o console para mais detalhes.");
         })
         .finally(() => {
-          btnSalvar.disabled = false;
-          btnSalvar.textContent = "Salvar Alterações";
+           if (eventoAtual.status !== "finalizado") {
+             btnSalvar.disabled = false;
+             btnSalvar.textContent = "Salvar Alterações";
+           }
         });
     });
 
