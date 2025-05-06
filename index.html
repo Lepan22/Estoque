@@ -56,9 +56,7 @@
               <td data-label="Ações">
                 <a href="form.html?id=${id}" class="botao">Ver Detalhes</a>
                 <a href="assets/criar-evento.html?id=${id}" class="botao editar">✏️ Editar</a>
-                <a href="resumo.html?id=${id}" class="botao resumo">📊 Ver Resumo</a>
                 <button class="botao duplicar" data-id="${id}">📄 Duplicar</button>
-                <button class="botao exportar-evento" data-id="${id}">📤 Exportar</button> <!-- Botão Exportar adicionado por linha -->
               </td>
             `;
             tabelaBody.appendChild(tr);
@@ -107,7 +105,6 @@
     <h1>Painel do Gerente</h1>
     <a href="assets/criar-evento.html" class="botao">➕ Criar Novo Evento</a>
     <a href="assets/produtos.html"     class="botao-criar">📦 Cadastro de Produto</a>
-    <!-- Botão Exportar Eventos (geral) removido daqui -->
 
     <table id="eventos-tabela">
       <thead>
