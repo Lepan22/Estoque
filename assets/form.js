@@ -34,7 +34,7 @@
   </div>
 
   <script type="module">
-    import { initializeApp }               from "https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js";
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js";
     import { getDatabase, ref, get, update } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-database.js";
 
     const firebaseConfig = {
@@ -46,15 +46,16 @@
       messagingSenderId: "779860276544",
       appId: "1:779860276544:web:f45844571a8c0bab1576a5",
     };
-    const app  = initializeApp(firebaseConfig);
-    const db   = getDatabase(app);
 
-    const params     = new URLSearchParams(window.location.search);
-    const eventId    = params.get("id");
-    const refEvento  = ref(db, `eventos/${eventId}`);
-    const itensBody  = document.getElementById("itens-tbody");
-    const btnFinal   = document.getElementById("finalizarEventoBtn");
-    const btnSalvar  = document.getElementById("salvarAlteracoesBtn");
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+
+    const params = new URLSearchParams(window.location.search);
+    const eventId = params.get("id");
+    const refEvento = ref(db, `eventos/${eventId}`);
+    const itensBody = document.getElementById("itens-tbody");
+    const btnFinal = document.getElementById("finalizarEventoBtn");
+    const btnSalvar = document.getElementById("salvarAlteracoesBtn");
     let currentItens = [];
 
     if (!eventId) {
@@ -89,24 +90,39 @@
               const tr = document.createElement("tr");
               tr.setAttribute("data-item-index", idx);
 
-              const nomeExib       = item.nomeItem ?? item.nome ?? "—";
+              const nomeExib = item.nomeItem ?? item.nome ?? "—";
               const quantidadeExib = item.quantidade ?? item.qtd ?? "—";
+              const assado = item.assado ?? 0;
+              const congelado = item.congelado ?? 0;
+              const perdido = item.perdido ?? 0;
 
               tr.innerHTML = `
                 <td class="col-nome">${nomeExib}</td>
                 <td class="col-quantidade">${quantidadeExib}</td>
-                <td class="col-editavel"><input type="number" name="assado" value="${item.assado ?? 0}" min="0"></td>
-                <td class="col-editavel"><input type="number" name="congelado" value="${item.congelado ?? 0}" min="0"></td>
-                <td class="col-editavel"><input type="number" name="perdido" value="${item.perdido ?? 0}" min="0"></td>
+                <td class="col-editavel"><input type="number" name="assado" value="${assado}" min="0"></td>
+                <td class="col-editavel"><input type="number" name="congelado" value="${congelado}" min="0"></td>
+                <td class="col-editavel"><input type="number" name="perdido" value="${perdido}" min="0"></td>
               `;
+
+              // Campos ocultos apenas se valor > 0
+              if (assado > 0) {
+                tr.innerHTML += `<input type="hidden" name="assado_oculto" value="${assado}">`;
+              }
+              if (congelado > 0) {
+                tr.innerHTML += `<input type="hidden" name="congelado_oculto" value="${congelado}">`;
+              }
+              if (perdido > 0) {
+                tr.innerHTML += `<input type="hidden" name="perdido_oculto" value="${perdido}">`;
+              }
+
               itensBody.appendChild(tr);
             });
           }
 
           if (ev.status === "finalizado") {
             btnFinal.textContent = "Evento Finalizado";
-            btnFinal.disabled    = true;
-            btnSalvar.disabled   = true;
+            btnFinal.disabled = true;
+            btnSalvar.disabled = true;
             itensBody.querySelectorAll("input").forEach(i => i.disabled = true);
           }
         })
@@ -123,9 +139,9 @@
         if (isNaN(idx) || !currentItens[idx]) return;
         const orig = currentItens[idx];
 
-        const assado    = parseInt(tr.querySelector('input[name="assado"]').value, 10)    || 0;
+        const assado = parseInt(tr.querySelector('input[name="assado"]').value, 10) || 0;
         const congelado = parseInt(tr.querySelector('input[name="congelado"]').value, 10) || 0;
-        const perdido   = parseInt(tr.querySelector('input[name="perdido"]').value, 10)   || 0;
+        const perdido = parseInt(tr.querySelector('input[name="perdido"]').value, 10) || 0;
 
         novos.push({ ...orig, assado, congelado, perdido });
       });
