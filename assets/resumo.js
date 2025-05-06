@@ -56,7 +56,10 @@ async function carregarDados() {
     if (afericaoContainer) afericaoContainer.style.display = "none";
     if (salvarResumoBtn) salvarResumoBtn.style.display = "none";
     if (itensH3 && itensH3.tagName === 'H3') itensH3.style.display = "none"; // Ocultar título "Itens:"
-    if (resumoContainer) resumoContainer.style.display = "none"; // Ocultar container de itens
+    if (resumoContainer) {
+        resumoContainer.innerHTML = ""; // Limpar qualquer conteúdo anterior
+        resumoContainer.style.display = "none"; // Ocultar container de itens
+    }
 
     if (!eventId) {
         eventoInfoDiv.innerHTML = "<p>ID do evento não fornecido.</p>";
@@ -65,12 +68,8 @@ async function carregarDados() {
 
     try {
         const eventoRef = ref(db, `eventos/${eventId}`);
-        const produtosRef = ref(db, "produtos"); // Ainda pode ser útil para contexto, mas não para cálculo de itens aqui
-
-        const [eventoSnapshot, produtosSnapshot] = await Promise.all([
-            get(eventoRef),
-            get(produtosRef) // Carregar dados de produtos caso necessário para algo no futuro, mas não para os totais já calculados
-        ]);
+        // Não precisamos mais carregar todos os produtos aqui se os totais já estão no eventoData
+        const eventoSnapshot = await get(eventoRef);
 
         if (!eventoSnapshot.exists()) {
             eventoInfoDiv.innerHTML = "<p>Evento não encontrado.</p>";
@@ -87,14 +86,7 @@ async function carregarDados() {
         // Evento está finalizado, mostrar seções relevantes
         if (afericaoContainer) afericaoContainer.style.display = "block";
         if (salvarResumoBtn) salvarResumoBtn.style.display = "block";
-        // Não mostrar itensH3 nem resumoContainer
         
-        // Carregar dados de produtos para referência (se necessário para algo mais, mas não para os totais)
-        const prods = produtosSnapshot.val() || {};
-        Object.values(prods).forEach(p => {
-            produtosData[p.nome] = { custo: parseFloat(p.custo) || 0, precoVenda: parseFloat(p.precoVenda) || 0 };
-        });
-
         const totalEquipe = calcularSomaDetalhes(eventoData.equipe);
         const totalLogistica = calcularSomaDetalhes(eventoData.logistica);
 
@@ -115,13 +107,8 @@ async function carregarDados() {
         recebidoMaquininhaInput.value = eventoData.resumoFinanceiro?.recebidoMaquininha || "";
         recebidoPIXInput.value = eventoData.resumoFinanceiro?.recebidoPIX || "";
         
-        // Se houver dados de resumo financeiro salvos, recalcular o farol com eles
-        if(eventoData.resumoFinanceiro) {
-            calcularResumo(); 
-        } else {
-            // Se não houver dados salvos, o farol pode ser calculado com os totais e PDV zerado (ou como preferir)
-            farolStatusSpan.textContent = "Preencha os campos de aferição";
-        }
+        // Calcular e exibir o farol inicial com os dados carregados
+        calcularResumo(); 
 
     } catch (error) {
         console.error("Erro ao carregar dados:", error);
