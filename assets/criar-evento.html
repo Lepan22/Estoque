@@ -84,6 +84,7 @@
     const finalizarEventoCheckbox = document.getElementById("finalizarEvento");
 
     let produtosData = {}; // Para armazenar custo e precoVenda dos produtos
+    let eventoOriginalData = null; // Para armazenar dados originais do evento em modo de edição
 
     // 1) Carrega produtos no datalist e armazena dados completos
     get(ref(db, "produtos"))
@@ -217,30 +218,44 @@
 
       get(child(ref(db), `eventos/${eventId}`))
         .then(snap => {
-          if (!snap.exists()) return;
-          const ev = snap.val();
+          if (!snap.exists()) {
+            alert("Evento não encontrado para edição.");
+            return;
+          }
+          eventoOriginalData = snap.val(); // Armazenar dados originais
+          const ev = eventoOriginalData;
+          
           form.nome.value        = ev.nome;
           form.data.value        = ev.data;
           form.responsavel.value = ev.responsavel;
 
           const eventoFinalizado = ev.status === "finalizado";
+
+          // Habilitar/Desabilitar campos e botões com base no status
+          form.querySelectorAll("input, textarea, select").forEach(el => {
+            if (el.id !== "finalizarEvento" && el.id !== "submit-btn") { // Não mexer no checkbox de finalizar nem no submit principal ainda
+                 el.disabled = eventoFinalizado;
+            }
+          });
+
+          addEquipeBtn.style.display = eventoFinalizado ? "none" : "inline-block";
+          addLogisticaBtn.style.display = eventoFinalizado ? "none" : "inline-block";
+          addItem.style.display = eventoFinalizado ? "none" : "inline-block";
+          
           if (eventoFinalizado) {
             finalizarEventoCheckbox.checked = true;
             finalizarEventoCheckbox.disabled = true;
             submitBtn.textContent = "Evento Finalizado";
-            submitBtn.disabled = true; // Desabilitar salvar se já finalizado
-            // Desabilitar todos os inputs e botões de adicionar/remover se finalizado
-            form.querySelectorAll("input, button").forEach(el => {
-                if(el.id !== "finalizarEvento" && el.id !== "submit-btn") el.disabled = true;
-            });
-            document.getElementById("add-equipe").style.display = "none";
-            document.getElementById("add-logistica").style.display = "none";
-            document.getElementById("add-item").style.display = "none";
+            submitBtn.disabled = true; 
+          } else {
+            finalizarEventoCheckbox.checked = false;
+            finalizarEventoCheckbox.disabled = false;
+            submitBtn.disabled = false;
           }
 
           (ev.equipe || []).forEach(eq => novaLinhaDetalhe(equipeCt, "equipe-nome", "Nome Membro", "equipe-valor", "Valor", eq, eventoFinalizado));
           (ev.logistica || []).forEach(lg => novaLinhaDetalhe(logisticaCt, "logistica-nome", "Item Logística", "logistica-valor", "Valor", lg, eventoFinalizado));
-          (ev.itens || []).forEach(it => novaLinha(it, ev.status)); // Passar status para controlar campos de retorno
+          (ev.itens || []).forEach(it => novaLinha(it, ev.status)); 
         });
     }
 
