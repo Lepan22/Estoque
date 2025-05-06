@@ -1,14 +1,34 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8" />
-  <title>Resumo do Evento</title>
-  <link rel="stylesheet" href="assets/estilo.css" />
+  <meta charset="UTF-8">
+  <title>Totais do Evento</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+    }
+    .totais {
+      background: #f1f1f1;
+      padding: 20px;
+      border-radius: 10px;
+      max-width: 400px;
+      margin: 0 auto;
+    }
+    .totais h2 {
+      text-align: center;
+    }
+    .totais p {
+      font-size: 18px;
+      margin: 10px 0;
+    }
+  </style>
 </head>
 <body>
-  <div id="eventoResumo"></div>
-  <div id="resumoItens"></div>
-  <div id="custosEvento"></div>
+  <div class="totais" id="totaisEvento">
+    <h2>Totais do Evento</h2>
+    <p>Carregando dados...</p>
+  </div>
 
   <script type="module" src="assets/resumo.js"></script>
 </body>
