@@ -47,6 +47,40 @@
             <p>Carregando resumo...</p>
         </div>
 
+        <!-- Seção de Aferição Financeira -->
+        <h3>Aferição Financeira</h3>
+        <div id="afericao-container">
+          <div class="resumo-item">
+            <label for="vendaPDV">Valor de Venda PDV:
+              <input type="number" id="vendaPDV" name="vendaPDV" step="0.01" min="0" />
+            </label>
+          </div>
+          <div class="resumo-item">
+            <label for="recebidoMaquininha">Valor Recebido Maquininha:
+              <input type="number" id="recebidoMaquininha" name="recebidoMaquininha" step="0.01" min="0" />
+            </label>
+          </div>
+          <div class="resumo-item">
+            <label for="recebidoPIX">Valor Recebido PIX:
+              <input type="number" id="recebidoPIX" name="recebidoPIX" step="0.01" min="0" />
+            </label>
+          </div>
+          <div class="resumo-item">
+            <strong>Valor Venda Calculada:</strong> <span id="vendaCalculada">--</span>
+          </div>
+          <div class="resumo-item">
+            <strong>Valor Perda Calculada:</strong> <span id="perdaCalculada">--</span>
+          </div>
+          <div class="resumo-item">
+            <strong>Farol:</strong> <span id="farolStatus">--</span>
+          </div>
+        </div>
+
+        <!-- Botão Salvar Resumo -->
+        <div class="button-container" style="margin-top: 20px;">
+             <button type="button" id="salvarResumoBtn" class="botao">Salvar Resumo</button>
+        </div>
+
         <!-- Botão Voltar -->
         <div class="button-container" style="margin-top: 30px;">
             <a href="index.html" class="botao">Voltar para a Página Inicial</a>
