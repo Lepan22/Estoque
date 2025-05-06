@@ -17,61 +17,28 @@ const db = getDatabase(app);
 const id = new URLSearchParams(window.location.search).get("id");
 
 if (!id) {
-  alert("Evento não encontrado.");
-  window.location.href = "index.html";
+  document.getElementById("totaisEvento").innerHTML = "<p>ID do evento não fornecido.</p>";
+  throw new Error("ID do evento não encontrado na URL.");
 }
 
 const refEvento = ref(db, `eventos/${id}`);
 
 get(refEvento).then(snapshot => {
   if (!snapshot.exists()) {
-    alert("Evento não encontrado.");
+    document.getElementById("totaisEvento").innerHTML = "<p>Evento não encontrado.</p>";
     return;
   }
 
   const evento = snapshot.val();
+  const logistica = evento.logistica || 0;
+  const equipe = evento.equipe || 0;
 
-  document.getElementById("eventoResumo").innerHTML = `
-    <h2>Resumo do Evento</h2>
-    <p><strong>Nome:</strong> ${evento.nome}</p>
-    <p><strong>Data:</strong> ${evento.data}</p>
-    <p><strong>Responsável:</strong> ${evento.responsavel}</p>
-    <p><strong>Status:</strong> ${evento.status || "pendente"}</p>
-    <h3>Itens:</h3>
+  document.getElementById("totaisEvento").innerHTML = `
+    <h2>Totais do Evento</h2>
+    <p><strong>Logística:</strong> R$ ${logistica.toFixed(2)}</p>
+    <p><strong>Equipe:</strong> R$ ${equipe.toFixed(2)}</p>
   `;
-
-  const container = document.getElementById("resumoItens");
-
-  if (Array.isArray(evento.itens) && evento.itens.length > 0) {
-    evento.itens.forEach(item => {
-      const div = document.createElement("div");
-      div.className = "item-resumo";
-      div.innerHTML = `
-        <p><strong>Nome:</strong> ${item.nomeItem || "N/A"}</p>
-        <p><strong>Quantidade Enviada:</strong> ${item.quantidadeEnviada || 0}</p>
-        <p><strong>Assado:</strong> ${item.assado || 0}</p>
-        <p><strong>Congelado:</strong> ${item.congelado || 0}</p>
-        <p><strong>Perdido:</strong> ${item.perdido || 0}</p>
-        <hr>
-      `;
-      container.appendChild(div);
-    });
-  } else {
-    container.innerHTML = "<p>Nenhum item registrado.</p>";
-  }
-
-  // Exibir os valores de Logística e Equipe
-  const valorLogistica = evento.logistica || 0;
-  const valorEquipe = evento.equipe || 0;
-
-  const custosDiv = document.getElementById("custosEvento");
-  if (custosDiv) {
-    custosDiv.innerHTML = `
-      <p><strong>Valor de Logística:</strong> R$ ${valorLogistica.toFixed(2)}</p>
-      <p><strong>Valor de Equipe:</strong> R$ ${valorEquipe.toFixed(2)}</p>
-    `;
-  }
-
 }).catch(error => {
-  console.error("Erro ao buscar dados:", error);
+  console.error("Erro ao buscar evento:", error);
+  document.getElementById("totaisEvento").innerHTML = "<p>Erro ao carregar os dados.</p>";
 });
