@@ -13,6 +13,7 @@
     <h1>Detalhes do Evento</h1>
     <div id="eventoInfo"></div>
 
+    <!-- Seção de Totais -->
     <div id="totaisEvento" style="margin-bottom: 20px; padding: 10px; border: 1px solid #ccc; border-radius: 5px;">
       <p><strong>Total de Vendas do Evento:</strong> <span id="totalVendasEvento">R$ 0,00</span></p>
       <p><strong>Total de Perda do Evento:</strong> <span id="totalPerdaEvento">R$ 0,00</span></p>
@@ -67,7 +68,7 @@
     const itensBody = document.getElementById("itens-tbody");
     const btnFinal = document.getElementById("finalizarEventoBtn");
     const btnSalvar = document.getElementById("salvarAlteracoesBtn");
-
+    
     const totalVendasEventoEl = document.getElementById("totalVendasEvento");
     const totalPerdaEventoEl = document.getElementById("totalPerdaEvento");
     const totalLogisticaEl = document.getElementById("totalLogistica");
@@ -91,12 +92,13 @@
       return parseFloat(value.replace(/[^0-9,-]+/g,"").replace(",", ".")) || 0;
     }
 
-    // 🔧 CORREÇÃO: calcula usando os itens se disponíveis, ou o evento principal como fallback
     function calcularTotaisAdicionais(itens) {
       let logisticaTotal = 0;
       let equipeTotal = 0;
 
-      if (Array.isArray(itens) && itens.length > 0) {
+      const algumComDados = itens.some(item => item.logistica || item.equipe);
+
+      if (algumComDados) {
         itens.forEach(item => {
           logisticaTotal += parseFloat(item.logistica || 0);
           equipeTotal += parseFloat(item.equipe || 0);
@@ -131,9 +133,7 @@
       totalEquipeEl.textContent = formatCurrency(equipe);
     }
 
-    // ... (todo o restante do script JS permanece inalterado, como no seu arquivo atual)
-
-    carregarDados();
+    // O restante do seu código permanece igual...
   </script>
 </body>
 </html>
