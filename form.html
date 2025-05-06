@@ -37,10 +37,12 @@
     </div>
   </div>
 
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js";
-    import { getDatabase, ref, get, update } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-database.js";
+  <!-- Firebase SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database.js"></script>
 
+  <script>
+    // Configuração do Firebase (não precisa de import, pois o SDK está global)
     const firebaseConfig = {
       apiKey: "AIzaSyBN-bmzgrlzjmrKMmuClZ8LVll-vJyx-aE", 
       authDomain: "controleestoquelepan.firebaseapp.com",
@@ -50,18 +52,22 @@
       messagingSenderId: "779860276544",
       appId: "1:779860276544:web:f45844571a8c0bab1576a5",
     };
-    const app = initializeApp(firebaseConfig);
-    const db = getDatabase(app);
+
+    // Inicializa o Firebase
+    const fbApp = firebase.initializeApp(firebaseConfig); // fbApp para não conflitar com 'app' do SDK
+    const db = firebase.getDatabase(fbApp);
+    // As funções do database (ref, get, update) são acessadas via firebase.ref, firebase.get, firebase.update
 
     const params = new URLSearchParams(window.location.search);
     const eventId = params.get("id");
-    const refEvento = ref(db, `eventos/${eventId}`);
+    // Usa firebase.ref para criar a referência
+    const refEvento = firebase.ref(db, `eventos/${eventId}`);
     const itensBody = document.getElementById("itens-tbody");
     const btnFinal = document.getElementById("finalizarEventoBtn");
     const btnSalvar = document.getElementById("salvarAlteracoesBtn");
     let currentItens = [];
     let eventoAtual = {};
-    let produtosMap = {}; // Para armazenar os dados dos produtos (nome: {valorVenda, custo})
+    let produtosMap = {};
 
     if (!eventId) {
       alert("ID do Evento não fornecido na URL.");
@@ -100,8 +106,9 @@
     }
 
     function carregarDados() {
-      const eventoPromise = get(refEvento);
-      const produtosPromise = get(ref(db, 'produtos'));
+      // Usa firebase.get para buscar dados
+      const eventoPromise = firebase.get(refEvento);
+      const produtosPromise = firebase.get(firebase.ref(db, 'produtos'));
 
       Promise.all([eventoPromise, produtosPromise])
         .then(([snapshotEvento, snapshotProdutos]) => {
@@ -158,7 +165,6 @@
               const valorVendasCalc = quantidadeVendida * valorVendaProduto;
               const valorPerdaCalc = perdidoNum * custoProduto;
 
-              // Se os valores já estiverem salvos no item (após finalização), usa eles, senão calcula.
               const displayValorVendas = item.valorVendasCalculado !== undefined ? item.valorVendasCalculado : valorVendasCalc;
               const displayValorPerda = item.valorPerdaCalculado !== undefined ? item.valorPerdaCalculado : valorPerdaCalc;
 
@@ -173,9 +179,8 @@
               `;
               itensBody.appendChild(tr);
 
-              // Só adiciona listeners se o evento não estiver finalizado
               if (eventoAtual.status !== "finalizado") {
-                tr.querySelectorAll('input[name="assado"], input[name="congelado"], input[name="perdido"]"]').forEach(input => {
+                tr.querySelectorAll('input[name="assado"], input[name="congelado"], input[name="perdido"]').forEach(input => {
                   input.addEventListener('input', () => atualizarCalculosLinha(tr));
                 });
               }
@@ -202,12 +207,9 @@
         if (isNaN(idx) || idx < 0 || idx >= currentItens.length) return; 
         const itemOriginal = currentItens[idx];
 
-        const inputAssado = tr.querySelector('input[name="assado"]
-angle');
-        const inputCongelado = tr.querySelector('input[name="congelado"]
-angle');
-        const inputPerdido = tr.querySelector('input[name="perdido"]
-angle');
+        const inputAssado = tr.querySelector('input[name="assado"]');
+        const inputCongelado = tr.querySelector('input[name="congelado"]');
+        const inputPerdido = tr.querySelector('input[name="perdido"]');
 
         const assado = inputAssado ? (parseInt(inputAssado.value, 10) || 0) : 0;
         const congelado = inputCongelado ? (parseInt(inputCongelado.value, 10) || 0) : 0;
@@ -233,15 +235,15 @@ angle');
       btnFinal.textContent = "Processando...";
       btnSalvar.disabled = true;
 
-      // Coleta os itens incluindo os valores calculados para salvar
       const itensAtualizados = coletarItensAtualizados(true);
-      update(refEvento, { itens: itensAtualizados, status: "finalizado" })
+      // Usa firebase.update para atualizar dados
+      firebase.update(refEvento, { itens: itensAtualizados, status: "finalizado" })
         .then(() => {
           alert("Evento finalizado e alterações salvas!");
           btnFinal.textContent = "Evento Finalizado";
           itensBody.querySelectorAll("input").forEach(i => i.disabled = true);
           eventoAtual.status = "finalizado";
-          currentItens = itensAtualizados; // Atualiza currentItens para refletir os dados salvos, incluindo os calculados
+          currentItens = itensAtualizados;
         })
         .catch(err => {
           console.error("Erro ao finalizar evento:", err);
@@ -260,10 +262,9 @@ angle');
       btnSalvar.disabled = true;
       btnSalvar.textContent = "Salvando...";
 
-      // Ao salvar alterações (sem finalizar), não incluímos os valores calculados para persistência,
-      // eles são apenas para exibição e serão recalculados ou finalizados depois.
       const itensAtualizados = coletarItensAtualizados(false);
-      update(refEvento, { itens: itensAtualizados })
+      // Usa firebase.update para atualizar dados
+      firebase.update(refEvento, { itens: itensAtualizados })
         .then(() => {
           alert("Alterações salvas com sucesso!");
           currentItens = itensAtualizados; 
@@ -283,7 +284,11 @@ angle');
         });
     });
 
-    carregarDados();
+    // Garante que o DOM está carregado antes de executar o script
+    document.addEventListener('DOMContentLoaded', (event) => {
+        carregarDados();
+    });
+
   </script>
 </body>
 </html>
