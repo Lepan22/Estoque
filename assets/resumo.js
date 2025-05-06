@@ -60,18 +60,6 @@ get(refEvento).then(snapshot => {
     container.innerHTML = "<p>Nenhum item registrado.</p>";
   }
 
-  // NOVO BLOCO: Exibir os valores de Logística e Equipe
-  const valorLogistica = evento.logistica || 0;
-  const valorEquipe = evento.equipe || 0;
-
-  const custosDiv = document.getElementById("custosEvento");
-  if (custosDiv) {
-    custosDiv.innerHTML = `
-      <p><strong>Valor de Logística:</strong> R$ ${valorLogistica.toFixed(2)}</p>
-      <p><strong>Valor de Equipe:</strong> R$ ${valorEquipe.toFixed(2)}</p>
-    `;
-  }
-
-}).catch(error => {
-  console.error("Erro ao buscar dados:", error);
-});
+  // EXIBE CUSTOS DE LOGÍSTICA E EQUIPE
+  const valorLogistica = parseFloat(evento.logistica || 0);
+  cons
