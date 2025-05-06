@@ -1,14 +1,67 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8">
-  <title>Resumo de Custos</title>
-  <script type="module" src="assets/resumo.js"></script>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Controle de Eventos</title>
+  <link rel="stylesheet" href="assets/style.css">
+  <link rel="stylesheet" href="assets/form-responsive.css">
 </head>
 <body>
-  <h1>Resumo de Custos</h1>
-  <div id="custosEvento">
-    <p>Carregando dados...</p>
-  </div>
+  <header>
+    <h1>Controle de Eventos</h1>
+    <nav>
+      <ul>
+        <li><a href="index.html">Início</a></li>
+        <li><a href="criar.html">Criar Evento</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <main>
+    <!-- Conteúdo dinâmico aqui (detalhes do evento incluído abaixo) -->
+
+    <div class="container">
+      <h1>Detalhes do Evento</h1>
+      <div id="eventoInfo"></div>
+
+      <div id="totaisEvento" style="margin-bottom: 20px; padding: 10px; border: 1px solid #ccc; border-radius: 5px;">
+        <p><strong>Total de Vendas do Evento:</strong> <span id="totalVendasEvento">R$ 0,00</span></p>
+        <p><strong>Total de Perda do Evento:</strong> <span id="totalPerdaEvento">R$ 0,00</span></p>
+        <p><strong>Total de Logística:</strong> <span id="totalLogistica">R$ 0,00</span></p>
+        <p><strong>Total de Equipe:</strong> <span id="totalEquipe">R$ 0,00</span></p>
+      </div>
+
+      <h3>Itens:</h3>
+
+      <table id="itens-tabela">
+        <thead>
+          <tr>
+            <th class="col-nome">Nome</th>
+            <th class="col-quantidade">Quantidade</th>
+            <th class="col-editavel">Assado</th>
+            <th class="col-editavel">Congelado</th>
+            <th class="col-editavel">Perdido</th>
+            <th class="col-calculado">Valor de Vendas</th>
+            <th class="col-calculado">Valor de Perda</th>
+          </tr>
+        </thead>
+        <tbody id="itens-tbody">
+          <tr><td colspan="7">Carregando itens...</td></tr>
+        </tbody>
+      </table>
+
+      <div class="button-container">
+        <button id="salvarAlteracoesBtn">Salvar Alterações</button>
+        <button id="finalizarEventoBtn">Finalizar Evento e Salvar Alterações</button>
+      </div>
+    </div>
+  </main>
+
+  <footer>
+    <p>&copy; 2025 Controle de Eventos LePan</p>
+  </footer>
+
+  <script type="module" src="detalhes.js"></script>
 </body>
 </html>
