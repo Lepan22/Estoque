@@ -3,7 +3,7 @@ import {
   getDatabase, ref, get, child, update
 } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-database.js";
 
-// --- FIREBASE CONFIG (Mesma configuração do criar-evento.html) ---
+// --- FIREBASE CONFIG ---
 const firebaseConfig = {
   apiKey: "AIzaSyBN-bmzgrlzjmrKMmuClZ8LVll-vJyx-aE",
   authDomain: "controleestoquelepan.firebaseapp.com",
@@ -26,6 +26,9 @@ const vendaCalculadaSpan = document.getElementById("vendaCalculada");
 const perdaCalculadaSpan = document.getElementById("perdaCalculada");
 const farolStatusSpan = document.getElementById("farolStatus");
 const salvarResumoBtn = document.getElementById("salvarResumoBtn");
+const afericaoContainer = document.getElementById("afericao-container"); 
+const itensH3 = resumoContainer.previousElementSibling; // Assume que H3 "Itens:" é irmão direto anterior
+
 
 // --- PARÂMETROS DA URL ---
 const params = new URLSearchParams(window.location.search);
@@ -33,15 +36,30 @@ const eventId = params.get("id");
 
 // --- ESTADO E DADOS ---
 let eventoData = null;
-let produtosData = {}; // Armazenar dados dos produtos (custo, precoVenda)
+let produtosData = {};
 
 // --- FUNÇÕES ---
 
-// Função para buscar dados do evento e produtos
+function calcularSomaDetalhes(detalhesArray, campoValor = "valor") {
+    if (!detalhesArray || !Array.isArray(detalhesArray) || detalhesArray.length === 0) return 0;
+    return detalhesArray.reduce((sum, item) => {
+        if (typeof item === 'object' && item !== null && item.hasOwnProperty(campoValor)) {
+            const valor = parseFloat(item[campoValor]);
+            return sum + (isNaN(valor) ? 0 : valor);
+        }
+        return sum;
+    }, 0);
+}
+
 async function carregarDados() {
+    // Esconder seções por padrão e mostrar apenas se o evento estiver finalizado e carregado
+    if (afericaoContainer) afericaoContainer.style.display = "none";
+    if (salvarResumoBtn) salvarResumoBtn.style.display = "none";
+    if (itensH3 && itensH3.tagName === 'H3') itensH3.style.display = "none";
+    if (resumoContainer) resumoContainer.style.display = "none";
+
     if (!eventId) {
         eventoInfoDiv.innerHTML = "<p>ID do evento não fornecido.</p>";
-        resumoContainer.innerHTML = "";
         return;
     }
 
@@ -56,52 +74,53 @@ async function carregarDados() {
 
         if (!eventoSnapshot.exists()) {
             eventoInfoDiv.innerHTML = "<p>Evento não encontrado.</p>";
-            resumoContainer.innerHTML = "";
             return;
         }
 
         eventoData = eventoSnapshot.val();
-        // Mapeia produtos por nome para fácil acesso
+
+        if (eventoData.status !== "finalizado") {
+            eventoInfoDiv.innerHTML = `<p><strong>Nome do Evento:</strong> ${eventoData.nome || 'N/A'}</p><p style="color: red; font-weight: bold;">EVENTO NÃO FINALIZADO.</p><p>Não é possível gerar o resumo financeiro até que o evento seja finalizado.</p>`;
+            return; 
+        }
+
+        // Evento está finalizado, mostrar seções relevantes
+        if (afericaoContainer) afericaoContainer.style.display = "block";
+        if (salvarResumoBtn) salvarResumoBtn.style.display = "block";
+        if (itensH3 && itensH3.tagName === 'H3') itensH3.style.display = "block";
+        if (resumoContainer) resumoContainer.style.display = "block";
+        
         const prods = produtosSnapshot.val() || {};
         Object.values(prods).forEach(p => {
             produtosData[p.nome] = { custo: p.custo || 0, precoVenda: p.precoVenda || 0 };
         });
 
-        // Preenche informações básicas do evento
+        const totalEquipe = calcularSomaDetalhes(eventoData.equipe);
+        const totalLogistica = calcularSomaDetalhes(eventoData.logistica);
+
         eventoInfoDiv.innerHTML = `
-            <p><strong>Nome do Evento:</strong> ${eventoData.nome}</p>
-            <p><strong>Data:</strong> ${eventoData.data}</p>
-            <p><strong>Responsável:</strong> ${eventoData.responsavel}</p>
-            <p><strong>Equipe:</strong> ${formatarDetalhes(eventoData.equipe)}</p>
-            <p><strong>Logística:</strong> ${formatarDetalhes(eventoData.logistica)}</p>
+            <p><strong>Nome do Evento:</strong> ${eventoData.nome || 'N/A'}</p>
+            <p><strong>Data:</strong> ${eventoData.data || 'N/A'}</p>
+            <p><strong>Responsável:</strong> ${eventoData.responsavel || 'N/A'}</p>
+            <p><strong>Total Custo Equipe:</strong> R$ ${totalEquipe.toFixed(2)}</p>
+            <p><strong>Total Custo Logística:</strong> R$ ${totalLogistica.toFixed(2)}</p>
         `;
 
-        // Preenche valores financeiros já salvos, se existirem
         vendaPDVInput.value = eventoData.resumoFinanceiro?.vendaPDV || "";
         recebidoMaquininhaInput.value = eventoData.resumoFinanceiro?.recebidoMaquininha || "";
         recebidoPIXInput.value = eventoData.resumoFinanceiro?.recebidoPIX || "";
 
-        // Renderiza itens
         renderizarItens();
-        // Calcula o resumo inicial se já houver dados
         calcularResumo();
 
     } catch (error) {
         console.error("Erro ao carregar dados:", error);
         eventoInfoDiv.innerHTML = "<p>Erro ao carregar dados do evento.</p>";
-        resumoContainer.innerHTML = "";
     }
 }
 
-// Função para formatar detalhes (Equipe/Logística)
-function formatarDetalhes(detalhes) {
-    if (!detalhes || detalhes.length === 0) return "N/A";
-    return detalhes.map(d => `${d.nome}: ${d.valor}`).join(", ");
-}
-
-// Função para renderizar os itens do evento com campos de entrada
 function renderizarItens() {
-    resumoContainer.innerHTML = ""; // Limpa o container
+    resumoContainer.innerHTML = ""; 
     if (!eventoData || !eventoData.itens || eventoData.itens.length === 0) {
         resumoContainer.innerHTML = "<p>Nenhum item neste evento.</p>";
         return;
@@ -110,9 +129,8 @@ function renderizarItens() {
     eventoData.itens.forEach((item, index) => {
         const itemDiv = document.createElement("div");
         itemDiv.className = "resumo-item";
-        itemDiv.dataset.itemName = item.nomeItem; // Guarda o nome do item
+        itemDiv.dataset.itemName = item.nomeItem; 
 
-        // Recupera quantidades salvas, se existirem
         const resumoItemSalvo = eventoData.resumoFinanceiro?.itens?.[item.nomeItem] || {};
 
         itemDiv.innerHTML = `
@@ -132,14 +150,12 @@ function renderizarItens() {
         resumoContainer.appendChild(itemDiv);
     });
 
-    // Adiciona listeners aos inputs de quantidade após renderizar
     resumoContainer.querySelectorAll("input[type='number']").forEach(input => {
         input.addEventListener("change", calcularResumo);
-        input.addEventListener("input", calcularResumo); // Recalcula enquanto digita
+        input.addEventListener("input", calcularResumo); 
     });
 }
 
-// Função para calcular Venda, Perda e Farol
 function calcularResumo() {
     if (!eventoData || !eventoData.itens) return;
 
@@ -162,14 +178,9 @@ function calcularResumo() {
         const assado = parseInt(assadoInput.value) || 0;
         const perdido = parseInt(perdidoInput.value) || 0;
 
-        // Validação simples para não exceder o enviado
         const totalRetornoPerda = congelado + assado + perdido;
         if (totalRetornoPerda > enviado) {
-           // Poderia adicionar uma mensagem de erro, mas por ora apenas limita
-           // Ajusta proporcionalmente ou zera o último modificado? Simplesmente não calcula?
-           // Por simplicidade, vamos apenas sinalizar e não calcular venda negativa.
            console.warn(`Item ${nomeItem}: Quantidade de retorno/perda (${totalRetornoPerda}) excede a enviada (${enviado}).`);
-           // Poderia resetar o último campo alterado ou mostrar erro.
         }
 
         const vendido = Math.max(0, enviado - totalRetornoPerda);
@@ -182,14 +193,12 @@ function calcularResumo() {
     vendaCalculadaSpan.textContent = `R$ ${vendaTotalCalculada.toFixed(2)}`;
     perdaCalculadaSpan.textContent = `R$ ${perdaTotalCalculada.toFixed(2)}`;
 
-    // Calcula Farol
     const vendaPDV = parseFloat(vendaPDVInput.value) || 0;
     const recebidoMaquininha = parseFloat(recebidoMaquininhaInput.value) || 0;
     const recebidoPIX = parseFloat(recebidoPIXInput.value) || 0;
     const recebidoTotal = recebidoMaquininha + recebidoPIX;
 
     let status = [];
-    // Tolerância para comparação de float
     const tolerancia = 0.01;
 
     if (Math.abs(vendaTotalCalculada - vendaPDV) <= tolerancia) {
@@ -214,13 +223,13 @@ function calcularResumo() {
     }
 
     farolStatusSpan.textContent = status.join("; ");
-    // Adicionar classes CSS para cores do farol se desejado
-    // Ex: farolStatusSpan.className = "farol-ok" ou "farol-verificar"
 }
 
-// Função para salvar o resumo financeiro no Firebase
 async function salvarResumo() {
-    if (!eventId || !eventoData) return;
+    if (!eventId || !eventoData || eventoData.status !== "finalizado") {
+        alert("Não é possível salvar o resumo. O evento não foi carregado corretamente ou não está finalizado.");
+        return;
+    }
 
     const resumoFinanceiro = {
         vendaPDV: parseFloat(vendaPDVInput.value) || 0,
@@ -243,8 +252,8 @@ async function salvarResumo() {
     });
 
     try {
-        const eventoRef = ref(db, `eventos/${eventId}/resumoFinanceiro`);
-        await update(eventoRef, resumoFinanceiro);
+        const eventoRefPath = `eventos/${eventId}/resumoFinanceiro`;
+        await update(ref(db, eventoRefPath), resumoFinanceiro);
         alert("Resumo financeiro salvo com sucesso!");
     } catch (error) {
         console.error("Erro ao salvar resumo financeiro:", error);
@@ -253,8 +262,6 @@ async function salvarResumo() {
 }
 
 // --- INICIALIZAÇÃO ---
-
-// Adiciona listeners aos inputs financeiros
 vendaPDVInput.addEventListener("change", calcularResumo);
 vendaPDVInput.addEventListener("input", calcularResumo);
 recebidoMaquininhaInput.addEventListener("change", calcularResumo);
@@ -262,9 +269,7 @@ recebidoMaquininhaInput.addEventListener("input", calcularResumo);
 recebidoPIXInput.addEventListener("change", calcularResumo);
 recebidoPIXInput.addEventListener("input", calcularResumo);
 
-// Adiciona listener ao botão salvar
 salvarResumoBtn.addEventListener("click", salvarResumo);
 
-// Carrega os dados iniciais
 carregarDados();
 
