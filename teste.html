@@ -1,88 +1,14 @@
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="pt-BR">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Análise do Evento</title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"/>
+  <meta charset="UTF-8">
+  <title>Resumo de Custos</title>
+  <script type="module" src="assets/resumo.js"></script>
 </head>
-<body class="container my-4">
-  <h1 class="mb-4">Análise do Evento</h1>
-
-  <div id="detalhesEvento" class="mb-4">
-    <p><strong>Nome:</strong> <span id="nomeEvento"></span></p>
-    <p><strong>Data:</strong> <span id="dataEvento"></span></p>
-    <p><strong>Local:</strong> <span id="localEvento"></span></p>
-    <p><strong>Horário:</strong> <span id="horarioEvento"></span></p>
-    <p><strong>Tipo:</strong> <span id="tipoEvento"></span></p>
+<body>
+  <h1>Resumo de Custos</h1>
+  <div id="custosEvento">
+    <p>Carregando dados...</p>
   </div>
-
-  <h3>Logística</h3>
-  <ul id="logisticaList" class="list-group mb-4"></ul>
-
-  <h3>Equipe</h3>
-  <ul id="equipeList" class="list-group mb-4"></ul>
-
-  <h3>Totais</h3>
-  <p><strong>Total de Logística:</strong> <span id="totalLogistica">R$ 0,00</span></p>
-  <p><strong>Total de Equipe:</strong> <span id="totalEquipe">R$ 0,00</span></p>
-
-  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js"></script>
-  <script src="assets/firebase-init.js"></script>
-  <script type="module">
-    import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js";
-
-    const db = getFirestore();
-    const urlParams = new URLSearchParams(window.location.search);
-    const eventoId = urlParams.get('id');
-
-    async function carregarEvento() {
-      const eventoRef = doc(db, "eventos", eventoId);
-      const eventoSnap = await getDoc(eventoRef);
-
-      if (eventoSnap.exists()) {
-        const dados = eventoSnap.data();
-
-        document.getElementById('nomeEvento').textContent = dados.nome || '';
-        document.getElementById('dataEvento').textContent = dados.data || '';
-        document.getElementById('localEvento').textContent = dados.local || '';
-        document.getElementById('horarioEvento').textContent = dados.horario || '';
-        document.getElementById('tipoEvento').textContent = dados.tipo || '';
-
-        const logisticaList = document.getElementById('logisticaList');
-        const equipeList = document.getElementById('equipeList');
-
-        logisticaList.innerHTML = '';
-        equipeList.innerHTML = '';
-
-        if (Array.isArray(dados.logistica)) {
-          dados.logistica.forEach(item => {
-            const li = document.createElement('li');
-            li.className = 'list-group-item';
-            li.textContent = `${item.nome} - R$ ${parseFloat(item.valor || 0).toFixed(2).replace('.', ',')}`;
-            logisticaList.appendChild(li);
-          });
-        }
-
-        if (Array.isArray(dados.equipe)) {
-          dados.equipe.forEach(item => {
-            const li = document.createElement('li');
-            li.className = 'list-group-item';
-            li.textContent = `${item.nome} - R$ ${parseFloat(item.valor || 0).toFixed(2).replace('.', ',')}`;
-            equipeList.appendChild(li);
-          });
-        }
-
-        // Chama o cálculo dos totais
-        calcularTotaisAdicionais(dados.logistica, dados.equipe);
-      } else {
-        alert("Evento não encontrado.");
-      }
-    }
-
-    carregarEvento();
-  </script>
-  <script src="assets/resumo.js"></script>
 </body>
 </html>
