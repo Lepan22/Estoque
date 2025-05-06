@@ -13,21 +13,83 @@
     <h1>Detalhes do Evento</h1>
     <div id="eventoInfo"></div>
 
-    <!-- Seção de Totais -->
+    <!-- Seção de Totais (AGORA COM CÁLCULO) -->
     <div id="totaisEvento" style="margin-bottom: 20px; padding: 10px; border: 1px solid #ccc; border-radius: 5px;">
-      <p><strong>Total de Vendas do Evento:</strong> <span id="totalVendasEvento">R$ 0,00</span></p>
-      <p><strong>Total de Perda do Evento:</strong> <span id="totalPerdaEvento">R$ 0,00</span></p>
-      <p><strong>Valor de Logística:</strong> <span id="valorLogistica">R$ 0,00</span></p>
-      <p><strong>Valor de Equipe:</strong> <span id="valorEquipe">R$ 0,00</span></p>
+      <p><strong>Total de Vendas:</strong> <span id="totalVendasEvento">R$ 0,00</span></p>
+      <p><strong>Total de Perda:</strong> <span id="totalPerdaEvento">R$ 0,00</span></p>
+      <p><strong>Logística Total:</strong> <span id="valorLogistica">R$ 0,00</span></p>
+      <p><strong>Custo Equipe:</strong> <span id="valorEquipe">R$ 0,00</span></p>
     </div>
 
-    <!-- Restante do seu HTML permanece igual -->
-    <!-- ... -->
+    <!-- Tabela de itens (permanece igual) -->
+    <h3>Itens:</h3>
+    <table id="itens-tabela">
+      <!-- ... -->
+    </table>
+
+    <div class="button-container">
+      <button id="salvarAlteracoesBtn">Salvar Alterações</button>
+      <button id="finalizarEventoBtn">Finalizar Evento e Salvar Alterações</button>
+    </div>
   </div>
 
   <script type="module">
-    // Configurações do Firebase permanecem iguais
-    // ...
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js";
+    import { getDatabase, ref, get, update } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-database.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyBN-bmzgrlzjmrKMmuClZ8LVll-vJyx-aE",
+      authDomain: "controleestoquelepan.firebaseapp.com",
+      databaseURL: "https://controleestoquelepan-default-rtdb.firebaseio.com",
+      projectId: "controleestoquelepan",
+      storageBucket: "controleestoquelepan.appspot.com",
+      messagingSenderId: "779860276544",
+      appId: "1:779860276544:web:f45844571a8c0bab1576a5",
+    };
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+
+    const params = new URLSearchParams(window.location.search);
+    const eventId = params.get("id");
+    const refEvento = ref(db, `eventos/${eventId}`);
+    const itensBody = document.getElementById("itens-tbody");
+    const btnFinal = document.getElementById("finalizarEventoBtn");
+    const btnSalvar = document.getElementById("salvarAlteracoesBtn");
+    
+    // Elementos dos totais
+    const totalVendasEventoEl = document.getElementById("totalVendasEvento");
+    const totalPerdaEventoEl = document.getElementById("totalPerdaEvento");
+    const valorLogisticaEl = document.getElementById("valorLogistica");
+    const valorEquipeEl = document.getElementById("valorEquipe");
+
+    let currentItens = [];
+    let eventoAtual = {};
+    let produtosMap = {};
+
+    // Função para calcular Logística e Equipe a partir dos itens
+    function calcularLogisticaEquipe(itens) {
+      let totalLogistica = 0;
+      let totalEquipe = 0;
+
+      itens.forEach(item => {
+        totalLogistica += parseFloat(item.logistica || 0);
+        totalEquipe += parseFloat(item.equipe || 0);
+      });
+
+      return {
+        logistica: totalLogistica,
+        equipe: totalEquipe
+      };
+    }
+
+    function formatCurrency(value) {
+      return (value || 0).toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+    }
+
+    function parseCurrency(value) {
+      if (typeof value !== "string") return parseFloat(value) || 0;
+      return parseFloat(value.replace(/[^0-9,-]+/g,"").replace(",", ".")) || 0;
+    }
 
     async function carregarDados() {
       try {
@@ -45,56 +107,46 @@
         eventoAtual = snapshotEvento.val();
         currentItens = Array.isArray(eventoAtual.itens) ? eventoAtual.itens : [];
 
-        // DEBUG: Verifique a estrutura completa do evento no console
-        console.log("Dados completos do evento:", eventoAtual);
+        // CALCULA LOGÍSTICA E EQUIPE
+        const { logistica, equipe } = calcularLogisticaEquipe(currentItens);
+        valorLogisticaEl.textContent = formatCurrency(logistica);
+        valorEquipeEl.textContent = formatCurrency(equipe);
 
-        // CORREÇÃO: Busca os valores corretos da estrutura do seu banco de dados
-        const valorLogistica = eventoAtual.custos?.logistica || 
-                             eventoAtual.logistica?.valor || 
-                             eventoAtual.logistica || 0;
-        
-        const valorEquipe = eventoAtual.custos?.equipe || 
-                          eventoAtual.equipe?.valor || 
-                          eventoAtual.equipe || 0;
-
-        console.log("Valores encontrados - Logística:", valorLogistica, "Equipe:", valorEquipe);
-
-        // Preenche os valores formatados
-        valorLogisticaEl.textContent = formatCurrency(parseFloat(valorLogistica));
-        valorEquipeEl.textContent = formatCurrency(parseFloat(valorEquipe));
-
-        // Restante da função permanece igual
+        // Restante do código (exibição dos itens) permanece igual
         // ...
 
       } catch (err) {
-        console.error("Erro ao buscar dados:", err);
-        // Tratamento de erro permanece igual
+        console.error("Erro ao carregar dados:", err);
       }
     }
 
-    // Restante do seu código JavaScript permanece igual
-    // ...
-
+    // Função chamada ao finalizar o evento (SALVA OS TOTAIS)
     btnFinal.addEventListener("click", async () => {
-      // Código existente permanece igual até a parte de atualização
+      if (btnFinal.disabled) return;
       
+      btnFinal.disabled = true;
+      btnFinal.textContent = "Processando...";
+
+      const itensAtualizados = coletarItensAtualizados(true);
+      const { logistica, equipe } = calcularLogisticaEquipe(itensAtualizados);
+
       try {
-        await update(refEvento, { 
-          // Campos existentes permanecem
-          // ...
-          
-          // CORREÇÃO: Garante que os valores serão salvos como números
-          logistica: parseFloat(parseCurrency(valorLogisticaEl.textContent)),
-          equipe: parseFloat(parseCurrency(valorEquipeEl.textContent))
+        await update(refEvento, {
+          itens: itensAtualizados,
+          status: "finalizado",
+          totalVendasEvento: parseCurrency(totalVendasEventoEl.textContent),
+          totalPerdaEvento: parseCurrency(totalPerdaEventoEl.textContent),
+          logistica: logistica,  // Salva o total de logística
+          equipe: equipe         // Salva o total de equipe
         });
-        
-        // Restante do código permanece igual
+        alert("Evento finalizado com sucesso!");
       } catch (err) {
-        // Tratamento de erro permanece igual
+        console.error("Erro ao salvar:", err);
+        alert("Erro ao finalizar evento!");
       }
     });
 
-    // Restante do seu código permanece igual
+    // Restante do código (funções auxiliares) permanece igual
     // ...
 
     carregarDados();
