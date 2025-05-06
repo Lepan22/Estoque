@@ -62,7 +62,7 @@
 
     const params = new URLSearchParams(window.location.search);
     const eventId = params.get("id");
-    const refEvento = ref(db, eventos/${eventId});
+    const refEvento = ref(db, `eventos/${eventId}`);
     const itensBody = document.getElementById("itens-tbody");
     const btnFinal = document.getElementById("finalizarEventoBtn");
     const btnSalvar = document.getElementById("salvarAlteracoesBtn");
@@ -157,16 +157,16 @@
           });
         }
 
-        document.getElementById("eventoInfo").innerHTML = 
+        document.getElementById("eventoInfo").innerHTML = `
           <p><strong>Nome:</strong> ${eventoAtual.nome || "—"}</p>
           <p><strong>Data:</strong> ${eventoAtual.data || "—"}</p>
           <p><strong>Responsável:</strong> ${eventoAtual.responsavel || "—"}</p>
-        ;
+        `;
 
         itensBody.innerHTML = "";
 
         if (currentItens.length === 0) {
-          itensBody.innerHTML = <tr><td colspan="7" data-label="Status">Nenhum item registrado para este evento.</td></tr>;
+          itensBody.innerHTML = `<tr><td colspan="7" data-label="Status">Nenhum item registrado para este evento.</td></tr>`;
         } else {
           currentItens.forEach((item, idx) => {
             const tr = document.createElement("tr");
@@ -192,7 +192,7 @@
                 valorPerdaCalc = item.valorPerdaCalculado !== undefined ? item.valorPerdaCalculado : valorPerdaCalc;
             }
 
-            tr.innerHTML = 
+            tr.innerHTML = `
               <td class="col-nome" data-label="Nome">${nomeExib}</td>
               <td class="col-quantidade" data-label="Quantidade">${quantidadeExib}</td>
               <td class="col-editavel" data-label="Assado"><input type="number" name="assado" value="${assadoNum}" min="0"></td>
@@ -200,7 +200,7 @@
               <td class="col-editavel" data-label="Perdido"><input type="number" name="perdido" value="${perdidoNum}" min="0"></td>
               <td class="col-calculado col-valor-vendas" data-label="Valor de Vendas">${formatCurrency(valorVendasCalc)}</td>
               <td class="col-calculado col-valor-perda" data-label="Valor de Perda">${formatCurrency(valorPerdaCalc)}</td>
-            ;
+            `;
             itensBody.appendChild(tr);
 
             if (eventoAtual.status !== "finalizado") {
@@ -221,7 +221,7 @@
         }
       } catch (err) {
         console.error("Erro ao buscar dados do evento e/ou produtos:", err);
-        itensBody.innerHTML = <tr><td colspan="7" data-label="Erro">Erro ao carregar itens. Verifique o console.</td></tr>;
+        itensBody.innerHTML = `<tr><td colspan="7" data-label="Erro">Erro ao carregar itens. Verifique o console.</td></tr>`;
         atualizarTotaisGerais(); // Garante que os totais sejam zerados em caso de erro
       }
     }
@@ -321,3 +321,4 @@
   </script>
 </body>
 </html>
+
