@@ -55,8 +55,8 @@ async function carregarDados() {
     // Esconder seções por padrão e mostrar apenas se o evento estiver finalizado e carregado
     if (afericaoContainer) afericaoContainer.style.display = "none";
     if (salvarResumoBtn) salvarResumoBtn.style.display = "none";
-    if (itensH3 && itensH3.tagName === 'H3') itensH3.style.display = "none";
-    if (resumoContainer) resumoContainer.style.display = "none";
+    if (itensH3 && itensH3.tagName === 'H3') itensH3.style.display = "none"; // Ocultar título "Itens:"
+    if (resumoContainer) resumoContainer.style.display = "none"; // Ocultar container de itens
 
     if (!eventId) {
         eventoInfoDiv.innerHTML = "<p>ID do evento não fornecido.</p>";
@@ -65,11 +65,11 @@ async function carregarDados() {
 
     try {
         const eventoRef = ref(db, `eventos/${eventId}`);
-        const produtosRef = ref(db, "produtos");
+        const produtosRef = ref(db, "produtos"); // Ainda pode ser útil para contexto, mas não para cálculo de itens aqui
 
         const [eventoSnapshot, produtosSnapshot] = await Promise.all([
             get(eventoRef),
-            get(produtosRef)
+            get(produtosRef) // Carregar dados de produtos caso necessário para algo no futuro, mas não para os totais já calculados
         ]);
 
         if (!eventoSnapshot.exists()) {
@@ -87,12 +87,12 @@ async function carregarDados() {
         // Evento está finalizado, mostrar seções relevantes
         if (afericaoContainer) afericaoContainer.style.display = "block";
         if (salvarResumoBtn) salvarResumoBtn.style.display = "block";
-        if (itensH3 && itensH3.tagName === 'H3') itensH3.style.display = "block";
-        if (resumoContainer) resumoContainer.style.display = "block";
+        // Não mostrar itensH3 nem resumoContainer
         
+        // Carregar dados de produtos para referência (se necessário para algo mais, mas não para os totais)
         const prods = produtosSnapshot.val() || {};
         Object.values(prods).forEach(p => {
-            produtosData[p.nome] = { custo: p.custo || 0, precoVenda: p.precoVenda || 0 };
+            produtosData[p.nome] = { custo: parseFloat(p.custo) || 0, precoVenda: parseFloat(p.precoVenda) || 0 };
         });
 
         const totalEquipe = calcularSomaDetalhes(eventoData.equipe);
@@ -106,12 +106,22 @@ async function carregarDados() {
             <p><strong>Total Custo Logística:</strong> R$ ${totalLogistica.toFixed(2)}</p>
         `;
 
+        // Preencher totais calculados na finalização do evento
+        vendaCalculadaSpan.textContent = `R$ ${(eventoData.totalVendaCalculada || 0).toFixed(2)}`;
+        perdaCalculadaSpan.textContent = `R$ ${(eventoData.totalPerdaCalculada || 0).toFixed(2)}`;
+
+        // Preencher valores de aferição já salvos, se existirem
         vendaPDVInput.value = eventoData.resumoFinanceiro?.vendaPDV || "";
         recebidoMaquininhaInput.value = eventoData.resumoFinanceiro?.recebidoMaquininha || "";
         recebidoPIXInput.value = eventoData.resumoFinanceiro?.recebidoPIX || "";
-
-        renderizarItens();
-        calcularResumo();
+        
+        // Se houver dados de resumo financeiro salvos, recalcular o farol com eles
+        if(eventoData.resumoFinanceiro) {
+            calcularResumo(); 
+        } else {
+            // Se não houver dados salvos, o farol pode ser calculado com os totais e PDV zerado (ou como preferir)
+            farolStatusSpan.textContent = "Preencha os campos de aferição";
+        }
 
     } catch (error) {
         console.error("Erro ao carregar dados:", error);
