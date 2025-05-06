@@ -30,7 +30,7 @@ get(refEvento).then(snapshot => {
 
   const evento = snapshot.val();
 
-  // ----- Calcular total de Logística
+  // Calcular total de Logística
   let totalLogistica = 0;
   if (Array.isArray(evento.logistica)) {
     totalLogistica = evento.logistica.reduce((soma, item) => {
@@ -38,7 +38,7 @@ get(refEvento).then(snapshot => {
     }, 0);
   }
 
-  // ----- Calcular total de Equipe
+  // Calcular total de Equipe
   let totalEquipe = 0;
   if (Array.isArray(evento.equipe)) {
     totalEquipe = evento.equipe.reduce((soma, item) => {
@@ -46,7 +46,7 @@ get(refEvento).then(snapshot => {
     }, 0);
   }
 
-  // ----- Mostrar na tela
+  // Mostrar na tela
   const custosDiv = document.getElementById("custosEvento");
   custosDiv.innerHTML = `
     <p><strong>Total Logística:</strong> R$ ${totalLogistica.toFixed(2)}</p>
