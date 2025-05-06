@@ -21,13 +21,115 @@
       <p><strong>Valor de Equipe:</strong> <span id="valorEquipe">R$ 0,00</span></p>
     </div>
 
-    <!-- Restante do seu código HTML permanece igual -->
-    <!-- ... -->
+    <h3>Itens:</h3>
+    
+    <table id="itens-tabela">
+      <thead>
+        <tr>
+          <th class="col-nome">Nome</th>
+          <th class="col-quantidade">Quantidade</th>
+          <th class="col-editavel">Assado</th>
+          <th class="col-editavel">Congelado</th>
+          <th class="col-editavel">Perdido</th>
+          <th class="col-calculado">Valor de Vendas</th>
+          <th class="col-calculado">Valor de Perda</th>
+        </tr>
+      </thead>
+      <tbody id="itens-tbody">
+        <tr><td colspan="7">Carregando itens...</td></tr>
+      </tbody>
+    </table>
+
+    <div class="button-container">
+      <button id="salvarAlteracoesBtn">Salvar Alterações</button>
+      <button id="finalizarEventoBtn">Finalizar Evento e Salvar Alterações</button>
+    </div>
   </div>
 
   <script type="module">
-    // Configurações do Firebase e outras declarações permanecem iguais
-    // ...
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js";
+    import { getDatabase, ref, get, update } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-database.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyBN-bmzgrlzjmrKMmuClZ8LVll-vJyx-aE", 
+      authDomain: "controleestoquelepan.firebaseapp.com",
+      databaseURL: "https://controleestoquelepan-default-rtdb.firebaseio.com",
+      projectId: "controleestoquelepan",
+      storageBucket: "controleestoquelepan.appspot.com",
+      messagingSenderId: "779860276544",
+      appId: "1:779860276544:web:f45844571a8c0bab1576a5",
+    };
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+
+    const params = new URLSearchParams(window.location.search);
+    const eventId = params.get("id");
+    const refEvento = ref(db, `eventos/${eventId}`);
+    const itensBody = document.getElementById("itens-tbody");
+    const btnFinal = document.getElementById("finalizarEventoBtn");
+    const btnSalvar = document.getElementById("salvarAlteracoesBtn");
+    
+    const totalVendasEventoEl = document.getElementById("totalVendasEvento");
+    const totalPerdaEventoEl = document.getElementById("totalPerdaEvento");
+    const valorLogisticaEl = document.getElementById("valorLogistica");
+    const valorEquipeEl = document.getElementById("valorEquipe");
+
+    let currentItens = [];
+    let eventoAtual = {};
+    let produtosMap = {};
+
+    if (!eventId) {
+      alert("ID do Evento não fornecido na URL.");
+      window.location.href = "index.html"; 
+    }
+
+    function formatCurrency(value) {
+      return (value || 0).toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+    }
+
+    function parseCurrency(value) {
+      if (typeof value !== "string") return parseFloat(value) || 0;
+      return parseFloat(value.replace(/[^0-9,-]+/g,"").replace(",", ".")) || 0;
+    }
+
+    function atualizarTotaisGerais() {
+      let totalVendas = 0;
+      let totalPerdas = 0;
+
+      document.querySelectorAll("#itens-tabela tbody tr[data-item-index]").forEach(tr => {
+        const valorVendasTexto = tr.querySelector(".col-valor-vendas").textContent;
+        const valorPerdaTexto = tr.querySelector(".col-valor-perda").textContent;
+        totalVendas += parseCurrency(valorVendasTexto);
+        totalPerdas += parseCurrency(valorPerdaTexto);
+      });
+
+      totalVendasEventoEl.textContent = formatCurrency(totalVendas);
+      totalPerdaEventoEl.textContent = formatCurrency(totalPerdas);
+    }
+
+    function atualizarCalculosLinha(trElement) {
+      const itemIndex = parseInt(trElement.getAttribute("data-item-index"), 10);
+      if (isNaN(itemIndex) || itemIndex < 0 || itemIndex >= currentItens.length) return;
+
+      const item = currentItens[itemIndex];
+      const produtoInfo = produtosMap[item.nomeItem || item.nome] || { valorVenda: 0, custo: 0 };
+      const valorVendaProduto = parseFloat(produtoInfo.valorVenda) || 0;
+      const custoProduto = parseFloat(produtoInfo.custo) || 0;
+
+      const quantidadeEnviada = parseInt(item.quantidade || item.qtd || 0);
+      const assado = parseInt(trElement.querySelector("input[name='assado']").value, 10) || 0;
+      const congelado = parseInt(trElement.querySelector("input[name='congelado']").value, 10) || 0;
+      const perdido = parseInt(trElement.querySelector("input[name='perdido']").value, 10) || 0;
+
+      const quantidadeVendida = quantidadeEnviada - (assado + congelado + perdido);
+      const valorVendasCalc = quantidadeVendida * valorVendaProduto;
+      const valorPerdaCalc = perdido * custoProduto;
+
+      trElement.querySelector(".col-valor-vendas").textContent = formatCurrency(valorVendasCalc);
+      trElement.querySelector(".col-valor-perda").textContent = formatCurrency(valorPerdaCalc);
+      
+      atualizarTotaisGerais();
+    }
 
     async function carregarDados() {
       try {
@@ -45,21 +147,88 @@
         eventoAtual = snapshotEvento.val();
         currentItens = Array.isArray(eventoAtual.itens) ? eventoAtual.itens : [];
 
-        // CORREÇÃO: Tratamento adequado dos valores de logística e equipe
-        const logistica = typeof eventoAtual.logistica === 'object' ? 
-                         (eventoAtual.logistica.valor || eventoAtual.logistica.total || 0) : 
-                         (eventoAtual.logistica || 0);
+        // Preenche os valores de logística e equipe
+        const logistica = eventoAtual.logistica ? (eventoAtual.logistica.valor || eventoAtual.logistica) : 0;
+        const equipe = eventoAtual.equipe ? (eventoAtual.equipe.valor || eventoAtual.equipe) : 0;
         
-        const equipe = typeof eventoAtual.equipe === 'object' ? 
-                      (eventoAtual.equipe.valor || eventoAtual.equipe.total || 0) : 
-                      (eventoAtual.equipe || 0);
-
-        // Preenche os valores formatados
         valorLogisticaEl.textContent = formatCurrency(parseFloat(logistica));
         valorEquipeEl.textContent = formatCurrency(parseFloat(equipe));
 
-        // Restante da função permanece igual
-        // ...
+        produtosMap = {}; 
+        if (snapshotProdutos.exists()) {
+          const produtosData = snapshotProdutos.val();
+          Object.values(produtosData).forEach(produto => {
+            if (produto.nome) {
+              produtosMap[produto.nome] = {
+                valorVenda: parseFloat(produto.valorVenda) || 0,
+                custo: parseFloat(produto.custo) || 0
+              };
+            }
+          });
+        }
+
+        document.getElementById("eventoInfo").innerHTML = `
+          <p><strong>Nome:</strong> ${eventoAtual.nome || "—"}</p>
+          <p><strong>Data:</strong> ${eventoAtual.data || "—"}</p>
+          <p><strong>Responsável:</strong> ${eventoAtual.responsavel || "—"}</p>
+        `;
+
+        itensBody.innerHTML = "";
+
+        if (currentItens.length === 0) {
+          itensBody.innerHTML = `<tr><td colspan="7" data-label="Status">Nenhum item registrado para este evento.</td></tr>`;
+        } else {
+          currentItens.forEach((item, idx) => {
+            const tr = document.createElement("tr");
+            tr.setAttribute("data-item-index", idx);
+
+            const nomeExib = item.nomeItem || item.nome || "—";
+            const quantidadeExib = item.quantidade || item.qtd || "—";
+            
+            const produtoInfo = produtosMap[nomeExib] || { valorVenda: 0, custo: 0 };
+            const valorVendaProduto = produtoInfo.valorVenda;
+            const custoProduto = produtoInfo.custo;
+
+            const quantidadeEnviadaNum = parseInt(quantidadeExib, 10) || 0;
+            const assadoNum = parseInt(item.assado, 10) || 0;
+            const congeladoNum = parseInt(item.congelado, 10) || 0;
+            const perdidoNum = parseInt(item.perdido, 10) || 0;
+
+            let valorVendasCalc = (quantidadeEnviadaNum - (assadoNum + congeladoNum + perdidoNum)) * valorVendaProduto;
+            let valorPerdaCalc = perdidoNum * custoProduto;
+
+            if (eventoAtual.status === "finalizado") {
+                valorVendasCalc = item.valorVendasCalculado !== undefined ? item.valorVendasCalculado : valorVendasCalc;
+                valorPerdaCalc = item.valorPerdaCalculado !== undefined ? item.valorPerdaCalculado : valorPerdaCalc;
+            }
+
+            tr.innerHTML = `
+              <td class="col-nome" data-label="Nome">${nomeExib}</td>
+              <td class="col-quantidade" data-label="Quantidade">${quantidadeExib}</td>
+              <td class="col-editavel" data-label="Assado"><input type="number" name="assado" value="${assadoNum}" min="0"></td>
+              <td class="col-editavel" data-label="Congelado"><input type="number" name="congelado" value="${congeladoNum}" min="0"></td>
+              <td class="col-editavel" data-label="Perdido"><input type="number" name="perdido" value="${perdidoNum}" min="0"></td>
+              <td class="col-calculado col-valor-vendas" data-label="Valor de Vendas">${formatCurrency(valorVendasCalc)}</td>
+              <td class="col-calculado col-valor-perda" data-label="Valor de Perda">${formatCurrency(valorPerdaCalc)}</td>
+            `;
+            itensBody.appendChild(tr);
+
+            if (eventoAtual.status !== "finalizado") {
+              tr.querySelectorAll("input[name='assado'], input[name='congelado'], input[name='perdido']").forEach(input => {
+                input.addEventListener("input", () => atualizarCalculosLinha(tr));
+              });
+            }
+          });
+        }
+        
+        atualizarTotaisGerais();
+
+        if (eventoAtual.status === "finalizado") {
+          btnFinal.textContent = "Evento Finalizado";
+          btnFinal.disabled = true;
+          btnSalvar.disabled = true;
+          itensBody.querySelectorAll("input").forEach(i => i.disabled = true);
+        }
       } catch (err) {
         console.error("Erro ao buscar dados do evento e/ou produtos:", err);
         itensBody.innerHTML = `<tr><td colspan="7" data-label="Erro">Erro ao carregar itens. Verifique o console.</td></tr>`;
@@ -67,8 +236,33 @@
       }
     }
 
-    // Restante do seu código JavaScript permanece igual
-    // ...
+    function coletarItensAtualizados(incluirValoresCalculados = false) {
+      const novosItens = [];
+      document.querySelectorAll("#itens-tabela tbody tr[data-item-index]").forEach(tr => {
+        const idx = parseInt(tr.getAttribute("data-item-index"), 10);
+        if (isNaN(idx) || idx < 0 || idx >= currentItens.length) return; 
+        const itemOriginal = currentItens[idx];
+
+        const inputAssado = tr.querySelector("input[name='assado']");
+        const inputCongelado = tr.querySelector("input[name='congelado']");
+        const inputPerdido = tr.querySelector("input[name='perdido']");
+
+        const assado = inputAssado ? (parseInt(inputAssado.value, 10) || 0) : 0;
+        const congelado = inputCongelado ? (parseInt(inputCongelado.value, 10) || 0) : 0;
+        const perdido = inputPerdido ? (parseInt(inputPerdido.value, 10) || 0) : 0;
+
+        const itemAtualizado = { ...itemOriginal, assado, congelado, perdido };
+
+        if (incluirValoresCalculados) {
+          const valorVendasTexto = tr.querySelector(".col-valor-vendas").textContent;
+          const valorPerdaTexto = tr.querySelector(".col-valor-perda").textContent;
+          itemAtualizado.valorVendasCalculado = parseCurrency(valorVendasTexto);
+          itemAtualizado.valorPerdaCalculado = parseCurrency(valorPerdaTexto);
+        }
+        novosItens.push(itemAtualizado);
+      });
+      return novosItens;
+    }
 
     btnFinal.addEventListener("click", async () => {
       if (btnFinal.disabled) return; 
@@ -80,8 +274,6 @@
       const itensAtualizados = coletarItensAtualizados(true);
       const totalVendasFinal = parseCurrency(totalVendasEventoEl.textContent);
       const totalPerdaFinal = parseCurrency(totalPerdaEventoEl.textContent);
-      
-      // CORREÇÃO: Obter os valores corretamente dos campos
       const valorLogistica = parseCurrency(valorLogisticaEl.textContent);
       const valorEquipe = parseCurrency(valorEquipeEl.textContent);
 
@@ -94,9 +286,15 @@
           logistica: valorLogistica,
           equipe: valorEquipe
         });
-        
-        // Restante do código do evento de clique permanece igual
-        // ...
+        alert("Evento finalizado e alterações salvas!");
+        btnFinal.textContent = "Evento Finalizado";
+        itensBody.querySelectorAll("input").forEach(i => i.disabled = true);
+        eventoAtual.status = "finalizado";
+        eventoAtual.totalVendasEvento = totalVendasFinal;
+        eventoAtual.totalPerdaEvento = totalPerdaFinal;
+        eventoAtual.logistica = valorLogistica;
+        eventoAtual.equipe = valorEquipe;
+        currentItens = itensAtualizados; 
       } catch (err) {
         console.error("Erro ao finalizar evento:", err);
         alert("Falha ao finalizar o evento. Verifique o console para mais detalhes.");
@@ -108,8 +306,30 @@
       }
     });
 
-    // Restante do seu código JavaScript permanece igual
-    // ...
+    btnSalvar.addEventListener("click", async () => {
+      if (btnSalvar.disabled) return; 
+      
+      btnSalvar.disabled = true;
+      btnSalvar.textContent = "Salvando...";
+
+      const itensAtualizados = coletarItensAtualizados(false);
+      try {
+        await update(refEvento, { itens: itensAtualizados });
+        alert("Alterações salvas com sucesso!");
+        currentItens = itensAtualizados; 
+        document.querySelectorAll("#itens-tabela tbody tr[data-item-index]").forEach(tr => {
+            atualizarCalculosLinha(tr);
+        });
+      } catch (err) {
+        console.error("Erro ao salvar alterações:", err);
+        alert("Falha ao salvar as alterações. Verifique o console para mais detalhes.");
+      } finally {
+        if (eventoAtual.status !== "finalizado") {
+            btnSalvar.disabled = false;
+            btnSalvar.textContent = "Salvar Alterações";
+        }
+      }
+    });
 
     carregarDados();
   </script>
