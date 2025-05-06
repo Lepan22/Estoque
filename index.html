@@ -48,6 +48,7 @@
           .sort((a, b) => new Date(b.data) - new Date(a.data))
           .forEach(({ id, nome, data, responsavel, status }) => {
             const tr = document.createElement("tr");
+            // Adicionado o novo botão/link para "Analisar Evento"
             tr.innerHTML = `
               <td data-label="Nome">${nome   || "–"}</td>
               <td data-label="Data">${data   || "–"}</td>
@@ -55,6 +56,7 @@
               <td data-label="Status">${status || "aberto"}</td>
               <td data-label="Ações">
                 <a href="form.html?id=${id}" class="botao">Ver Detalhes</a>
+                <a href="analise_evento.html?id=${id}" class="botao analisar">📊 Analisar Evento</a> <!-- Novo Botão -->
                 <a href="assets/criar-evento.html?id=${id}" class="botao editar">✏️ Editar</a>
                 <button class="botao duplicar" data-id="${id}">📄 Duplicar</button>
               </td>
@@ -68,13 +70,13 @@
             if (!id) return;
 
             try {
-              const snapshot = await get(ref(db, `eventos/${id}`));
-              if (!snapshot.exists()) {
+              const snapshotBotao = await get(ref(db, `eventos/${id}`)); // Renomeada a variável snapshot para evitar conflito
+              if (!snapshotBotao.exists()) {
                 alert("Evento não encontrado.");
                 return;
               }
 
-              const dados = snapshot.val();
+              const dados = snapshotBotao.val();
               const novoRef = push(ref(db, "eventos"));
               await set(novoRef, {
                 ...dados,
@@ -83,7 +85,7 @@
               });
 
               alert("Evento duplicado com sucesso!");
-              carregarEventos();
+              // carregarEventos(); // A atualização já é feita pelo onValue
             } catch (error) {
               console.error("Erro ao duplicar:", error);
               alert("Erro ao duplicar o evento.");
