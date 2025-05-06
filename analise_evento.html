@@ -17,8 +17,7 @@
     <div id="totaisEvento" style="margin-bottom: 20px; padding: 10px; border: 1px solid #ccc; border-radius: 5px;">
       <p><strong>Total de Vendas do Evento:</strong> <span id="totalVendasEvento">R$ 0,00</span></p>
       <p><strong>Total de Perda do Evento:</strong> <span id="totalPerdaEvento">R$ 0,00</span></p>
-      <p><strong>Total de Logística:</strong> <span id="totalLogistica">R$ 0,00</span></p>
-      <p><strong>Total de Equipe:</strong> <span id="totalEquipe">R$ 0,00</span></p>
+     
     </div>
 
     <h3>Itens:</h3>
@@ -91,22 +90,6 @@
     function parseCurrency(value) {
       if (typeof value !== "string") return parseFloat(value) || 0;
       return parseFloat(value.replace(/[^0-9,-]+/g,"").replace(",", ".")) || 0;
-    }
-
-    // Função para calcular os totais de logística e equipe
-    function calcularTotaisAdicionais(itens) {
-      let logisticaTotal = 0;
-      let equipeTotal = 0;
-
-      itens.forEach(item => {
-        logisticaTotal += parseFloat(item.logistica || 0);
-        equipeTotal += parseFloat(item.equipe || 0);
-      });
-
-      return {
-        logistica: logisticaTotal,
-        equipe: equipeTotal
-      };
     }
 
     function atualizarTotaisGerais() {
