@@ -17,6 +17,8 @@
     <div id="totaisEvento" style="margin-bottom: 20px; padding: 10px; border: 1px solid #ccc; border-radius: 5px;">
       <p><strong>Total de Vendas do Evento:</strong> <span id="totalVendasEvento">R$ 0,00</span></p>
       <p><strong>Total de Perda do Evento:</strong> <span id="totalPerdaEvento">R$ 0,00</span></p>
+      <p><strong>Valor de Logística:</strong> <span id="valorLogistica">R$ 0,00</span></p>
+      <p><strong>Valor de Equipe:</strong> <span id="valorEquipe">R$ 0,00</span></p>
     </div>
 
     <h3>Itens:</h3>
@@ -70,6 +72,8 @@
     // Elementos para os totais do evento
     const totalVendasEventoEl = document.getElementById("totalVendasEvento");
     const totalPerdaEventoEl = document.getElementById("totalPerdaEvento");
+    const valorLogisticaEl = document.getElementById("valorLogistica");
+    const valorEquipeEl = document.getElementById("valorEquipe");
 
     let currentItens = [];
     let eventoAtual = {};
@@ -125,7 +129,7 @@
       trElement.querySelector(".col-valor-vendas").textContent = formatCurrency(valorVendasCalc);
       trElement.querySelector(".col-valor-perda").textContent = formatCurrency(valorPerdaCalc);
       
-      atualizarTotaisGerais(); // Atualiza os totais gerais após recalcular a linha
+      atualizarTotaisGerais();
     }
 
     async function carregarDados() {
@@ -143,6 +147,10 @@
 
         eventoAtual = snapshotEvento.val();
         currentItens = Array.isArray(eventoAtual.itens) ? eventoAtual.itens : [];
+
+        // Preenche os valores de logística e equipe
+        valorLogisticaEl.textContent = formatCurrency(eventoAtual.logistica || 0);
+        valorEquipeEl.textContent = formatCurrency(eventoAtual.equipe || 0);
 
         produtosMap = {}; 
         if (snapshotProdutos.exists()) {
@@ -211,7 +219,7 @@
           });
         }
         
-        atualizarTotaisGerais(); // Atualiza os totais gerais após carregar todos os itens
+        atualizarTotaisGerais();
 
         if (eventoAtual.status === "finalizado") {
           btnFinal.textContent = "Evento Finalizado";
@@ -222,7 +230,7 @@
       } catch (err) {
         console.error("Erro ao buscar dados do evento e/ou produtos:", err);
         itensBody.innerHTML = `<tr><td colspan="7" data-label="Erro">Erro ao carregar itens. Verifique o console.</td></tr>`;
-        atualizarTotaisGerais(); // Garante que os totais sejam zerados em caso de erro
+        atualizarTotaisGerais();
       }
     }
 
@@ -262,23 +270,28 @@
       btnSalvar.disabled = true;
 
       const itensAtualizados = coletarItensAtualizados(true);
-      // Salvar os totais no objeto do evento principal
       const totalVendasFinal = parseCurrency(totalVendasEventoEl.textContent);
       const totalPerdaFinal = parseCurrency(totalPerdaEventoEl.textContent);
+      const valorLogistica = parseCurrency(valorLogisticaEl.textContent);
+      const valorEquipe = parseCurrency(valorEquipeEl.textContent);
 
       try {
         await update(refEvento, { 
           itens: itensAtualizados, 
           status: "finalizado",
-          totalVendasEvento: totalVendasFinal, // Salva o total de vendas do evento
-          totalPerdaEvento: totalPerdaFinal     // Salva o total de perda do evento
+          totalVendasEvento: totalVendasFinal,
+          totalPerdaEvento: totalPerdaFinal,
+          logistica: valorLogistica,
+          equipe: valorEquipe
         });
         alert("Evento finalizado e alterações salvas!");
         btnFinal.textContent = "Evento Finalizado";
         itensBody.querySelectorAll("input").forEach(i => i.disabled = true);
         eventoAtual.status = "finalizado";
-        eventoAtual.totalVendasEvento = totalVendasFinal; // Atualiza localmente
-        eventoAtual.totalPerdaEvento = totalPerdaFinal;   // Atualiza localmente
+        eventoAtual.totalVendasEvento = totalVendasFinal;
+        eventoAtual.totalPerdaEvento = totalPerdaFinal;
+        eventoAtual.logistica = valorLogistica;
+        eventoAtual.equipe = valorEquipe;
         currentItens = itensAtualizados; 
       } catch (err) {
         console.error("Erro ao finalizar evento:", err);
@@ -302,9 +315,8 @@
         await update(refEvento, { itens: itensAtualizados });
         alert("Alterações salvas com sucesso!");
         currentItens = itensAtualizados; 
-        // Recalcula as linhas e os totais gerais após salvar
         document.querySelectorAll("#itens-tabela tbody tr[data-item-index]").forEach(tr => {
-            atualizarCalculosLinha(tr); // Isso já chama atualizarTotaisGerais()
+            atualizarCalculosLinha(tr);
         });
       } catch (err) {
         console.error("Erro ao salvar alterações:", err);
@@ -321,4 +333,3 @@
   </script>
 </body>
 </html>
-
