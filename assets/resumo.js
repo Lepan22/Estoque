@@ -17,28 +17,43 @@ const db = getDatabase(app);
 const id = new URLSearchParams(window.location.search).get("id");
 
 if (!id) {
-  document.getElementById("totaisEvento").innerHTML = "<p>ID do evento não fornecido.</p>";
-  throw new Error("ID do evento não encontrado na URL.");
+  alert("Evento não encontrado.");
+  window.location.href = "index.html";
 }
 
 const refEvento = ref(db, `eventos/${id}`);
 
 get(refEvento).then(snapshot => {
   if (!snapshot.exists()) {
-    document.getElementById("totaisEvento").innerHTML = "<p>Evento não encontrado.</p>";
-    return;
+    throw new Error("Evento não encontrado.");
   }
 
   const evento = snapshot.val();
-  const logistica = evento.logistica || 0;
-  const equipe = evento.equipe || 0;
 
-  document.getElementById("totaisEvento").innerHTML = `
-    <h2>Totais do Evento</h2>
-    <p><strong>Logística:</strong> R$ ${logistica.toFixed(2)}</p>
-    <p><strong>Equipe:</strong> R$ ${equipe.toFixed(2)}</p>
+  // ----- Calcular total de Logística
+  let totalLogistica = 0;
+  if (Array.isArray(evento.logistica)) {
+    totalLogistica = evento.logistica.reduce((soma, item) => {
+      return soma + parseFloat(item.valor || 0);
+    }, 0);
+  }
+
+  // ----- Calcular total de Equipe
+  let totalEquipe = 0;
+  if (Array.isArray(evento.equipe)) {
+    totalEquipe = evento.equipe.reduce((soma, item) => {
+      return soma + parseFloat(item.valor || 0);
+    }, 0);
+  }
+
+  // ----- Mostrar na tela
+  const custosDiv = document.getElementById("custosEvento");
+  custosDiv.innerHTML = `
+    <p><strong>Total Logística:</strong> R$ ${totalLogistica.toFixed(2)}</p>
+    <p><strong>Total Equipe:</strong> R$ ${totalEquipe.toFixed(2)}</p>
   `;
+
 }).catch(error => {
-  console.error("Erro ao buscar evento:", error);
-  document.getElementById("totaisEvento").innerHTML = "<p>Erro ao carregar os dados.</p>";
+  const custosDiv = document.getElementById("custosEvento");
+  custosDiv.innerHTML = `<p style="color:red;">Erro ao carregar os dados: ${error.message}</p>`;
 });
