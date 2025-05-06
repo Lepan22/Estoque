@@ -6,19 +6,36 @@
   <title>Análise do Evento</title>
   <link rel="stylesheet" href="assets/style.css">
   <link rel="stylesheet" href="assets/form-responsive.css">
+  <style>
+    #totaisResumo {
+      margin: 20px 0;
+      padding: 15px;
+      background-color: #f9f9f9;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+    }
+
+    #totaisResumo p {
+      margin: 5px 0;
+      font-weight: bold;
+      font-size: 1.1em;
+    }
+  </style>
 </head>
 <body>
   <div class="container">
     <h1>Análise do Evento</h1>
+
     <div id="eventoResumo">
-      <p><strong>Nome:</strong> <span id="nomeEvento">...</span></p>
-      <p><strong>Data:</strong> <span id="dataEvento">...</span></p>
-      <p><strong>Responsável:</strong> <span id="responsavelEvento">...</span></p>
+      <p><strong>Nome:</strong> <span id="nomeEvento">Carregando...</span></p>
+      <p><strong>Data:</strong> <span id="dataEvento">Carregando...</span></p>
+      <p><strong>Responsável:</strong> <span id="responsavelEvento">Carregando...</span></p>
     </div>
 
-    <div id="totaisEvento" style="margin: 20px 0; padding: 10px; border: 1px solid #ccc; border-radius: 5px;">
-      <p><strong>Total de Vendas do Evento:</strong> <span id="totalVendasEvento">R$ 0,00</span></p>
-      <p><strong>Total de Perda do Evento:</strong> <span id="totalPerdaEvento">R$ 0,00</span></p>
+    <!-- CAMPOS NOVOS DE TOTAIS -->
+    <div id="totaisResumo">
+      <p>Total de Vendas do Evento: <span id="totalVendasEvento">R$ 0,00</span></p>
+      <p>Total de Perda do Evento: <span id="totalPerdaEvento">R$ 0,00</span></p>
     </div>
 
     <table id="resumoTabela">
@@ -63,26 +80,22 @@
     const nomeEventoEl = document.getElementById("nomeEvento");
     const dataEventoEl = document.getElementById("dataEvento");
     const responsavelEventoEl = document.getElementById("responsavelEvento");
-    const totalVendasEventoEl = document.getElementById("totalVendasEvento");
-    const totalPerdaEventoEl = document.getElementById("totalPerdaEvento");
+
+    const totalVendasEl = document.getElementById("totalVendasEvento");
+    const totalPerdaEl = document.getElementById("totalPerdaEvento");
 
     const resumoTabelaBody = document.querySelector("#resumoTabela tbody");
 
-    function formatCurrency(value) {
-      return (value || 0).toLocaleString("pt-BR", {
+    function formatCurrency(valor) {
+      return (valor || 0).toLocaleString("pt-BR", {
         style: "currency",
         currency: "BRL"
       });
     }
 
-    function parseCurrency(value) {
-      if (typeof value !== "string") return parseFloat(value) || 0;
-      return parseFloat(value.replace(/[^0-9,-]+/g,"").replace(",", ".")) || 0;
-    }
-
-    async function carregarResumo() {
+    async function carregarDados() {
       if (!eventId) {
-        alert("Evento não especificado.");
+        alert("ID do evento não encontrado na URL.");
         return;
       }
 
@@ -90,80 +103,71 @@
       const produtosRef = ref(db, "produtos");
 
       try {
-        const [snapshotEvento, snapshotProdutos] = await Promise.all([
+        const [eventoSnap, produtosSnap] = await Promise.all([
           get(eventoRef),
           get(produtosRef)
         ]);
 
-        if (!snapshotEvento.exists()) {
+        if (!eventoSnap.exists()) {
           alert("Evento não encontrado.");
           return;
         }
 
-        const evento = snapshotEvento.val();
+        const evento = eventoSnap.val();
+        const produtos = produtosSnap.exists() ? produtosSnap.val() : {};
         const itens = evento.itens || [];
 
         nomeEventoEl.textContent = evento.nome || "—";
         dataEventoEl.textContent = evento.data || "—";
         responsavelEventoEl.textContent = evento.responsavel || "—";
 
-        const produtos = snapshotProdutos.exists() ? snapshotProdutos.val() : {};
-
         resumoTabelaBody.innerHTML = "";
 
         let totalVendas = 0;
-        let totalPerdas = 0;
+        let totalPerda = 0;
 
         itens.forEach(item => {
-          const nome = item.nomeItem || item.nome || "—";
+          const nome = item.nome || item.nomeItem || "—";
           const qtd = parseInt(item.quantidade || item.qtd || 0);
           const assado = parseInt(item.assado || 0);
           const congelado = parseInt(item.congelado || 0);
           const perdido = parseInt(item.perdido || 0);
           const vendidos = qtd - (assado + congelado + perdido);
 
-          const prod = produtos[nome] || {};
-          const valorVenda = parseFloat(prod.valorVenda || 0);
-          const custo = parseFloat(prod.custo || 0);
+          const dadosProduto = produtos[nome] || {};
+          const valorVenda = parseFloat(dadosProduto.valorVenda || 0);
+          const custo = parseFloat(dadosProduto.custo || 0);
 
-          let valorVendas = vendidos * valorVenda;
-          let valorPerda = perdido * custo;
+          const valorVendaItem = vendidos * valorVenda;
+          const valorPerdaItem = perdido * custo;
 
-          // Usa os valores salvos, se existirem
-          if (item.valorVendasCalculado !== undefined) {
-            valorVendas = item.valorVendasCalculado;
-          }
-          if (item.valorPerdaCalculado !== undefined) {
-            valorPerda = item.valorPerdaCalculado;
-          }
+          totalVendas += valorVendaItem;
+          totalPerda += valorPerdaItem;
 
-          totalVendas += valorVendas;
-          totalPerdas += valorPerda;
-
-          const row = document.createElement("tr");
-          row.innerHTML = `
+          const linha = document.createElement("tr");
+          linha.innerHTML = `
             <td>${nome}</td>
             <td>${qtd}</td>
             <td>${assado}</td>
             <td>${congelado}</td>
             <td>${perdido}</td>
             <td>${vendidos}</td>
-            <td>${formatCurrency(valorVendas)}</td>
-            <td>${formatCurrency(valorPerda)}</td>
+            <td>${formatCurrency(valorVendaItem)}</td>
+            <td>${formatCurrency(valorPerdaItem)}</td>
           `;
-          resumoTabelaBody.appendChild(row);
+          resumoTabelaBody.appendChild(linha);
         });
 
-        totalVendasEventoEl.textContent = formatCurrency(totalVendas);
-        totalPerdaEventoEl.textContent = formatCurrency(totalPerdas);
+        totalVendasEl.textContent = formatCurrency(totalVendas);
+        totalPerdaEl.textContent = formatCurrency(totalPerda);
 
-      } catch (error) {
-        console.error("Erro ao carregar dados:", error);
+      } catch (erro) {
+        console.error("Erro ao carregar dados:", erro);
         resumoTabelaBody.innerHTML = "<tr><td colspan='8'>Erro ao carregar os dados.</td></tr>";
       }
     }
 
-    carregarResumo();
+    carregarDados();
   </script>
 </body>
 </html>
