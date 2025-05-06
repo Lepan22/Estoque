@@ -5,9 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Painel do Gerente</title>
   <link rel="stylesheet" href="assets/style.css">
-  <!-- Adiciona a biblioteca SheetJS (xlsx.full.min.js) via CDN -->
-  <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
-
   <script type="module">
     import { initializeApp }     from "https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js";
     import {
@@ -20,7 +17,6 @@
     } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-database.js";
 
     const firebaseConfig = {
-      // ATENÇÃO: Sua chave de API está exposta aqui. Considere usar regras de segurança do Firebase ou autenticação para proteger seus dados.
       apiKey: "AIzaSyBN-bmzgrlzjmrKMmuClZ8LVll-vJyx-aE",
       authDomain: "controleestoquelepan.firebaseapp.com",
       databaseURL: "https://controleestoquelepan-default-rtdb.firebaseio.com",
@@ -35,90 +31,10 @@
     const tabelaBody = document.getElementById("eventos-tbody");
     const loadingRow = document.getElementById("loading-row");
 
-    // Função para formatar data (opcional, para nome do arquivo)
-    function formatarDataParaNomeArquivo(dataString) {
-        if (!dataString) return 'sem_data';
-        try {
-            const data = new Date(dataString);
-            const ano = data.getFullYear();
-            const mes = String(data.getMonth() + 1).padStart(2, '0');
-            const dia = String(data.getDate()).padStart(2, '0');
-            return `${ano}-${mes}-${dia}`;
-        } catch (e) {
-            return dataString.replace(/\//g, '-'); // Fallback simples
-        }
-    }
-
-    // Função para exportar dados do evento para Excel
-    async function exportarEventoParaExcel(eventId, botao) {
-        botao.disabled = true;
-        botao.textContent = "Exportando...";
-
-        try {
-            const eventoRef = ref(db, `eventos/${eventId}`);
-            const snapshot = await get(eventoRef);
-
-            if (!snapshot.exists()) {
-                alert("Evento não encontrado para exportação.");
-                botao.disabled = false;
-                botao.textContent = "📊 Exportar";
-                return;
-            }
-
-            const evento = snapshot.val();
-            const itens = Array.isArray(evento.itens) ? evento.itens : [];
-
-            // --- Preparar dados para as planilhas ---
-
-            // Planilha 1: Detalhes do Evento
-            const detalhesEvento = [
-                { Campo: "Nome", Valor: evento.nome || "-" },
-                { Campo: "Data", Valor: evento.data || "-" },
-                { Campo: "Responsável", Valor: evento.responsavel || "-" },
-                { Campo: "Status", Valor: evento.status || "aberto" },
-            ];
-            const wsDetalhes = XLSX.utils.json_to_sheet(detalhesEvento, { skipHeader: true });
-            // Ajustar largura das colunas (opcional)
-            wsDetalhes['!cols'] = [{ wch: 15 }, { wch: 40 }];
-
-            // Planilha 2: Itens do Evento
-            const dadosItens = itens.map(item => ({
-                "Nome Item": item.nomeItem ?? item.nome ?? "-",
-                "Quantidade": item.quantidade ?? item.qtd ?? 0,
-                "Assado": item.assado ?? 0,
-                "Congelado": item.congelado ?? 0,
-                "Perdido": item.perdido ?? 0
-            }));
-            const wsItens = XLSX.utils.json_to_sheet(dadosItens);
-            // Ajustar largura das colunas (opcional)
-            wsItens['!cols'] = [{ wch: 30 }, { wch: 10 }, { wch: 10 }, { wch: 10 }, { wch: 10 }];
-
-            // --- Criar e baixar o arquivo .xlsx ---
-            const wb = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(wb, wsDetalhes, "Detalhes Evento");
-            XLSX.utils.book_append_sheet(wb, wsItens, "Itens");
-
-            // Definir nome do arquivo
-            const nomeArquivo = `Evento_${(evento.nome || 'sem_nome').replace(/[^a-zA-Z0-9]/g, '_')}_${formatarDataParaNomeArquivo(evento.data)}.xlsx`;
-
-            XLSX.writeFile(wb, nomeArquivo);
-
-            // Restaurar botão
-            botao.disabled = false;
-            botao.textContent = "📊 Exportar";
-
-        } catch (error) {
-            console.error("Erro ao exportar evento:", error);
-            alert("Ocorreu um erro ao exportar os dados. Verifique o console.");
-            botao.disabled = false;
-            botao.textContent = "📊 Exportar";
-        }
-    }
-
     function carregarEventos() {
       const eventosRef = ref(db, "eventos");
       onValue(eventosRef, snapshot => {
-        tabelaBody.innerHTML = ""; // Limpa a tabela antes de adicionar novas linhas
+        tabelaBody.innerHTML = "";
         loadingRow.style.display = "none";
 
         if (!snapshot.exists()) {
@@ -127,98 +43,69 @@
         }
 
         const evs = snapshot.val();
-        const eventosArray = Object.entries(evs)
+        Object.entries(evs)
           .map(([id, ev]) => ({ id, ...ev }))
-          .sort((a, b) => {
-              // Ordena por data, tratando datas inválidas
-              const dataA = a.data ? new Date(a.data) : new Date(0);
-              const dataB = b.data ? new Date(b.data) : new Date(0);
-              if (isNaN(dataA)) return 1; // Joga datas inválidas para o final
-              if (isNaN(dataB)) return -1;
-              return dataB - dataA; // Mais recentes primeiro
-          });
-
-        eventosArray.forEach(({ id, nome, data, responsavel, status }) => {
+          .sort((a, b) => new Date(b.data) - new Date(a.data))
+          .forEach(({ id, nome, data, responsavel, status }) => {
             const tr = document.createElement("tr");
             tr.innerHTML = `
               <td data-label="Nome">${nome   || "–"}</td>
               <td data-label="Data">${data   || "–"}</td>
               <td data-label="Responsável">${responsavel || "–"}</td>
               <td data-label="Status">${status || "aberto"}</td>
-              <td data-label="Ações" class="actions-cell"> <!-- Adicionada classe para facilitar seleção -->
+              <td data-label="Ações">
                 <a href="form.html?id=${id}" class="botao">Ver Detalhes</a>
                 <a href="assets/criar-evento.html?id=${id}" class="botao editar">✏️ Editar</a>
+                <a href="resumo.html?id=${id}" class="botao resumo">📊 Ver Resumo</a>
                 <button class="botao duplicar" data-id="${id}">📄 Duplicar</button>
-                <button class="botao exportar" data-id="${id}">📊 Exportar</button> <!-- Botão Exportar adicionado -->
               </td>
             `;
             tabelaBody.appendChild(tr);
           });
 
-        // Adiciona event listeners usando delegação para performance
-        tabelaBody.addEventListener('click', async (event) => {
-            const target = event.target;
+        document.querySelectorAll(".duplicar").forEach(botao => {
+          botao.addEventListener("click", async e => {
+            const id = e.target.dataset.id;
+            if (!id) return;
 
-            // Listener para Duplicar
-            if (target.classList.contains('duplicar')) {
-                const id = target.dataset.id;
-                if (!id) return;
-                target.disabled = true; // Desabilita botão durante o processo
-                target.textContent = "Duplicando...";
+            try {
+              const snapshot = await get(ref(db, `eventos/${id}`));
+              if (!snapshot.exists()) {
+                alert("Evento não encontrado.");
+                return;
+              }
 
-                try {
-                    const snapshot = await get(ref(db, `eventos/${id}`));
-                    if (!snapshot.exists()) {
-                        alert("Evento não encontrado para duplicar.");
-                        target.disabled = false;
-                        target.textContent = "📄 Duplicar";
-                        return;
-                    }
+              const dados = snapshot.val();
+              const novoRef = push(ref(db, "eventos"));
+              await set(novoRef, {
+                ...dados,
+                status: "aberto",
+                nome: `${dados.nome} (cópia)`
+              });
 
-                    const dados = snapshot.val();
-                    const novoRef = push(ref(db, "eventos"));
-                    await set(novoRef, {
-                        ...dados,
-                        status: "aberto",
-                        nome: `${dados.nome || 'Evento'} (cópia)` // Garante que nome não seja undefined
-                    });
-
-                    alert("Evento duplicado com sucesso!");
-                    // Não precisa chamar carregarEventos() aqui, pois o onValue já faz isso
-                } catch (error) {
-                    console.error("Erro ao duplicar:", error);
-                    alert("Erro ao duplicar o evento.");
-                    target.disabled = false;
-                    target.textContent = "📄 Duplicar";
-                }
+              alert("Evento duplicado com sucesso!");
+              carregarEventos();
+            } catch (error) {
+              console.error("Erro ao duplicar:", error);
+              alert("Erro ao duplicar o evento.");
             }
-
-            // Listener para Exportar
-            if (target.classList.contains('exportar')) {
-                const id = target.dataset.id;
-                if (!id) return;
-                await exportarEventoParaExcel(id, target);
-            }
+          });
         });
-
       }, err => {
         console.error("Erro ao carregar eventos:", err);
         loadingRow.style.display = "none";
-        tabelaBody.innerHTML = '<tr><td colspan="5">Erro ao carregar eventos. Verifique o console.</td></tr>';
+        tabelaBody.innerHTML = '<tr><td colspan="5">Erro ao carregar eventos.</td></tr>';
       });
     }
 
-    // Carrega os eventos quando o DOM estiver pronto
     document.addEventListener("DOMContentLoaded", carregarEventos);
   </script>
 </head>
 <body>
   <div class="container">
     <h1>Painel do Gerente</h1>
-    <div class="button-group-top"> <!-- Agrupando botões superiores -->
-        <a href="assets/criar-evento.html" class="botao">➕ Criar Novo Evento</a>
-        <a href="assets/produtos.html"     class="botao-criar">📦 Cadastro de Produto</a>
-    </div>
+    <a href="assets/criar-evento.html" class="botao">➕ Criar Novo Evento</a>
+    <a href="assets/produtos.html"     class="botao-criar">📦 Cadastro de Produto</a>
 
     <table id="eventos-tabela">
       <thead>
@@ -234,7 +121,6 @@
         <tr id="loading-row">
           <td colspan="5">Carregando eventos...</td>
         </tr>
-        <!-- Linhas de eventos serão inseridas aqui pelo JavaScript -->
       </tbody>
     </table>
   </div>
