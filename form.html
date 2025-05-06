@@ -22,12 +22,13 @@
           <th class="col-editavel">Assado</th>
           <th class="col-editavel">Congelado</th>
           <th class="col-editavel">Perdido</th>
-          <th class="col-calculado">Valor de Vendas</th>
-          <th class="col-calculado">Valor de Perda</th>
+          <th class="col-calculado">Valor de Vendas</th> <!-- Novo Campo -->
+          <th class="col-calculado">Valor de Perda</th>   <!-- Novo Campo -->
         </tr>
       </thead>
       <tbody id="itens-tbody">
-        <tr><td colspan="7">Carregando itens...</td></tr>
+        <!-- Conteúdo será gerado pelo JavaScript -->
+        <tr><td colspan="7">Carregando itens...</td></tr> <!-- Colspan ajustado para 7 colunas -->
       </tbody>
     </table>
 
@@ -37,12 +38,10 @@
     </div>
   </div>
 
-  <!-- Firebase SDKs -->
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database.js"></script>
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js";
+    import { getDatabase, ref, get, update } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-database.js";
 
-  <script>
-    // Configuração do Firebase (não precisa de import, pois o SDK está global)
     const firebaseConfig = {
       apiKey: "AIzaSyBN-bmzgrlzjmrKMmuClZ8LVll-vJyx-aE", 
       authDomain: "controleestoquelepan.firebaseapp.com",
@@ -52,22 +51,18 @@
       messagingSenderId: "779860276544",
       appId: "1:779860276544:web:f45844571a8c0bab1576a5",
     };
-
-    // Inicializa o Firebase
-    const fbApp = firebase.initializeApp(firebaseConfig); // fbApp para não conflitar com 'app' do SDK
-    const db = firebase.getDatabase(fbApp);
-    // As funções do database (ref, get, update) são acessadas via firebase.ref, firebase.get, firebase.update
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
 
     const params = new URLSearchParams(window.location.search);
     const eventId = params.get("id");
-    // Usa firebase.ref para criar a referência
-    const refEvento = firebase.ref(db, `eventos/${eventId}`);
+    const refEvento = ref(db, `eventos/${eventId}`);
     const itensBody = document.getElementById("itens-tbody");
     const btnFinal = document.getElementById("finalizarEventoBtn");
     const btnSalvar = document.getElementById("salvarAlteracoesBtn");
     let currentItens = [];
     let eventoAtual = {};
-    let produtosMap = {};
+    let produtosMap = {}; // Para armazenar os dados dos produtos (nome: {valorVenda, custo})
 
     if (!eventId) {
       alert("ID do Evento não fornecido na URL.");
@@ -105,99 +100,100 @@
       trElement.querySelector('.col-valor-perda').textContent = formatCurrency(valorPerdaCalc);
     }
 
-    function carregarDados() {
-      // Usa firebase.get para buscar dados
-      const eventoPromise = firebase.get(refEvento);
-      const produtosPromise = firebase.get(firebase.ref(db, 'produtos'));
+    async function carregarDados() {
+      try {
+        const [snapshotEvento, snapshotProdutos] = await Promise.all([
+          get(refEvento),
+          get(ref(db, 'produtos'))
+        ]);
 
-      Promise.all([eventoPromise, produtosPromise])
-        .then(([snapshotEvento, snapshotProdutos]) => {
-          if (!snapshotEvento.exists()) {
-            alert("Evento não encontrado.");
-            window.location.href = "index.html";
-            return;
-          }
+        if (!snapshotEvento.exists()) {
+          alert("Evento não encontrado.");
+          window.location.href = "index.html";
+          return;
+        }
 
-          eventoAtual = snapshotEvento.val();
-          currentItens = Array.isArray(eventoAtual.itens) ? eventoAtual.itens : [];
+        eventoAtual = snapshotEvento.val();
+        currentItens = Array.isArray(eventoAtual.itens) ? eventoAtual.itens : [];
 
-          produtosMap = {}; 
-          if (snapshotProdutos.exists()) {
-            const produtosData = snapshotProdutos.val();
-            Object.values(produtosData).forEach(produto => {
-              if (produto.nome) {
-                produtosMap[produto.nome] = {
-                  valorVenda: parseFloat(produto.valorVenda) || 0,
-                  custo: parseFloat(produto.custo) || 0
-                };
-              }
-            });
-          }
+        produtosMap = {}; 
+        if (snapshotProdutos.exists()) {
+          const produtosData = snapshotProdutos.val();
+          Object.values(produtosData).forEach(produto => {
+            if (produto.nome) {
+              produtosMap[produto.nome] = {
+                valorVenda: parseFloat(produto.valorVenda) || 0,
+                custo: parseFloat(produto.custo) || 0
+              };
+            }
+          });
+        }
 
-          document.getElementById("eventoInfo").innerHTML = `
-            <p><strong>Nome:</strong> ${eventoAtual.nome || "—"}</p>
-            <p><strong>Data:</strong> ${eventoAtual.data || "—"}</p>
-            <p><strong>Responsável:</strong> ${eventoAtual.responsavel || "—"}</p>
-          `;
+        document.getElementById("eventoInfo").innerHTML = `
+          <p><strong>Nome:</strong> ${eventoAtual.nome || "—"}</p>
+          <p><strong>Data:</strong> ${eventoAtual.data || "—"}</p>
+          <p><strong>Responsável:</strong> ${eventoAtual.responsavel || "—"}</p>
+        `;
 
-          itensBody.innerHTML = "";
+        itensBody.innerHTML = "";
 
-          if (currentItens.length === 0) {
-            itensBody.innerHTML = `<tr><td colspan="7" data-label="Status">Nenhum item registrado para este evento.</td></tr>`;
-          } else {
-            currentItens.forEach((item, idx) => {
-              const tr = document.createElement("tr");
-              tr.setAttribute("data-item-index", idx);
+        if (currentItens.length === 0) {
+          itensBody.innerHTML = `<tr><td colspan="7" data-label="Status">Nenhum item registrado para este evento.</td></tr>`;
+        } else {
+          currentItens.forEach((item, idx) => {
+            const tr = document.createElement("tr");
+            tr.setAttribute("data-item-index", idx);
 
-              const nomeExib = item.nomeItem || item.nome || "—";
-              const quantidadeExib = item.quantidade || item.qtd || "—";
-              
-              const produtoInfo = produtosMap[nomeExib] || { valorVenda: 0, custo: 0 };
-              const valorVendaProduto = produtoInfo.valorVenda;
-              const custoProduto = produtoInfo.custo;
+            const nomeExib = item.nomeItem || item.nome || "—";
+            const quantidadeExib = item.quantidade || item.qtd || "—";
+            
+            const produtoInfo = produtosMap[nomeExib] || { valorVenda: 0, custo: 0 };
+            const valorVendaProduto = produtoInfo.valorVenda;
+            const custoProduto = produtoInfo.custo;
 
-              const quantidadeEnviadaNum = parseInt(quantidadeExib, 10) || 0;
-              const assadoNum = parseInt(item.assado, 10) || 0;
-              const congeladoNum = parseInt(item.congelado, 10) || 0;
-              const perdidoNum = parseInt(item.perdido, 10) || 0;
+            const quantidadeEnviadaNum = parseInt(quantidadeExib, 10) || 0;
+            const assadoNum = parseInt(item.assado, 10) || 0;
+            const congeladoNum = parseInt(item.congelado, 10) || 0;
+            const perdidoNum = parseInt(item.perdido, 10) || 0;
 
-              const quantidadeVendida = quantidadeEnviadaNum - (assadoNum + congeladoNum + perdidoNum);
-              const valorVendasCalc = quantidadeVendida * valorVendaProduto;
-              const valorPerdaCalc = perdidoNum * custoProduto;
+            let valorVendasCalc = (quantidadeEnviadaNum - (assadoNum + congeladoNum + perdidoNum)) * valorVendaProduto;
+            let valorPerdaCalc = perdidoNum * custoProduto;
 
-              const displayValorVendas = item.valorVendasCalculado !== undefined ? item.valorVendasCalculado : valorVendasCalc;
-              const displayValorPerda = item.valorPerdaCalculado !== undefined ? item.valorPerdaCalculado : valorPerdaCalc;
+            // Se o evento estiver finalizado e os valores estiverem salvos, use-os.
+            if (eventoAtual.status === "finalizado") {
+                valorVendasCalc = item.valorVendasCalculado !== undefined ? item.valorVendasCalculado : valorVendasCalc;
+                valorPerdaCalc = item.valorPerdaCalculado !== undefined ? item.valorPerdaCalculado : valorPerdaCalc;
+            }
 
-              tr.innerHTML = `
-                <td class="col-nome" data-label="Nome">${nomeExib}</td>
-                <td class="col-quantidade" data-label="Quantidade">${quantidadeExib}</td>
-                <td class="col-editavel" data-label="Assado"><input type="number" name="assado" value="${assadoNum}" min="0"></td>
-                <td class="col-editavel" data-label="Congelado"><input type="number" name="congelado" value="${congeladoNum}" min="0"></td>
-                <td class="col-editavel" data-label="Perdido"><input type="number" name="perdido" value="${perdidoNum}" min="0"></td>
-                <td class="col-calculado col-valor-vendas" data-label="Valor de Vendas">${formatCurrency(displayValorVendas)}</td>
-                <td class="col-calculado col-valor-perda" data-label="Valor de Perda">${formatCurrency(displayValorPerda)}</td>
-              `;
-              itensBody.appendChild(tr);
+            tr.innerHTML = `
+              <td class="col-nome" data-label="Nome">${nomeExib}</td>
+              <td class="col-quantidade" data-label="Quantidade">${quantidadeExib}</td>
+              <td class="col-editavel" data-label="Assado"><input type="number" name="assado" value="${assadoNum}" min="0"></td>
+              <td class="col-editavel" data-label="Congelado"><input type="number" name="congelado" value="${congeladoNum}" min="0"></td>
+              <td class="col-editavel" data-label="Perdido"><input type="number" name="perdido" value="${perdidoNum}" min="0"></td>
+              <td class="col-calculado col-valor-vendas" data-label="Valor de Vendas">${formatCurrency(valorVendasCalc)}</td>
+              <td class="col-calculado col-valor-perda" data-label="Valor de Perda">${formatCurrency(valorPerdaCalc)}</td>
+            `;
+            itensBody.appendChild(tr);
 
-              if (eventoAtual.status !== "finalizado") {
-                tr.querySelectorAll('input[name="assado"], input[name="congelado"], input[name="perdido"]').forEach(input => {
-                  input.addEventListener('input', () => atualizarCalculosLinha(tr));
-                });
-              }
-            });
-          }
+            if (eventoAtual.status !== "finalizado") {
+              tr.querySelectorAll('input[name="assado"], input[name="congelado"], input[name="perdido"]').forEach(input => {
+                input.addEventListener('input', () => atualizarCalculosLinha(tr));
+              });
+            }
+          });
+        }
 
-          if (eventoAtual.status === "finalizado") {
-            btnFinal.textContent = "Evento Finalizado";
-            btnFinal.disabled = true;
-            btnSalvar.disabled = true;
-            itensBody.querySelectorAll("input").forEach(i => i.disabled = true);
-          }
-        })
-        .catch(err => {
-          console.error("Erro ao buscar dados do evento e/ou produtos:", err);
-          itensBody.innerHTML = `<tr><td colspan="7" data-label="Erro">Erro ao carregar itens. Verifique o console.</td></tr>`;
-        });
+        if (eventoAtual.status === "finalizado") {
+          btnFinal.textContent = "Evento Finalizado";
+          btnFinal.disabled = true;
+          btnSalvar.disabled = true;
+          itensBody.querySelectorAll("input").forEach(i => i.disabled = true);
+        }
+      } catch (err) {
+        console.error("Erro ao buscar dados do evento e/ou produtos:", err);
+        itensBody.innerHTML = `<tr><td colspan="7" data-label="Erro">Erro ao carregar itens. Verifique o console.</td></tr>`;
+      }
     }
 
     function coletarItensAtualizados(incluirValoresCalculados = false) {
@@ -228,7 +224,7 @@
       return novosItens;
     }
 
-    btnFinal.addEventListener("click", () => {
+    btnFinal.addEventListener("click", async () => {
       if (btnFinal.disabled) return; 
       
       btnFinal.disabled = true;
@@ -236,59 +232,50 @@
       btnSalvar.disabled = true;
 
       const itensAtualizados = coletarItensAtualizados(true);
-      // Usa firebase.update para atualizar dados
-      firebase.update(refEvento, { itens: itensAtualizados, status: "finalizado" })
-        .then(() => {
-          alert("Evento finalizado e alterações salvas!");
-          btnFinal.textContent = "Evento Finalizado";
-          itensBody.querySelectorAll("input").forEach(i => i.disabled = true);
-          eventoAtual.status = "finalizado";
-          currentItens = itensAtualizados;
-        })
-        .catch(err => {
-          console.error("Erro ao finalizar evento:", err);
-          alert("Falha ao finalizar o evento. Verifique o console para mais detalhes.");
-          btnFinal.disabled = false;
-          btnFinal.textContent = "Finalizar Evento e Salvar Alterações";
-          if (eventoAtual.status !== "finalizado") {
-              btnSalvar.disabled = false;
-          }
-        });
+      try {
+        await update(refEvento, { itens: itensAtualizados, status: "finalizado" });
+        alert("Evento finalizado e alterações salvas!");
+        btnFinal.textContent = "Evento Finalizado";
+        itensBody.querySelectorAll("input").forEach(i => i.disabled = true);
+        eventoAtual.status = "finalizado";
+        currentItens = itensAtualizados; 
+      } catch (err) {
+        console.error("Erro ao finalizar evento:", err);
+        alert("Falha ao finalizar o evento. Verifique o console para mais detalhes.");
+        btnFinal.disabled = false;
+        btnFinal.textContent = "Finalizar Evento e Salvar Alterações";
+        if (eventoAtual.status !== "finalizado") {
+            btnSalvar.disabled = false;
+        }
+      }
     });
 
-    btnSalvar.addEventListener("click", () => {
+    btnSalvar.addEventListener("click", async () => {
       if (btnSalvar.disabled) return; 
       
       btnSalvar.disabled = true;
       btnSalvar.textContent = "Salvando...";
 
       const itensAtualizados = coletarItensAtualizados(false);
-      // Usa firebase.update para atualizar dados
-      firebase.update(refEvento, { itens: itensAtualizados })
-        .then(() => {
-          alert("Alterações salvas com sucesso!");
-          currentItens = itensAtualizados; 
-          document.querySelectorAll("#itens-tabela tbody tr[data-item-index]").forEach(tr => {
-             atualizarCalculosLinha(tr);
-          });
-        })
-        .catch(err => {
-          console.error("Erro ao salvar alterações:", err);
-          alert("Falha ao salvar as alterações. Verifique o console para mais detalhes.");
-        })
-        .finally(() => {
-           if (eventoAtual.status !== "finalizado") {
-             btnSalvar.disabled = false;
-             btnSalvar.textContent = "Salvar Alterações";
-           }
+      try {
+        await update(refEvento, { itens: itensAtualizados });
+        alert("Alterações salvas com sucesso!");
+        currentItens = itensAtualizados; 
+        document.querySelectorAll("#itens-tabela tbody tr[data-item-index]").forEach(tr => {
+            atualizarCalculosLinha(tr);
         });
+      } catch (err) {
+        console.error("Erro ao salvar alterações:", err);
+        alert("Falha ao salvar as alterações. Verifique o console para mais detalhes.");
+      } finally {
+        if (eventoAtual.status !== "finalizado") {
+            btnSalvar.disabled = false;
+            btnSalvar.textContent = "Salvar Alterações";
+        }
+      }
     });
 
-    // Garante que o DOM está carregado antes de executar o script
-    document.addEventListener('DOMContentLoaded', (event) => {
-        carregarDados();
-    });
-
+    carregarDados();
   </script>
 </body>
 </html>
