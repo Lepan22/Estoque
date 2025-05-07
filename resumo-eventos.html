@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Resumo dos Eventos</title>
+  <link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+  <div class="container">
+    <h2>Resumo dos Eventos Finalizados</h2>
+    <table border="1" cellpadding="6" cellspacing="0">
+      <thead>
+        <tr>
+          <th>Nome do Evento</th>
+          <th>Data</th>
+          <th>Responsável</th>
+          <th>Venda PDV (R$)</th>
+          <th>Venda Total (R$)</th>
+          <th>Perda (R$)</th>
+          <th>Custo Equipe (R$)</th>
+          <th>Custo Logística (R$)</th>
+        </tr>
+      </thead>
+      <tbody id="tabela-eventos">
+        <tr><td colspan="8">Carregando...</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js";
+    import { getDatabase, ref, get, child } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-database.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyBN-bmzgrlzjmrKMmuClZ8LVll-vJyx-aE",
+      authDomain: "controleestoquelepan.firebaseapp.com",
+      databaseURL: "https://controleestoquelepan-default-rtdb.firebaseio.com",
+      projectId: "controleestoquelepan",
+      storageBucket: "controleestoquelepan.appspot.com",
+      messagingSenderId: "779860276544",
+      appId: "1:779860276544:web:f45844571a8c0bab1576a5"
+    };
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+    const tbody = document.getElementById("tabela-eventos");
+
+    function parseValor(valor) {
+      return parseFloat(valor || 0);
+    }
+
+    get(child(ref(db), "eventos")).then(snapshot => {
+      tbody.innerHTML = "";
+      const eventos = snapshot.val() || {};
+      const finalizados = Object.values(eventos).filter(e => e.status === "finalizado");
+
+      if (finalizados.length === 0) {
+        tbody.innerHTML = "<tr><td colspan='8'>Nenhum evento finalizado encontrado.</td></tr>";
+        return;
+      }
+
+      finalizados.forEach(ev => {
+        const custoEquipe = (ev.equipe || []).reduce((soma, e) => soma + parseValor(e.valor), 0);
+        const custoLog    = (ev.logistica || []).reduce((soma, l) => soma + parseValor(l.valor), 0);
+
+        const row = document.createElement("tr");
+        row.innerHTML = `
+          <td>${ev.nome}</td>
+          <td>${ev.data}</td>
+          <td>${ev.responsavel}</td>
+          <td>${parseValor(ev.vendaPDV).toFixed(2)}</td>
+          <td>${parseValor(ev.vendaTotal).toFixed(2)}</td>
+          <td>${parseValor(ev.valorPerda).toFixed(2)}</td>
+          <td>${custoEquipe.toFixed(2)}</td>
+          <td>${custoLog.toFixed(2)}</td>
+        `;
+        tbody.appendChild(row);
+      });
+    }).catch(err => {
+      tbody.innerHTML = "<tr><td colspan='8'>Erro ao carregar eventos.</td></tr>";
+      console.error(err);
+    });
+  </script>
+</body>
+</html>
