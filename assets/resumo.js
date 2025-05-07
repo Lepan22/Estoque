@@ -30,7 +30,6 @@ async function carregarDados() {
     const produtos = produtosSnap.val() || {};
     const itens = evento.itens || [];
 
-    // Preenche campos básicos
     document.getElementById("nomeEvento").value = evento.nome || "";
     document.getElementById("dataEvento").value = evento.data || "";
     document.getElementById("responsavelEvento").value = evento.responsavel || "";
@@ -41,9 +40,6 @@ async function carregarDados() {
       return;
     }
 
-    // Inicializa totais
-    let custoLogistica = 0;
-    let custoEquipe = 0;
     let totalVenda = 0;
     let totalPerda = 0;
 
@@ -69,8 +65,6 @@ async function carregarDados() {
 
       totalVenda += valorVendaTotal;
       totalPerda += custoPerda;
-      custoLogistica += parseFloat(item.logistica || 0);
-      custoEquipe += parseFloat(item.equipe || 0);
 
       const linha = document.createElement("tr");
       linha.innerHTML = `
@@ -85,16 +79,10 @@ async function carregarDados() {
       tabela.appendChild(linha);
     });
 
-    // Exibe na interface
-    document.getElementById("custoLogistica").value = formatar(custoLogistica);
-    document.getElementById("custoEquipe").value = formatar(custoEquipe);
     document.getElementById("valorVenda").value = formatar(totalVenda);
     document.getElementById("valorPerda").value = formatar(totalPerda);
 
-    // Salva no Firebase
     await db.ref(`eventos/${id}/analise`).update({
-      custoLogistica,
-      custoEquipe,
       valorVenda: totalVenda,
       valorPerda: totalPerda
     });
@@ -105,7 +93,6 @@ async function carregarDados() {
   }
 }
 
-// Salvar venda PDV manualmente
 document.addEventListener("DOMContentLoaded", () => {
   carregarDados();
 
