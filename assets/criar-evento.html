@@ -20,10 +20,6 @@
         <input type="text" id="responsavel" name="responsavel" required />
       </label>
 
-      <label for="vendaPDV">Venda no PDV (R$):
-        <input type="number" id="vendaPDV" name="vendaPDV" step="0.01" min="0" />
-      </label>
-
       <h3>Equipe</h3>
       <div id="equipe-container"></div>
       <button type="button" id="add-equipe" class="botao">➕ Adicionar Membro</button>
@@ -48,6 +44,7 @@
       get, child
     } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-database.js";
 
+    // --- FIREBASE CONFIG ---
     const firebaseConfig = {
       apiKey: "AIzaSyBN-bmzgrlzjmrKMmuClZ8LVll-vJyx-aE",
       authDomain: "controleestoquelepan.firebaseapp.com",
@@ -60,10 +57,12 @@
     const app = initializeApp(firebaseConfig);
     const db  = getDatabase(app);
 
+    // Params
     const params   = new URLSearchParams(window.location.search);
     const eventId  = params.get("id");
     const isEdit   = Boolean(eventId);
 
+    // Elements
     const titleH2   = document.getElementById("form-title");
     const submitBtn = document.getElementById("submit-btn");
     const addItem   = document.getElementById("add-item");
@@ -75,6 +74,7 @@
     const logisticaCt = document.getElementById("logistica-container");
     const addLogisticaBtn = document.getElementById("add-logistica");
 
+    // 1) Carrega produtos no datalist
     get(ref(db, "produtos"))
       .then(snap => {
         const prods = snap.val() || {};
@@ -85,6 +85,7 @@
         });
       });
 
+    // 2) Função de adicionar linha de item
     function novaLinha(item = {}) {
       const div = document.createElement("div");
       div.className = "item-line";
@@ -111,9 +112,10 @@
 
     addItem.addEventListener("click", () => novaLinha());
 
+    // Funções para adicionar linhas de Equipe e Logística
     function novaLinhaDetalhe(container, nomeCampo, placeholderNome, nomeValor, placeholderValor, item = {}) {
       const div = document.createElement("div");
-      div.className = "detalhe-line";
+      div.className = "detalhe-line"; // Classe genérica para estilização
 
       const nomeInput = document.createElement("input");
       nomeInput.type = "text";
@@ -123,7 +125,7 @@
       nomeInput.value = item.nome || "";
 
       const valorInput = document.createElement("input");
-      valorInput.type = "text";
+      valorInput.type = "text"; // Pode ser 'number' ou outro se necessário
       valorInput.name = nomeValor;
       valorInput.placeholder = placeholderValor;
       valorInput.required = true;
@@ -141,6 +143,8 @@
     addEquipeBtn.addEventListener("click", () => novaLinhaDetalhe(equipeCt, "equipe-nome", "Nome Membro", "equipe-valor", "Função/Cargo"));
     addLogisticaBtn.addEventListener("click", () => novaLinhaDetalhe(logisticaCt, "logistica-nome", "Item Logística", "logistica-valor", "Detalhe/Valor"));
 
+
+    // 3) Se for edição, carrega dados existentes
     if (isEdit) {
       titleH2.textContent   = "Editar Evento";
       submitBtn.textContent = "Salvar Alterações";
@@ -151,20 +155,19 @@
           form.nome.value        = ev.nome;
           form.data.value        = ev.data;
           form.responsavel.value = ev.responsavel;
-          form.vendaPDV.value    = ev.vendaPDV || "";
           (ev.equipe || []).forEach(eq => novaLinhaDetalhe(equipeCt, "equipe-nome", "Nome Membro", "equipe-valor", "Função/Cargo", eq));
           (ev.logistica || []).forEach(lg => novaLinhaDetalhe(logisticaCt, "logistica-nome", "Item Logística", "logistica-valor", "Detalhe/Valor", lg));
           (ev.itens || []).forEach(it => novaLinha(it));
         });
     }
 
+    // 4) Submit: push ou update
     form.addEventListener("submit", e => {
       e.preventDefault();
       const evObj = {
         nome:        form.nome.value,
         data:        form.data.value,
         responsavel: form.responsavel.value,
-        vendaPDV:    parseFloat(form.vendaPDV.value || 0),
         equipe: Array.from(equipeCt.children).map(div => ({
           nome:  div.querySelector('[name="equipe-nome"]').value,
           valor: div.querySelector('[name="equipe-valor"]').value
