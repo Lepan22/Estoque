@@ -1,131 +1,38 @@
-<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Relatório do Evento</title>
-  <style>
-    body { font-family: Arial, sans-serif; padding: 20px; background-color: #f2f2f2; }
-    h2 { color: #333; }
-    table { width: 100%; border-collapse: collapse; margin-top: 20px; background-color: #fff; }
-    th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
-    th { background-color: #eee; }
-    button { margin-top: 20px; padding: 10px 15px; font-size: 16px; }
-  </style>
-</head>
-<body>
-  <h2>Relatório do Evento</h2>
-  <p><strong>Nome:</strong> <span id="eventoNome"></span></p>
-  <p><strong>Data:</strong> <span id="eventoData"></span></p>
-  <p><strong>Responsável:</strong> <span id="eventoResponsavel"></span></p>
-  <p><strong>Status:</strong> <span id="eventoStatus"></span></p>
+const urlParams = new URLSearchParams(window.location.search);
+const id = urlParams.get("id");
+const db = firebase.database();
 
-  <table>
-    <thead>
-      <tr>
-        <th>Item</th>
-        <th>Qtd Enviada</th>
-        <th>Congelado</th>
-        <th>Assado</th>
-        <th>Perda</th>
-        <th>Valor Venda</th>
-        <th>Valor Perda</th>
-      </tr>
-    </thead>
-    <tbody id="itensTabela"></tbody>
-  </table>
-
-  <button onclick="salvarDados()">Salvar</button>
-  <button onclick="voltarPagina()">Voltar</button>
-
-  <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-database-compat.js"></script>
-  <script>
-    const firebaseConfig = {
-      apiKey: "AIzaSyA60F-MtAxQ7vL6frtwVURRznDQofzxNRI",
-      authDomain: "controleestoquelepan.firebaseapp.com",
-      databaseURL: "https://controleestoquelepan-default-rtdb.firebaseio.com",
-      projectId: "controleestoquelepan",
-      storageBucket: "controleestoquelepan.appspot.com",
-      messagingSenderId: "547373654094",
-      appId: "1:547373654094:web:9a9e3b1b0ff74b6c64db38"
-    };
-
-    firebase.initializeApp(firebaseConfig);
-    const database = firebase.database();
-
-    const urlParams = new URLSearchParams(window.location.search);
-    const eventoId = urlParams.get('id') || '-OPanRjlKPRitdLPalzW';
-
-    function carregarDados() {
-      database.ref('eventos/' + eventoId).once('value').then(snapshot => {
-        const evento = snapshot.val();
-        if (!evento) return;
-
-        document.getElementById('eventoNome').textContent = evento.nome || '-';
-        document.getElementById('eventoData').textContent = evento.data || '-';
-        document.getElementById('eventoResponsavel').textContent = evento.responsavel || '-';
-        document.getElementById('eventoStatus').textContent = evento.status || '-';
-
-        database.ref('produtos').once('value').then(prodSnap => {
-          const produtos = prodSnap.val() || {};
-
-          const tabela = document.getElementById('itensTabela');
-          tabela.innerHTML = '';
-
-          for (const nome in evento.itens) {
-            const item = evento.itens[nome];
-            const nomeNormalizado = nome.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
-
-            let dadosProduto = null;
-            for (const chave in produtos) {
-              const chaveNormalizada = chave.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
-              if (chaveNormalizada === nomeNormalizado) {
-                dadosProduto = produtos[chave];
-                break;
-              }
-            }
-
-            if (!dadosProduto) {
-              console.warn(`Produto não encontrado no cadastro: ${nome}`);
-              dadosProduto = { valorVenda: 0, custo: 0 };
-            }
-
-            const qtd = item.quantidade || 0;
-            const congelado = item.congelado || 0;
-            const assado = item.assado || 0;
-            const perda = item.perda || 0;
-            const valorVendaUnit = parseFloat(dadosProduto.valorVenda) || 0;
-            const custoUnit = parseFloat(dadosProduto.custo) || 0;
-
-            const vendidos = qtd - congelado - assado - perda;
-            const valorVenda = vendidos * valorVendaUnit;
-            const valorPerda = perda * custoUnit;
-
-            const row = `<tr>
-              <td>${nome}</td>
-              <td>${qtd}</td>
-              <td>${congelado}</td>
-              <td>${assado}</td>
-              <td>${perda}</td>
-              <td>R$ ${valorVenda.toFixed(2)}</td>
-              <td>R$ ${valorPerda.toFixed(2)}</td>
-            </tr>`;
-            tabela.innerHTML += row;
-          }
-        });
-      });
+async function calcularCustosFixos() {
+  try {
+    const snap = await db.ref(`eventos/${id}`).get();
+    const evento = snap.val();
+    if (!evento || !evento.itens) {
+      alert("Evento sem itens ou não encontrado.");
+      return;
     }
 
-    function salvarDados() {
-      alert('Funcionalidade de salvar ainda não implementada.');
-    }
+    const itens = evento.itens;
+    let totalLogistica = 0;
+    let totalEquipe = 0;
 
-    function voltarPagina() {
-      window.history.back();
-    }
+    itens.forEach(item => {
+      totalLogistica += parseFloat(item.logistica || 0);
+      totalEquipe += parseFloat(item.equipe || 0);
+    });
 
-    carregarDados();
-  </script>
-</body>
-</html>
+    // Salvar no banco
+    await db.ref(`eventos/${id}/analise`).update({
+      custoLogistica: totalLogistica,
+      custoEquipe: totalEquipe
+    });
+
+    console.log("Custos salvos:", { totalLogistica, totalEquipe });
+    alert("Custos de logística e equipe salvos com sucesso!");
+
+  } catch (e) {
+    console.error("Erro ao calcular e salvar custos:", e);
+    alert("Erro ao salvar custos.");
+  }
+}
+
+document.addEventListener("DOMContentLoaded", calcularCustosFixos);
