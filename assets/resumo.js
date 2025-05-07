@@ -35,7 +35,17 @@ async function carregarDados() {
     document.getElementById("responsavelEvento").value = evento.responsavel || "";
     document.getElementById("vendaPDV").value = evento.analise?.vendaPDV || "";
 
-    // Calcular logistica e equipe
+    // Se não houver itens, mostrar alerta e parar
+    if (!Array.isArray(itens) || itens.length === 0) {
+      alert("Este evento não possui itens cadastrados. Nenhum cálculo pode ser realizado.");
+      document.getElementById("custoLogistica").value = "R$ 0,00";
+      document.getElementById("custoEquipe").value = "R$ 0,00";
+      document.getElementById("valorVenda").value = "R$ 0,00";
+      document.getElementById("valorPerda").value = "R$ 0,00";
+      return;
+    }
+
+    // Cálculos
     let custoLogistica = 0;
     let custoEquipe = 0;
     let totalVenda = 0;
@@ -86,7 +96,7 @@ async function carregarDados() {
     document.getElementById("valorVenda").value = formatar(totalVenda);
     document.getElementById("valorPerda").value = formatar(totalPerda);
 
-    // Salvar automaticamente os totais na análise
+    // Salvar os totais na análise
     await db.ref(`eventos/${id}/analise`).update({
       custoLogistica,
       custoEquipe,
@@ -109,4 +119,3 @@ document.addEventListener("DOMContentLoaded", () => {
     alert("Venda PDV salva com sucesso!");
   });
 });
-
