@@ -1,138 +1,162 @@
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Resumo de Itens</title>
-  <link rel="stylesheet" href="style.css">
+  <title>Análise do Evento</title>
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+    }
+
+    th, td {
+      border: 1px solid #ddd;
+      padding: 8px;
+      text-align: center;
+    }
+
+    th {
+      background-color: #f2f2f2;
+    }
+
+    .totais {
+      margin-top: 20px;
+      font-weight: bold;
+    }
+  </style>
 </head>
 <body>
-  <h1>Resumo de Itens por Categoria</h1>
-  <table id="resumoTabela">
+  <h1>Análise do Evento</h1>
+
+  <label for="select-evento">Selecione o Evento:</label>
+  <select id="select-evento">
+    <option value="">-- Selecione --</option>
+  </select>
+
+  <table id="itens-tabela">
     <thead>
       <tr>
-        <th>Categoria</th>
-        <th>Quantidade Total</th>
-        <th>Valor Total</th>
+        <th>Produto</th>
+        <th>Qtd Vendida</th>
+        <th>Qtd Perdida</th>
+        <th>Valor Venda</th>
+        <th>Valor Perda</th>
       </tr>
     </thead>
-    <tbody id="resumoCorpo">
-      <!-- Dados serão inseridos aqui -->
+    <tbody>
+      <!-- Itens do evento serão inseridos aqui -->
     </tbody>
   </table>
 
-  <div id="totaisGerais">
-    <p id="totalItens"></p>
-    <p id="totalProdutos"></p>
+  <div class="totais">
+    Total Vendas: <span id="total-vendas-evento">R$ 0,00</span><br>
+    Total Perdas: <span id="total-perda-evento">R$ 0,00</span>
   </div>
 
-  <button id="btnFinalizar">Finalizar Evento</button>
-
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js";
-    import {
-      getDatabase,
-      ref,
-      get,
-      update
-    } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-database.js";
-
+  <script>
+    // Configuração do Firebase
     const firebaseConfig = {
       apiKey: "SUA_API_KEY",
-      authDomain: "SEU_AUTH_DOMAIN",
-      databaseURL: "SUA_DATABASE_URL",
-      projectId: "SEU_PROJECT_ID",
-      storageBucket: "SEU_STORAGE_BUCKET",
+      authDomain: "SEU_DOMINIO.firebaseapp.com",
+      databaseURL: "https://SEU_PROJETO.firebaseio.com",
+      projectId: "SEU_PROJETO",
+      storageBucket: "SEU_PROJETO.appspot.com",
       messagingSenderId: "SEU_SENDER_ID",
-      appId: "SEU_APP_ID"
+      appId: "SUA_APP_ID"
     };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
 
-    const app = initializeApp(firebaseConfig);
-    const db = getDatabase(app);
-    const urlParams = new URLSearchParams(window.location.search);
-    const eventoID = urlParams.get("eventoID");
-    const refEvento = ref(db, "eventos/" + eventoID);
+    const selectEvento = document.getElementById("select-evento");
+    const tabelaItens = document.querySelector("#itens-tabela tbody");
+    const totalVendasEventoEl = document.getElementById("total-vendas-evento");
+    const totalPerdaEventoEl = document.getElementById("total-perda-evento");
 
-    let eventoAtual = null;
-    let currentItens = null;
-
-    function calcularTotaisCategoria(itens) {
-      const totais = {};
-      itens.forEach(item => {
-        const { categoria, quantidade, valorUnitario } = item;
-        if (!totais[categoria]) {
-          totais[categoria] = { quantidade: 0, valorTotal: 0 };
-        }
-        totais[categoria].quantidade += Number(quantidade);
-        totais[categoria].valorTotal += quantidade * valorUnitario;
-      });
-      return totais;
-    }
-
-    function atualizarTabelaResumo(totaisCategoria) {
-      const corpoTabela = document.getElementById("resumoCorpo");
-      corpoTabela.innerHTML = "";
-
-      Object.keys(totaisCategoria).forEach(categoria => {
-        const linha = document.createElement("tr");
-        linha.innerHTML = `
-          <td>${categoria}</td>
-          <td>${totaisCategoria[categoria].quantidade}</td>
-          <td>R$ ${totaisCategoria[categoria].valorTotal.toFixed(2)}</td>
-        `;
-        corpoTabela.appendChild(linha);
-      });
-    }
-
-    function atualizarTotaisGerais(itens) {
-      const totalItens = itens.reduce((acc, item) => acc + Number(item.quantidade), 0);
-      const totalProdutos = itens.reduce((acc, item) => acc + (item.quantidade * item.valorUnitario), 0);
-
-      document.getElementById("totalItens").innerText = `Total de Itens: ${totalItens}`;
-      document.getElementById("totalProdutos").innerText = `Total em Produtos: R$ ${totalProdutos.toFixed(2)}`;
-    }
-
-    async function carregarDados() {
-      try {
-        const [snapshotEvento, snapshotProdutos] = await Promise.all([
-          get(refEvento),
-          get(ref(db, "produtos"))
-        ]);
-
-        if (!snapshotEvento.exists()) {
-          console.error("Evento não encontrado");
-          return;
-        }
-
-        eventoAtual = snapshotEvento.val();
-        currentItens = eventoAtual.itens || [];
-
-        const totaisCategoria = calcularTotaisCategoria(currentItens);
-        atualizarTabelaResumo(totaisCategoria);
-        atualizarTotaisGerais(currentItens);
-
-      } catch (error) {
-        console.error("Erro ao carregar os dados:", error);
-      }
-    }
-
-    const btnFinal = document.getElementById("btnFinalizar");
-    btnFinal.addEventListener("click", async () => {
-      if (!eventoID || !currentItens) return;
-
-      try {
-        await update(refEvento, {
-          status: "finalizado"
+    // Carrega eventos para o select
+    function carregarEventos() {
+      db.ref("eventos").once("value").then(snapshot => {
+        snapshot.forEach(eventoSnap => {
+          const evento = eventoSnap.val();
+          const option = document.createElement("option");
+          option.value = eventoSnap.key;
+          option.textContent = evento.nome || "Evento sem nome";
+          selectEvento.appendChild(option);
         });
+      });
+    }
 
-        alert("Evento finalizado com sucesso!");
-        window.location.href = "resumo.html?eventoID=" + eventoID;
-      } catch (error) {
-        console.error("Erro ao finalizar o evento:", error);
-      }
+    // Formatação de moeda
+    function formatCurrency(valor) {
+      return valor.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+    }
+
+    function parseCurrency(str) {
+      return parseFloat(str.replace("R$", "").replace(".", "").replace(",", ".")) || 0;
+    }
+
+    // Carrega os dados do evento selecionado
+    selectEvento.addEventListener("change", () => {
+      const eventoId = selectEvento.value;
+      if (!eventoId) return;
+
+      db.ref(`eventos/${eventoId}`).once("value").then(snapshot => {
+        const evento = snapshot.val();
+        preencherTabela(evento.itens || []);
+      });
     });
 
-    carregarDados();
+    // Preenche a tabela com os itens do evento
+    function preencherTabela(itens) {
+      tabelaItens.innerHTML = "";
+      itens.forEach(item => {
+        const tr = document.createElement("tr");
+
+        const qtdVendida = item.qtdVendida || 0;
+        const qtdPerdida = item.qtdPerdida || 0;
+        const preco = item.preco || 0;
+
+        const valorVenda = qtdVendida * preco;
+        const valorPerda = qtdPerdida * preco;
+
+        tr.innerHTML = `
+          <td>${item.nome}</td>
+          <td>${qtdVendida}</td>
+          <td>${qtdPerdida}</td>
+          <td class="col-valor-vendas">${formatCurrency(valorVenda)}</td>
+          <td class="col-valor-perda">${formatCurrency(valorPerda)}</td>
+        `;
+
+        tabelaItens.appendChild(tr);
+      });
+
+      atualizarTotaisGerais();
+    }
+
+    // Atualiza os totais de vendas e perdas
+    function atualizarTotaisGerais() {
+      let totalVendas = 0;
+      let totalPerdas = 0;
+
+      document.querySelectorAll("#itens-tabela tbody tr").forEach(tr => {
+        const valorVendasTexto = tr.querySelector(".col-valor-vendas").textContent;
+        const valorPerdaTexto = tr.querySelector(".col-valor-perda").textContent;
+        totalVendas += parseCurrency(valorVendasTexto);
+        totalPerdas += parseCurrency(valorPerdaTexto);
+      });
+
+      totalVendasEventoEl.textContent = formatCurrency(totalVendas);
+      totalPerdaEventoEl.textContent = formatCurrency(totalPerdas);
+    }
+
+    carregarEventos();
   </script>
 </body>
 </html>
