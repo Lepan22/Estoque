@@ -5,11 +5,13 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Análise de Evento</title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"/>
+  <link rel="stylesheet" href="assets/style.css">
 </head>
 <body class="p-4">
   <div class="container">
     <h2 class="mb-4">Análise do Evento</h2>
 
+    <!-- Informações do Evento -->
     <div class="mb-3">
       <label class="form-label">Nome</label>
       <input type="text" id="nomeEvento" class="form-control" readonly />
@@ -23,11 +25,13 @@
       <input type="text" id="responsavelEvento" class="form-control" readonly />
     </div>
 
+    <!-- Venda PDV -->
     <div class="mb-3">
       <label class="form-label">Venda PDV</label>
       <input type="number" id="vendaPDV" class="form-control" />
     </div>
 
+    <!-- Totais -->
     <div class="row g-3 mb-4">
       <div class="col-md-6">
         <label class="form-label">Valor Total de Venda</label>
@@ -39,6 +43,19 @@
       </div>
     </div>
 
+    <!-- Equipe -->
+    <h4>Equipe</h4>
+    <div id="equipe-container" class="mb-2"></div>
+    <button type="button" class="btn btn-outline-primary btn-sm mb-3" id="addEquipeBtn">➕ Adicionar Membro</button>
+    <p><strong>Custo Total da Equipe:</strong> <span id="custoEquipe">R$ 0,00</span></p>
+
+    <!-- Logística -->
+    <h4>Logística</h4>
+    <div id="logistica-container" class="mb-2"></div>
+    <button type="button" class="btn btn-outline-primary btn-sm mb-3" id="addLogisticaBtn">➕ Adicionar Item</button>
+    <p><strong>Custo Total da Logística:</strong> <span id="custoLogistica">R$ 0,00</span></p>
+
+    <!-- Produtos -->
     <h4 class="mt-4">Resumo dos Produtos</h4>
     <div class="table-responsive">
       <table class="table table-bordered" id="tabelaProdutos">
@@ -57,17 +74,7 @@
       </table>
     </div>
 
-    <hr class="my-4" />
-    <h4>Equipe</h4>
-    <div id="equipe-container" class="mb-2"></div>
-    <button type="button" class="btn btn-outline-primary btn-sm mb-3" id="addEquipeBtn">➕ Adicionar Membro</button>
-    <p><strong>Custo Total da Equipe:</strong> <span id="custoEquipe">R$ 0,00</span></p>
-
-    <h4>Logística</h4>
-    <div id="logistica-container" class="mb-2"></div>
-    <button type="button" class="btn btn-outline-primary btn-sm mb-3" id="addLogisticaBtn">➕ Adicionar Item</button>
-    <p><strong>Custo Total da Logística:</strong> <span id="custoLogistica">R$ 0,00</span></p>
-
+    <!-- Botões -->
     <div class="mt-4 d-flex gap-3">
       <button class="btn btn-primary" id="btnSalvar">Salvar</button>
       <a href="index.html" class="btn btn-secondary">Voltar</a>
