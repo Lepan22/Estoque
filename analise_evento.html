@@ -23,13 +23,15 @@
       <input type="text" id="responsavelEvento" class="form-control" readonly />
     </div>
 
-    <div class="mb-3">
-      <label class="form-label">Custo Logística</label>
-      <input type="text" id="custoLogistica" class="form-control" readonly />
-    </div>
-    <div class="mb-3">
-      <label class="form-label">Custo Equipe</label>
-      <input type="text" id="custoEquipe" class="form-control" readonly />
+    <div class="row g-3 mb-3">
+      <div class="col-md-6">
+        <label class="form-label">Custo Logística</label>
+        <input type="text" id="custoLogistica" class="form-control" readonly />
+      </div>
+      <div class="col-md-6">
+        <label class="form-label">Custo Equipe</label>
+        <input type="text" id="custoEquipe" class="form-control" readonly />
+      </div>
     </div>
 
     <div class="mb-3">
@@ -37,20 +39,21 @@
       <input type="number" id="vendaPDV" class="form-control" />
     </div>
 
-    <div class="mb-3">
-      <label class="form-label">Valor Total de Venda</label>
-      <input type="text" id="valorVenda" class="form-control" readonly />
+    <div class="row g-3 mb-4">
+      <div class="col-md-6">
+        <label class="form-label">Valor Total de Venda</label>
+        <input type="text" id="valorVenda" class="form-control" readonly />
+      </div>
+      <div class="col-md-6">
+        <label class="form-label">Valor Total de Perda</label>
+        <input type="text" id="valorPerda" class="form-control" readonly />
+      </div>
     </div>
 
-    <div class="mb-4">
-      <label class="form-label">Valor Total de Perda</label>
-      <input type="text" id="valorPerda" class="form-control" readonly />
-    </div>
-
-    <h4 class="mt-5">Produtos</h4>
+    <h4 class="mt-4">Resumo dos Produtos</h4>
     <div class="table-responsive">
       <table class="table table-bordered" id="tabelaProdutos">
-        <thead>
+        <thead class="table-light">
           <tr>
             <th>Produto</th>
             <th>Enviado</th>
@@ -71,9 +74,18 @@
     </div>
   </div>
 
+  <!-- Firebase e Bootstrap -->
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
-  <script src="assets/firebase-init.js"></script>
+  <script>
+    // Firebase init direto no HTML (ou use seu firebase-init.js)
+    const firebaseConfig = {
+      databaseURL: "https://controleestoquelepan-default-rtdb.firebaseio.com"
+    };
+    firebase.initializeApp(firebaseConfig);
+  </script>
+
+  <!-- Script de lógica -->
   <script src="assets/resumo.js"></script>
 </body>
 </html>
