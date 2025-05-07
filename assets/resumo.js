@@ -1,126 +1,90 @@
-// Firebase config
+import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js";
+import { getDatabase, ref, get, update } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js";
+
 const firebaseConfig = {
-  databaseURL: "https://controleestoquelepan-default-rtdb.firebaseio.com"
+  // sua configuração está no firebase-init.js, que já está incluída no HTML
 };
 
-firebase.initializeApp(firebaseConfig);
-const database = firebase.database();
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
 
 const urlParams = new URLSearchParams(window.location.search);
-const eventoId = urlParams.get("id");
+const id = urlParams.get("id");
 
-let produtosInfo = {};
-let totalVenda = 0;
-let totalPerda = 0;
-let totalLogistica = 0;
-let totalEquipe = 0;
+function formatarValor(valor) {
+  return `R$ ${parseFloat(valor || 0).toFixed(2).replace('.', ',')}`;
+}
 
-function carregarProdutos() {
-  return database.ref("produtos").once("value").then(snapshot => {
-    produtosInfo = snapshot.val() || {};
+async function carregarDados() {
+  const snapshot = await get(ref(db, `eventos/${id}`));
+  const evento = snapshot.val();
+
+  if (!evento) return;
+
+  document.getElementById("nomeEvento").value = evento.nome || "";
+  document.getElementById("dataEvento").value = evento.data || "";
+  document.getElementById("responsavelEvento").value = evento.responsavel || "";
+
+  document.getElementById("vendaPDV").value = evento.analise?.vendaPDV || "";
+
+  document.getElementById("custoLogistica").value = formatarValor(
+    (evento.itens || [])
+      .filter(item => item.categoria?.toLowerCase() === "logistica")
+      .reduce((acc, item) => acc + (parseFloat(item.valor) || 0), 0)
+  );
+
+  document.getElementById("custoEquipe").value = formatarValor(
+    (evento.itens || [])
+      .filter(item => item.categoria?.toLowerCase() === "equipe")
+      .reduce((acc, item) => acc + (parseFloat(item.valor) || 0), 0)
+  );
+
+  document.getElementById("valorVenda").value = formatarValor(evento.totalVendasEvento || 0);
+  document.getElementById("valorPerda").value = formatarValor(evento.totalPerdaEvento || 0);
+
+  const produtosSnap = await get(ref(db, "produtos"));
+  const todosProdutos = produtosSnap.val() || {};
+
+  const corpoTabela = document.querySelector("#tabelaProdutos tbody");
+  corpoTabela.innerHTML = "";
+
+  const listaProdutos = evento.produtos || {};
+
+  Object.entries(listaProdutos).forEach(([nomeProduto, dados]) => {
+    const produtoBase = Object.values(todosProdutos).find(
+      p => (p.nome || "").trim().toLowerCase() === nomeProduto.trim().toLowerCase()
+    );
+
+    const enviado = parseFloat(dados.enviado || 0);
+    const congelado = parseFloat(dados.congelado || 0);
+    const assado = parseFloat(dados.assado || 0);
+    const perda = parseFloat(dados.perda || 0);
+
+    const valorVenda = parseFloat(produtoBase?.valorVenda || 0);
+    const custoProduto = parseFloat(produtoBase?.custo || 0);
+
+    const linha = document.createElement("tr");
+    linha.innerHTML = `
+      <td>${nomeProduto}</td>
+      <td>${enviado}</td>
+      <td>${congelado}</td>
+      <td>${assado}</td>
+      <td>${perda}</td>
+      <td>${formatarValor(valorVenda)}</td>
+      <td>${formatarValor(perda * custoProduto)}</td>
+    `;
+    corpoTabela.appendChild(linha);
   });
 }
 
-function carregarEvento() {
-  if (!eventoId) return;
+document.getElementById("btnSalvar").addEventListener("click", async () => {
+  const vendaPDV = parseFloat(document.getElementById("vendaPDV").value || 0);
 
-  database.ref("eventos/" + eventoId).once("value").then(snapshot => {
-    const evento = snapshot.val();
-    if (!evento) return alert("Evento não encontrado.");
-
-    document.getElementById("nomeEvento").textContent = evento.nome || "";
-    document.getElementById("dataEvento").textContent = evento.data || "";
-    document.getElementById("responsavelEvento").textContent = evento.responsavel || "";
-
-    if (evento.analise && evento.analise.vendaPDV) {
-      document.getElementById("vendaPDV").value = evento.analise.vendaPDV;
-    }
-
-    processarResumo(evento);
+  await update(ref(db, `eventos/${id}/analise`), {
+    vendaPDV: vendaPDV
   });
-}
 
-function processarResumo(evento) {
-  const tbody = document.querySelector("#tabelaProdutos tbody");
-  tbody.innerHTML = "";
+  alert("Venda PDV salva com sucesso!");
+});
 
-  totalVenda = 0;
-  totalPerda = 0;
-  totalLogistica = 0;
-  totalEquipe = 0;
-
-  if (evento.logistica) {
-    totalLogistica = Object.values(evento.logistica).reduce((acc, item) => acc + (parseFloat(item.valor) || 0), 0);
-  }
-
-  if (evento.equipe) {
-    totalEquipe = Object.values(evento.equipe).reduce((acc, item) => acc + (parseFloat(item.valor) || 0), 0);
-  }
-
-  if (evento.produtos) {
-    Object.values(evento.produtos).forEach(prod => {
-      const info = Object.values(produtosInfo).find(p =>
-        (p.nome || "").trim().toLowerCase() === (prod.nome || "").trim().toLowerCase()
-      );
-      if (!info) return;
-
-      const valorVenda = parseFloat(info.valorVenda || 0);
-      const custo = parseFloat(info.custo || 0);
-      const enviada = parseInt(prod.quantidade) || 0;
-      const congelado = parseInt(prod.congelado) || 0;
-      const assado = parseInt(prod.assado) || 0;
-      const perda = parseInt(prod.perda) || 0;
-
-      const vendidos = enviada - (congelado + assado + perda);
-      const valorTotalVenda = vendidos * valorVenda;
-      const custoTotalPerda = perda * custo;
-
-      totalVenda += valorTotalVenda;
-      totalPerda += custoTotalPerda;
-
-      const linha = `
-        <tr>
-          <td>${prod.nome}</td>
-          <td>${enviada}</td>
-          <td>${congelado}</td>
-          <td>${assado}</td>
-          <td>${perda}</td>
-          <td>R$ ${valorTotalVenda.toFixed(2)}</td>
-          <td>R$ ${custoTotalPerda.toFixed(2)}</td>
-        </tr>
-      `;
-      tbody.innerHTML += linha;
-    });
-  }
-
-  atualizarCamposTotais();
-}
-
-function atualizarCamposTotais() {
-  document.getElementById("custoLogistica").value = `R$ ${totalLogistica.toFixed(2)}`;
-  document.getElementById("custoEquipe").value = `R$ ${totalEquipe.toFixed(2)}`;
-  document.getElementById("valorVenda").value = `R$ ${totalVenda.toFixed(2)}`;
-  document.getElementById("valorPerda").value = `R$ ${totalPerda.toFixed(2)}`;
-}
-
-function salvarAnalise() {
-  const vendaPDV = document.getElementById("vendaPDV").value || "";
-  const dadosAnalise = {
-    vendaPDV,
-    valorVenda: totalVenda,
-    valorPerda: totalPerda,
-    custoLogistica: totalLogistica,
-    custoEquipe: totalEquipe
-  };
-
-  database.ref("eventos/" + eventoId + "/analise").set(dadosAnalise)
-    .then(() => {
-      alert("Análise salva com sucesso!");
-    })
-    .catch(error => {
-      console.error("Erro ao salvar análise:", error);
-      alert("Erro ao salvar análise.");
-    });
-}
-
-carregarProdutos().then(carregarEvento);
+carregarDados();
