@@ -5,14 +5,16 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Detalhes do Evento</title>
   <link rel="stylesheet" href="assets/style.css">
-  <link rel="stylesheet" href="assets/form-responsive.css">
+  <link rel="stylesheet" href="assets/form-responsive.css"> <!-- Link para o CSS responsivo dedicado -->
 </head>
+
 <body>
   <div class="container">
     <h1>Detalhes do Evento</h1>
-    <div id="eventoInfo"></div>
+    <div id="eventoInfo"></div> <!-- ID usado pelo JS -->
     <h3>Itens:</h3>
-    <table id="itens-tabela">
+    
+    <table id="itens-tabela"> <!-- ID usado pelo JS -->
       <thead>
         <tr>
           <th class="col-nome">Nome</th>
@@ -22,18 +24,20 @@
           <th class="col-editavel">Perdido</th>
         </tr>
       </thead>
-      <tbody id="itens-tbody">
-        <tr><td colspan="5">Carregando itens...</td></tr>
+      <tbody id="itens-tbody"> <!-- ID usado pelo JS -->
+        <tr><td colspan="5">Carregando itens...</td></tr> <!-- Colspan ajustado para 5 colunas -->
       </tbody>
     </table>
+
     <div class="button-container">
-      <button id="salvarAlteracoesBtn">Salvar Alterações</button>
-      <button id="finalizarEventoBtn">Finalizar Evento e Salvar Alterações</button>
+      <button id="salvarAlteracoesBtn">Salvar Alterações</button> <!-- ID usado pelo JS -->
+      <button id="finalizarEventoBtn">Finalizar Evento e Salvar Alterações</button> <!-- ID usado pelo JS -->
     </div>
   </div>
+
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js";
-    import { getDatabase, ref, get, update } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-database.js";
+    import { getDatabase, ref, get, update, child } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-database.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyBN-bmzgrlzjmrKMmuClZ8LVll-vJyx-aE",
@@ -47,6 +51,7 @@
 
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
+
     const params = new URLSearchParams(window.location.search);
     const eventId = params.get("id");
     const refEvento = ref(db, `eventos/${eventId}`);
@@ -58,119 +63,150 @@
 
     if (!eventId) {
       alert("ID do Evento não fornecido na URL.");
-      window.location.href = "index.html";
+      window.location.href = "index.html"; 
+    }
+
+    async function calcularValoresExtras(itens) {
+      const dbRef = ref(getDatabase());
+      let vendaTotal = 0;
+      let valorPerda = 0;
+
+      for (const item of itens) {
+        const nomeItem = item.nomeItem || item.nome;
+        const qtdOriginal = item.quantidade || item.qtd || 0;
+        const congelado = item.congelado || 0;
+        const assado = item.assado || 0;
+        const perdido = item.perdido || 0;
+
+        const snap = await get(child(dbRef, `produtos/${nomeItem}`));
+        const produto = snap.exists() ? snap.val() : null;
+
+        const custo = produto?.custo || 0;
+        const valor = produto?.valor || 0;
+
+        const vendidos = Math.max(0, qtdOriginal - congelado - assado - perdido);
+
+        vendaTotal += vendidos * valor;
+        valorPerda += perdido * custo;
+      }
+
+      return { vendaTotal, valorPerda };
     }
 
     function carregarDados() {
-      get(refEvento).then(snapshot => {
-        if (!snapshot.exists()) {
-          alert("Evento não encontrado.");
-          window.location.href = "index.html";
-          return;
-        }
-        eventoAtual = snapshot.val();
-        currentItens = Array.isArray(eventoAtual.itens) ? eventoAtual.itens : [];
-        document.getElementById("eventoInfo").innerHTML = `
-          <p><strong>Nome:</strong> ${eventoAtual.nome || "—"}</p>
-          <p><strong>Data:</strong> ${eventoAtual.data || "—"}</p>
-          <p><strong>Responsável:</strong> ${eventoAtual.responsavel || "—"}</p>
-        `;
-        itensBody.innerHTML = "";
+      get(refEvento)
+        .then(snapshot => {
+          if (!snapshot.exists()) {
+            alert("Evento não encontrado.");
+            window.location.href = "index.html";
+            return;
+          }
 
-        if (currentItens.length === 0) {
-          itensBody.innerHTML = `<tr><td colspan="5">Nenhum item registrado para este evento.</td></tr>`;
-        } else {
-          currentItens.forEach((item, idx) => {
-            const tr = document.createElement("tr");
-            tr.setAttribute("data-item-index", idx);
-            tr.innerHTML = `
-              <td class="col-nome">${item.nomeItem ?? item.nome ?? "—"}</td>
-              <td class="col-quantidade">${item.quantidade ?? item.qtd ?? "—"}</td>
-              <td class="col-editavel"><input type="number" name="assado" value="${item.assado ?? 0}" min="0"></td>
-              <td class="col-editavel"><input type="number" name="congelado" value="${item.congelado ?? 0}" min="0"></td>
-              <td class="col-editavel"><input type="number" name="perdido" value="${item.perdido ?? 0}" min="0"></td>
-            `;
-            itensBody.appendChild(tr);
-          });
-        }
+          eventoAtual = snapshot.val(); 
+          currentItens = Array.isArray(eventoAtual.itens) ? eventoAtual.itens : [];
 
-        if (eventoAtual.status === "finalizado") {
-          btnFinal.textContent = "Evento Finalizado";
-          btnFinal.disabled = true;
-          btnSalvar.disabled = true;
-          itensBody.querySelectorAll("input").forEach(i => i.disabled = true);
-        }
-      });
+          document.getElementById("eventoInfo").innerHTML = `
+            <p><strong>Nome:</strong> ${eventoAtual.nome || "—"}</p>
+            <p><strong>Data:</strong> ${eventoAtual.data || "—"}</p>
+            <p><strong>Responsável:</strong> ${eventoAtual.responsavel || "—"}</p>
+          `;
+
+          itensBody.innerHTML = ""; 
+
+          if (currentItens.length === 0) {
+            itensBody.innerHTML = `<tr><td colspan="5" data-label="Status">Nenhum item registrado para este evento.</td></tr>`;
+          } else {
+            currentItens.forEach((item, idx) => {
+              const tr = document.createElement("tr");
+              tr.setAttribute("data-item-index", idx);
+
+              const nomeExib = item.nomeItem ?? item.nome ?? "—";
+              const quantidadeExib = item.quantidade ?? item.qtd ?? "—";
+
+              tr.innerHTML = `
+                <td class="col-nome" data-label="Nome">${nomeExib}</td>
+                <td class="col-quantidade" data-label="Quantidade">${quantidadeExib}</td>
+                <td class="col-editavel" data-label="Assado"><input type="number" name="assado" value="${item.assado ?? 0}" min="0"></td>
+                <td class="col-editavel" data-label="Congelado"><input type="number" name="congelado" value="${item.congelado ?? 0}" min="0"></td>
+                <td class="col-editavel" data-label="Perdido"><input type="number" name="perdido" value="${item.perdido ?? 0}" min="0"></td>
+              `;
+              itensBody.appendChild(tr);
+            });
+          }
+
+          if (eventoAtual.status === "finalizado") {
+            btnFinal.textContent = "Evento Finalizado";
+            btnFinal.disabled = true;
+            btnSalvar.disabled = true;
+            itensBody.querySelectorAll("input").forEach(i => i.disabled = true);
+          }
+        })
+        .catch(err => {
+          console.error("Erro ao buscar dados do evento:", err);
+          itensBody.innerHTML = `<tr><td colspan="5" data-label="Erro">Erro ao carregar itens. Verifique o console.</td></tr>`;
+        });
     }
 
     function coletarItensAtualizados() {
       const novosItens = [];
       document.querySelectorAll("#itens-tabela tbody tr[data-item-index]").forEach(tr => {
         const idx = parseInt(tr.getAttribute("data-item-index"), 10);
-        if (isNaN(idx) || idx < 0 || idx >= currentItens.length) return;
+        if (isNaN(idx) || idx < 0 || idx >= currentItens.length) return; 
         const itemOriginal = currentItens[idx];
-        const assado = parseInt(tr.querySelector('input[name="assado"]').value) || 0;
-        const congelado = parseInt(tr.querySelector('input[name="congelado"]').value) || 0;
-        const perdido = parseInt(tr.querySelector('input[name="perdido"]').value) || 0;
-        const enviado = itemOriginal.quantidade || itemOriginal.qtd || 0;
-        const valorVenda = itemOriginal.valorVenda || 0;
-        const custo = itemOriginal.custo || 0;
 
-        const vendaTotal = (enviado - (congelado + assado + perdido)) * valorVenda;
-        const valorPerda = perdido * custo;
+        const inputAssado = tr.querySelector('input[name="assado"]');
+        const inputCongelado = tr.querySelector('input[name="congelado"]');
+        const inputPerdido = tr.querySelector('input[name="perdido"]');
 
-        novosItens.push({
-          ...itemOriginal,
-          assado,
-          congelado,
-          perdido,
-          vendaTotal,
-          valorPerda
-        });
+        const assado = inputAssado ? (parseInt(inputAssado.value, 10) || 0) : 0;
+        const congelado = inputCongelado ? (parseInt(inputCongelado.value, 10) || 0) : 0;
+        const perdido = inputPerdido ? (parseInt(inputPerdido.value, 10) || 0) : 0;
+
+        novosItens.push({ ...itemOriginal, assado, congelado, perdido });
       });
       return novosItens;
     }
 
-    btnFinal.addEventListener("click", () => {
-      if (btnFinal.disabled) return;
+    btnFinal.addEventListener("click", async () => {
+      if (btnFinal.disabled) return; 
+      
       btnFinal.disabled = true;
       btnFinal.textContent = "Processando...";
       btnSalvar.disabled = true;
+
       const itensAtualizados = coletarItensAtualizados();
-      update(refEvento, { itens: itensAtualizados, status: "finalizado" }).then(() => {
-        alert("Evento finalizado e alteracoes salvas!");
+
+      try {
+        const { vendaTotal, valorPerda } = await calcularValoresExtras(itensAtualizados);
+
+        await update(refEvento, {
+          itens: itensAtualizados,
+          status: "finalizado",
+          vendaTotal,
+          valorPerda
+        });
+
+        alert("Evento finalizado e alterações salvas!");
         btnFinal.textContent = "Evento Finalizado";
         itensBody.querySelectorAll("input").forEach(i => i.disabled = true);
         eventoAtual.status = "finalizado";
-      }).catch(err => {
+      } catch (err) {
         console.error("Erro ao finalizar evento:", err);
-        alert("Falha ao finalizar o evento.");
+        alert("Falha ao finalizar. Verifique o console.");
         btnFinal.disabled = false;
-        btnFinal.textContent = "Finalizar Evento e Salvar Alteracoes";
-        if (eventoAtual.status !== "finalizado") btnSalvar.disabled = false;
-      });
-    });
-
-    btnSalvar.addEventListener("click", () => {
-      if (btnSalvar.disabled) return;
-      btnSalvar.disabled = true;
-      btnSalvar.textContent = "Salvando...";
-      const itensAtualizados = coletarItensAtualizados();
-      update(refEvento, { itens: itensAtualizados }).then(() => {
-        alert("Alteracoes salvas com sucesso!");
-        currentItens = itensAtualizados;
-      }).catch(err => {
-        console.error("Erro ao salvar:", err);
-        alert("Falha ao salvar as alteracoes.");
-      }).finally(() => {
+        btnFinal.textContent = "Finalizar Evento e Salvar Alterações";
         if (eventoAtual.status !== "finalizado") {
           btnSalvar.disabled = false;
-          btnSalvar.textContent = "Salvar Alteracoes";
         }
-      });
+      }
     });
 
-    carregarDados();
-  </script>
-</body>
-</html>
+    btnSalvar.addEventListener("click", async () => {
+      if (btnSalvar.disabled) return; 
+      
+      btnSalvar.disabled = true;
+      btnSalvar.textContent = "Salvando...";
+
+      const itensAtualizados = coletarItensAtualizados();
+
+      try {
