@@ -2,117 +2,169 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8" />
+  <title>Relatório do Evento</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Criar / Editar Evento</title>
-  <link rel="stylesheet" href="assets/style.css">
+  <style>
+    body { font-family: Arial, sans-serif; margin: 20px; }
+    table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+    th, td { border: 1px solid #ccc; padding: 8px; text-align: center; }
+    th { background-color: #f0f0f0; }
+    .btn-container { margin-top: 20px; }
+    button { padding: 10px 15px; margin-right: 10px; }
+  </style>
 </head>
 <body>
-  <div class="container">
-    <h2 id="form-title">Criar Novo Evento</h2>
-    <form id="form-evento">
-      <label for="nome">Nome do Evento:
-        <input type="text" id="nome" name="nome" required />
-      </label>
-      <label for="data">Data:
-        <input type="date" id="data" name="data" required />
-      </label>
-      <label for="responsavel">Responsável:
-        <input type="text" id="responsavel" name="responsavel" required />
-      </label>
 
-      <label for="vendaPDV">Venda no PDV (R$):
-        <input type="number" id="vendaPDV" name="vendaPDV" step="0.01" min="0" />
-      </label>
+  <h1>Relatório do Evento</h1>
+  <div id="dadosEvento">
+    <p><strong>Nome:</strong> <span id="nomeEvento">Carregando...</span></p>
+    <p><strong>Data:</strong> <span id="dataEvento">-</span></p>
+    <p><strong>Responsável:</strong> <span id="responsavelEvento">-</span></p>
+    <p><strong>Status:</strong> <span id="statusEvento">-</span></p>
+  </div>
 
-      <h3>Equipe</h3>
-      <div id="equipe-container"></div>
-      <button type="button" id="add-equipe" class="botao">➕ Adicionar Membro</button>
-      <p><strong>Custo Equipe:</strong> R$ <span id="custo-equipe">0,00</span></p>
+  <table>
+    <thead>
+      <tr>
+        <th>Item</th>
+        <th>Qtd Enviada</th>
+        <th>Congelado</th>
+        <th>Assado</th>
+        <th>Perda</th>
+        <th>Valor Venda</th>
+        <th>Valor Perda</th>
+      </tr>
+    </thead>
+    <tbody id="tabelaItens">
+      <tr><td colspan="7">Carregando...</td></tr>
+    </tbody>
+  </table>
 
-      <h3>Logística</h3>
-      <div id="logistica-container"></div>
-      <button type="button" id="add-logistica" class="botao">➕ Adicionar Item Logística</button>
-      <p><strong>Custo Logística:</strong> R$ <span id="custo-logistica">0,00</span></p>
-
-      <h3>Itens</h3>
-      <datalist id="lista-produtos"></datalist>
-      <div id="itens-container"></div>
-      <button type="button" id="add-item" class="botao">➕ Adicionar Item</button>
-
-      <button type="submit" id="submit-btn" class="botao">Criar Evento</button>
-    </form>
+  <div class="btn-container">
+    <button id="btnSalvar">Salvar</button>
+    <button onclick="window.history.back()">Voltar</button>
   </div>
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js";
-    import {
-      getDatabase, ref, push, update,
-      get, child
-    } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-database.js";
+    import { getDatabase, ref, get, update } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-database.js";
 
     const firebaseConfig = {
-      apiKey: "AIzaSyBN-bmzgrlzjmrKMmuClZ8LVll-vJyx-aE",
-      authDomain: "controleestoquelepan.firebaseapp.com",
-      databaseURL: "https://controleestoquelepan-default-rtdb.firebaseio.com",
-      projectId: "controleestoquelepan",
-      storageBucket: "controleestoquelepan.appspot.com",
-      messagingSenderId: "779860276544",
-      appId: "1:779860276544:web:f45844571a8c0bab1576a5"
+      apiKey: "SUA_API_KEY",
+      authDomain: "SEU_DOMINIO.firebaseapp.com",
+      databaseURL: "https://SEU_DOMINIO.firebaseio.com",
+      projectId: "SEU_PROJECT_ID",
+      storageBucket: "SEU_BUCKET.appspot.com",
+      messagingSenderId: "SEU_SENDER_ID",
+      appId: "SEU_APP_ID"
     };
+
     const app = initializeApp(firebaseConfig);
-    const db  = getDatabase(app);
+    const db = getDatabase(app);
 
-    const params   = new URLSearchParams(window.location.search);
-    const eventId  = params.get("id");
-    const isEdit   = Boolean(eventId);
+    const urlParams = new URLSearchParams(window.location.search);
+    const eventId = urlParams.get("id");
 
-    const titleH2   = document.getElementById("form-title");
-    const submitBtn = document.getElementById("submit-btn");
-    const addItem   = document.getElementById("add-item");
-    const itensCt   = document.getElementById("itens-container");
-    const form      = document.getElementById("form-evento");
-    const datalist  = document.getElementById("lista-produtos");
-    const equipeCt = document.getElementById("equipe-container");
-    const addEquipeBtn = document.getElementById("add-equipe");
-    const logisticaCt = document.getElementById("logistica-container");
-    const addLogisticaBtn = document.getElementById("add-logistica");
+    const nomeEl = document.getElementById("nomeEvento");
+    const dataEl = document.getElementById("dataEvento");
+    const responsavelEl = document.getElementById("responsavelEvento");
+    const statusEl = document.getElementById("statusEvento");
+    const tabelaItens = document.getElementById("tabelaItens");
+    const btnSalvar = document.getElementById("btnSalvar");
 
-    get(ref(db, "produtos"))
-      .then(snap => {
-        const prods = snap.val() || {};
-        Object.values(prods).forEach(p => {
-          const opt = document.createElement("option");
-          opt.value = p.nome;
-          datalist.appendChild(opt);
-        });
-      });
+    let itensAtualizados = [];
 
-    function novaLinha(item = {}) {
-      const div = document.createElement("div");
-      div.className = "item-line";
-
-      const nome = document.createElement("input");
-      nome.type = "text"; nome.name = "item-nome";
-      nome.setAttribute("list","lista-produtos");
-      nome.placeholder = "Produto";
-      nome.required = true;
-      nome.value = item.nomeItem || item.nome || "";
-
-      const qtd = document.createElement("input");
-      qtd.type = "number"; qtd.name = "item-quantidade";
-      qtd.placeholder = "Qtd"; qtd.min = "1"; qtd.required = true;
-      qtd.value = item.quantidade ?? item.qtd ?? "";
-
-      const rem = document.createElement("button");
-      rem.type = "button"; rem.textContent = "❌";
-      rem.addEventListener("click", () => div.remove());
-
-      div.append(nome, qtd, rem);
-      itensCt.appendChild(div);
+    function formatarMoeda(valor) {
+      return valor.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
     }
 
-    function atualizarTotais() {
-      const somar = (selector) => {
-        return Array.from(document.querySelectorAll(selector))
-          .map(input => parseFloat(input.value.replace(",", ".") || 0))
-          .reduce((
+    async function carregarDados() {
+      try {
+        const [eventoSnap, produtosSnap] = await Promise.all([
+          get(ref(db, `eventos/${eventId}`)),
+          get(ref(db, "produtos"))
+        ]);
+
+        if (!eventoSnap.exists()) {
+          alert("Evento não encontrado.");
+          return;
+        }
+
+        const evento = eventoSnap.val();
+        const produtos = produtosSnap.exists() ? produtosSnap.val() : {};
+
+        nomeEl.textContent = evento.nome || "-";
+        dataEl.textContent = evento.data || "-";
+        responsavelEl.textContent = evento.responsavel || "-";
+        statusEl.textContent = evento.status || "-";
+
+        const itens = evento.itens || [];
+        tabelaItens.innerHTML = "";
+
+        itens.forEach((item, index) => {
+          const nome = item.nome || item.nomeItem || "-";
+          const qtd = parseInt(item.quantidade || item.qtd || 0);
+          const congelado = parseInt(item.congelado || 0);
+          const assado = parseInt(item.assado || 0);
+          const perda = parseInt(item.perdido || 0);
+
+          const produto = produtos[nome] || {};
+          const valorVenda = parseFloat(produto.valorVenda || 0);
+          const custo = parseFloat(produto.custo || 0);
+
+          const vendido = qtd - (congelado + assado + perda);
+          const valorVendas = vendido * valorVenda;
+          const valorPerdas = perda * custo;
+
+          itensAtualizados.push({ index, congelado, assado, perdido: perda });
+
+          const row = document.createElement("tr");
+          row.innerHTML = `
+            <td>${nome}</td>
+            <td>${qtd}</td>
+            <td><input type="number" value="${congelado}" data-index="${index}" data-campo="congelado" min="0"></td>
+            <td><input type="number" value="${assado}" data-index="${index}" data-campo="assado" min="0"></td>
+            <td><input type="number" value="${perda}" data-index="${index}" data-campo="perdido" min="0"></td>
+            <td>${formatarMoeda(valorVendas)}</td>
+            <td>${formatarMoeda(valorPerdas)}</td>
+          `;
+          tabelaItens.appendChild(row);
+        });
+
+        tabelaItens.querySelectorAll("input").forEach(input => {
+          input.addEventListener("change", e => {
+            const idx = parseInt(e.target.dataset.index);
+            const campo = e.target.dataset.campo;
+            const valor = parseInt(e.target.value);
+            if (!isNaN(idx)) {
+              itensAtualizados[idx][campo] = valor;
+            }
+          });
+        });
+      } catch (err) {
+        console.error("Erro ao carregar dados:", err);
+        alert("Erro ao carregar dados do evento.");
+      }
+    }
+
+    btnSalvar.addEventListener("click", async () => {
+      try {
+        const updates = {};
+        itensAtualizados.forEach(item => {
+          updates[`itens/${item.index}/congelado`] = item.congelado;
+          updates[`itens/${item.index}/assado`] = item.assado;
+          updates[`itens/${item.index}/perdido`] = item.perdido;
+        });
+        await update(ref(db, `eventos/${eventId}`), updates);
+        alert("Dados atualizados com sucesso.");
+        location.reload();
+      } catch (err) {
+        console.error("Erro ao salvar:", err);
+        alert("Erro ao salvar os dados.");
+      }
+    });
+
+    carregarDados();
+  </script>
+</body>
+</html>
