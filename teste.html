@@ -2,26 +2,23 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Relatório do Evento</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <style>
-    body { font-family: Arial, sans-serif; margin: 20px; }
-    table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-    th, td { border: 1px solid #ccc; padding: 8px; text-align: center; }
-    th { background-color: #f0f0f0; }
-    .btn-container { margin-top: 20px; }
-    button { padding: 10px 15px; margin-right: 10px; }
+    body { font-family: Arial, sans-serif; padding: 20px; background-color: #f2f2f2; }
+    h2 { color: #333; }
+    table { width: 100%; border-collapse: collapse; margin-top: 20px; background-color: #fff; }
+    th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
+    th { background-color: #eee; }
+    button { margin-top: 20px; padding: 10px 15px; font-size: 16px; }
   </style>
 </head>
 <body>
-
-  <h1>Relatório do Evento</h1>
-  <div id="dadosEvento">
-    <p><strong>Nome:</strong> <span id="nomeEvento">Carregando...</span></p>
-    <p><strong>Data:</strong> <span id="dataEvento">-</span></p>
-    <p><strong>Responsável:</strong> <span id="responsavelEvento">-</span></p>
-    <p><strong>Status:</strong> <span id="statusEvento">-</span></p>
-  </div>
+  <h2>Relatório do Evento</h2>
+  <p><strong>Nome:</strong> <span id="eventoNome"></span></p>
+  <p><strong>Data:</strong> <span id="eventoData"></span></p>
+  <p><strong>Responsável:</strong> <span id="eventoResponsavel"></span></p>
+  <p><strong>Status:</strong> <span id="eventoStatus"></span></p>
 
   <table>
     <thead>
@@ -35,137 +32,100 @@
         <th>Valor Perda</th>
       </tr>
     </thead>
-    <tbody id="tabelaItens">
-      <tr><td colspan="7">Carregando...</td></tr>
-    </tbody>
+    <tbody id="itensTabela"></tbody>
   </table>
 
-  <div class="btn-container">
-    <button id="btnSalvar">Salvar</button>
-    <button onclick="window.history.back()">Voltar</button>
-  </div>
+  <button onclick="salvarDados()">Salvar</button>
+  <button onclick="voltarPagina()">Voltar</button>
 
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js";
-    import { getDatabase, ref, get, update } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-database.js";
-
+  <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-database-compat.js"></script>
+  <script>
     const firebaseConfig = {
-      apiKey: "AIzaSyD-gwzz-ctYMzK9bTqCig9o8ZNE2p6E0B4",
+      apiKey: "AIzaSyA60F-MtAxQ7vL6frtwVURRznDQofzxNRI",
       authDomain: "controleestoquelepan.firebaseapp.com",
       databaseURL: "https://controleestoquelepan-default-rtdb.firebaseio.com",
       projectId: "controleestoquelepan",
       storageBucket: "controleestoquelepan.appspot.com",
-      messagingSenderId: "711161025797",
-      appId: "1:711161025797:web:2764f36e099f63b2f3432f"
+      messagingSenderId: "547373654094",
+      appId: "1:547373654094:web:9a9e3b1b0ff74b6c64db38"
     };
 
-    const app = initializeApp(firebaseConfig);
-    const db = getDatabase(app);
+    firebase.initializeApp(firebaseConfig);
+    const database = firebase.database();
 
     const urlParams = new URLSearchParams(window.location.search);
-    const eventId = urlParams.get("id");
+    const eventoId = urlParams.get('id') || '-OPanRjlKPRitdLPalzW';
 
-    const nomeEl = document.getElementById("nomeEvento");
-    const dataEl = document.getElementById("dataEvento");
-    const responsavelEl = document.getElementById("responsavelEvento");
-    const statusEl = document.getElementById("statusEvento");
-    const tabelaItens = document.getElementById("tabelaItens");
-    const btnSalvar = document.getElementById("btnSalvar");
+    function carregarDados() {
+      database.ref('eventos/' + eventoId).once('value').then(snapshot => {
+        const evento = snapshot.val();
+        if (!evento) return;
 
-    let itensAtualizados = [];
+        document.getElementById('eventoNome').textContent = evento.nome || '-';
+        document.getElementById('eventoData').textContent = evento.data || '-';
+        document.getElementById('eventoResponsavel').textContent = evento.responsavel || '-';
+        document.getElementById('eventoStatus').textContent = evento.status || '-';
 
-    function formatarMoeda(valor) {
-      return valor.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
-    }
+        database.ref('produtos').once('value').then(prodSnap => {
+          const produtos = prodSnap.val() || {};
 
-    async function carregarDados() {
-      try {
-        const [eventoSnap, produtosSnap] = await Promise.all([
-          get(ref(db, `eventos/${eventId}`)),
-          get(ref(db, "produtos"))
-        ]);
+          const tabela = document.getElementById('itensTabela');
+          tabela.innerHTML = '';
 
-        if (!eventoSnap.exists()) {
-          alert("Evento não encontrado.");
-          return;
-        }
+          for (const nome in evento.itens) {
+            const item = evento.itens[nome];
+            const nomeNormalizado = nome.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
 
-        const evento = eventoSnap.val();
-        const produtos = produtosSnap.exists() ? produtosSnap.val() : {};
-
-        nomeEl.textContent = evento.nome || "-";
-        dataEl.textContent = evento.data || "-";
-        responsavelEl.textContent = evento.responsavel || "-";
-        statusEl.textContent = evento.status || "-";
-
-        const itens = evento.itens || [];
-        tabelaItens.innerHTML = "";
-
-        itens.forEach((item, index) => {
-          const nome = item.nome || item.nomeItem || "-";
-          const qtd = parseInt(item.quantidade || item.qtd || 0);
-          const congelado = parseInt(item.congelado || 0);
-          const assado = parseInt(item.assado || 0);
-          const perda = parseInt(item.perdido || 0);
-
-          const produto = produtos[nome] || {};
-          const valorVenda = parseFloat(produto.valorVenda || 0);
-          const custo = parseFloat(produto.custo || 0);
-
-          const vendido = qtd - (congelado + assado + perda);
-          const valorVendas = vendido * valorVenda;
-          const valorPerdas = perda * custo;
-
-          itensAtualizados.push({ index, congelado, assado, perdido: perda });
-
-          const row = document.createElement("tr");
-          row.innerHTML = `
-            <td>${nome}</td>
-            <td>${qtd}</td>
-            <td><input type="number" value="${congelado}" data-index="${index}" data-campo="congelado" min="0"></td>
-            <td><input type="number" value="${assado}" data-index="${index}" data-campo="assado" min="0"></td>
-            <td><input type="number" value="${perda}" data-index="${index}" data-campo="perdido" min="0"></td>
-            <td>${formatarMoeda(valorVendas)}</td>
-            <td>${formatarMoeda(valorPerdas)}</td>
-          `;
-          tabelaItens.appendChild(row);
-        });
-
-        tabelaItens.querySelectorAll("input").forEach(input => {
-          input.addEventListener("change", e => {
-            const idx = parseInt(e.target.dataset.index);
-            const campo = e.target.dataset.campo;
-            const valor = parseInt(e.target.value);
-            if (!isNaN(idx)) {
-              itensAtualizados[idx][campo] = valor;
+            let dadosProduto = null;
+            for (const chave in produtos) {
+              const chaveNormalizada = chave.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
+              if (chaveNormalizada === nomeNormalizado) {
+                dadosProduto = produtos[chave];
+                break;
+              }
             }
-          });
+
+            if (!dadosProduto) {
+              console.warn(`Produto não encontrado no cadastro: ${nome}`);
+              dadosProduto = { valorVenda: 0, custo: 0 };
+            }
+
+            const qtd = item.quantidade || 0;
+            const congelado = item.congelado || 0;
+            const assado = item.assado || 0;
+            const perda = item.perda || 0;
+            const valorVendaUnit = parseFloat(dadosProduto.valorVenda) || 0;
+            const custoUnit = parseFloat(dadosProduto.custo) || 0;
+
+            const vendidos = qtd - congelado - assado - perda;
+            const valorVenda = vendidos * valorVendaUnit;
+            const valorPerda = perda * custoUnit;
+
+            const row = `<tr>
+              <td>${nome}</td>
+              <td>${qtd}</td>
+              <td>${congelado}</td>
+              <td>${assado}</td>
+              <td>${perda}</td>
+              <td>R$ ${valorVenda.toFixed(2)}</td>
+              <td>R$ ${valorPerda.toFixed(2)}</td>
+            </tr>`;
+            tabela.innerHTML += row;
+          }
         });
-      } catch (err) {
-        console.error("Erro ao carregar dados:", err);
-        alert("Erro ao carregar dados do evento.");
-      }
+      });
     }
 
-    btnSalvar.addEventListener("click", async () => {
-      try {
-        const updates = {};
-        itensAtualizados.forEach(item => {
-          updates[`itens/${item.index}/congelado`] = item.congelado;
-          updates[`itens/${item.index}/assado`] = item.assado;
-          updates[`itens/${item.index}/perdido`] = item.perdido;
-        });
-        await update(ref(db, `eventos/${eventId}`), updates);
-        alert("Dados atualizados com sucesso.");
-        location.reload();
-      } catch (err) {
-        console.error("Erro ao salvar:", err);
-        alert("Erro ao salvar os dados.");
-      }
-    });
+    function salvarDados() {
+      alert('Funcionalidade de salvar ainda não implementada.');
+    }
+
+    function voltarPagina() {
+      window.history.back();
+    }
 
     carregarDados();
   </script>
 </body>
 </html>
-
