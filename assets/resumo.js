@@ -32,6 +32,10 @@ function carregarEvento() {
     document.getElementById("dataEvento").textContent = evento.data || "";
     document.getElementById("responsavelEvento").textContent = evento.responsavel || "";
 
+    if (evento.analise && evento.analise.vendaPDV) {
+      document.getElementById("vendaPDV").value = evento.analise.vendaPDV;
+    }
+
     processarResumo(evento);
   });
 }
@@ -97,11 +101,26 @@ function atualizarCamposTotais() {
   document.getElementById("custoEquipe").value = `R$ ${totalEquipe.toFixed(2)}`;
   document.getElementById("valorVenda").value = `R$ ${totalVenda.toFixed(2)}`;
   document.getElementById("valorPerda").value = `R$ ${totalPerda.toFixed(2)}`;
-  // campo vendaPDV fica editável e deve ser preenchido manualmente
 }
 
 function salvarAnalise() {
-  alert("Análise salva com sucesso (simulação).");
+  const vendaPDV = document.getElementById("vendaPDV").value || "";
+  const dadosAnalise = {
+    vendaPDV,
+    valorVenda: totalVenda,
+    valorPerda: totalPerda,
+    custoLogistica: totalLogistica,
+    custoEquipe: totalEquipe
+  };
+
+  database.ref("eventos/" + eventoId + "/analise").set(dadosAnalise)
+    .then(() => {
+      alert("Análise salva com sucesso!");
+    })
+    .catch(error => {
+      console.error("Erro ao salvar análise:", error);
+      alert("Erro ao salvar análise.");
+    });
 }
 
 carregarProdutos().then(carregarEvento);
