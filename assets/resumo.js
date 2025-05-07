@@ -30,6 +30,7 @@ async function carregarDados() {
     const produtos = produtosSnap.val() || {};
     const itens = evento.itens || [];
 
+    // Preenche campos básicos
     document.getElementById("nomeEvento").value = evento.nome || "";
     document.getElementById("dataEvento").value = evento.data || "";
     document.getElementById("responsavelEvento").value = evento.responsavel || "";
@@ -40,6 +41,7 @@ async function carregarDados() {
       return;
     }
 
+    // Inicializa totais
     let custoLogistica = 0;
     let custoEquipe = 0;
     let totalVenda = 0;
@@ -58,10 +60,10 @@ async function carregarDados() {
       const congelado = parseInt(item.congelado || 0);
       const perdido = parseInt(item.perdido || 0);
 
+      const vendidos = enviado - (congelado + assado + perdido);
       const valorVendaUnit = parseFloat(produto?.valorVenda || 0);
       const custoUnit = parseFloat(produto?.custo || 0);
 
-      const vendidos = enviado - (assado + congelado + perdido);
       const valorVendaTotal = vendidos * valorVendaUnit;
       const custoPerda = perdido * custoUnit;
 
@@ -83,13 +85,13 @@ async function carregarDados() {
       tabela.appendChild(linha);
     });
 
-    // Preencher campos na tela
+    // Exibe na interface
     document.getElementById("custoLogistica").value = formatar(custoLogistica);
     document.getElementById("custoEquipe").value = formatar(custoEquipe);
     document.getElementById("valorVenda").value = formatar(totalVenda);
     document.getElementById("valorPerda").value = formatar(totalPerda);
 
-    // Salvar no banco
+    // Salva no Firebase
     await db.ref(`eventos/${id}/analise`).update({
       custoLogistica,
       custoEquipe,
@@ -98,11 +100,12 @@ async function carregarDados() {
     });
 
   } catch (err) {
-    console.error("Erro ao carregar e calcular:", err);
-    alert("Erro ao carregar dados do evento.");
+    console.error("Erro ao carregar dados do evento:", err);
+    alert("Erro ao carregar dados.");
   }
 }
 
+// Salvar venda PDV manualmente
 document.addEventListener("DOMContentLoaded", () => {
   carregarDados();
 
