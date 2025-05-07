@@ -1,113 +1,100 @@
+
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Resumo dos Eventos Finalizados</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      padding: 20px;
-    }
-    h2 {
-      margin-bottom: 20px;
-    }
-    table {
-      width: 100%;
-      border-collapse: collapse;
-    }
-    th, td {
-      border: 1px solid #ccc;
-      padding: 8px;
-      text-align: left;
-    }
-    th {
-      background-color: #f2f2f2;
-    }
-  </style>
+  <title>Resumo dos Eventos</title>
+  <link rel="stylesheet" href="assets/style.css">
 </head>
 <body>
-  <h2>Resumo dos Eventos Finalizados</h2>
-  <table>
-    <thead>
-      <tr>
-        <th>Nome do Evento</th>
-        <th>Data</th>
-        <th>Responsável</th>
-        <th>Venda PDV (R$)</th>
-        <th>Venda Total (R$)</th>
-        <th>Perda (R$)</th>
-        <th>Custo Equipe (R$)</th>
-        <th>Custo Logística (R$)</th>
-      </tr>
-    </thead>
-    <tbody id="tabela-eventos">
-      <tr><td colspan="8">Carregando...</td></tr>
-    </tbody>
-  </table>
+  <div class="container">
+    <h1>Resumo dos Eventos Finalizados</h1>
 
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js";
-    import { getDatabase, ref, child, get } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-database.js";
+    <table id="tabelaResumo">
+      <thead>
+        <tr>
+          <th>Nome do Evento</th>
+          <th>Data</th>
+          <th>Responsável</th>
+          <th>Venda PDV</th>
+          <th>Valor de Venda</th>
+          <th>Valor de Perda</th>
+          <th>Custo Equipe</th>
+          <th>Custo Logística</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td colspan="8">Carregando eventos...</td></tr>
+      </tbody>
+    </table>
 
+    <div class="button-container">
+      <a href="index.html" class="botao">Voltar</a>
+    </div>
+  </div>
+
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+  <script>
     const firebaseConfig = {
-      apiKey: "AIzaSyBN-bmzgrlzjmrKMmuClZ8LVll-vJyx-aE",
-      authDomain: "controleestoquelepan.firebaseapp.com",
-      databaseURL: "https://controleestoquelepan-default-rtdb.firebaseio.com",
-      projectId: "controleestoquelepan",
-      storageBucket: "controleestoquelepan.appspot.com",
-      messagingSenderId: "779860276544",
-      appId: "1:779860276544:web:f45844571a8c0bab1576a5"
+      databaseURL: "https://controleestoquelepan-default-rtdb.firebaseio.com"
     };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+  </script>
 
-    const app = initializeApp(firebaseConfig);
-    const db = getDatabase(app);
-    const tbody = document.getElementById("tabela-eventos");
+  <script>
+    const tbody = document.querySelector("#tabelaResumo tbody");
 
-    function parseValor(valor) {
-      return isNaN(parseFloat(valor)) ? 0 : parseFloat(valor);
+    function formatar(valor) {
+      return "R$ " + parseFloat(valor || 0).toFixed(2).replace('.', ',');
     }
 
-    get(child(ref(db), "eventos"))
-      .then(snapshot => {
-        tbody.innerHTML = "";
-        const eventos = snapshot.val() || {};
+    function carregarEventos() {
+      db.ref("eventos").once("value")
+        .then(snapshot => {
+          const dados = snapshot.val();
+          tbody.innerHTML = "";
 
-        const finalizados = Object.values(eventos).filter(ev => ev.status === "finalizado");
+          if (!dados) {
+            tbody.innerHTML = `<tr><td colspan="8">Nenhum evento encontrado.</td></tr>`;
+            return;
+          }
 
-        if (finalizados.length === 0) {
-          tbody.innerHTML = "<tr><td colspan='8'>Nenhum evento finalizado encontrado.</td></tr>";
-          return;
-        }
+          const eventos = Object.values(dados).filter(e => e.status === "finalizado");
 
-        finalizados.forEach(ev => {
-          const nome = ev.nome || "-";
-          const data = ev.data || "-";
-          const responsavel = ev.responsavel || "-";
-          const vendaPDV = parseValor(ev.vendaPDV).toFixed(2);
-          const vendaTotal = parseValor(ev.vendaTotal).toFixed(2);
-          const valorPerda = parseValor(ev.valorPerda).toFixed(2);
-          const custoEquipe = (ev.equipe || []).reduce((acc, e) => acc + parseValor(e.valor), 0).toFixed(2);
-          const custoLogistica = (ev.logistica || []).reduce((acc, l) => acc + parseValor(l.valor), 0).toFixed(2);
+          if (eventos.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="8">Nenhum evento finalizado.</td></tr>`;
+            return;
+          }
 
-          const row = document.createElement("tr");
-          row.innerHTML = `
-            <td>${nome}</td>
-            <td>${data}</td>
-            <td>${responsavel}</td>
-            <td>${vendaPDV}</td>
-            <td>${vendaTotal}</td>
-            <td>${valorPerda}</td>
-            <td>${custoEquipe}</td>
-            <td>${custoLogistica}</td>
-          `;
-          tbody.appendChild(row);
+          eventos.forEach(ev => {
+            const analise = ev.analise || {};
+            const linha = document.createElement("tr");
+
+            linha.innerHTML = `
+              <td>${ev.nome || "—"}</td>
+              <td>${ev.data || "—"}</td>
+              <td>${ev.responsavel || "—"}</td>
+              <td>${formatar(analise.vendaPDV)}</td>
+              <td>${formatar(analise.valorVenda)}</td>
+              <td>${formatar(analise.valorPerda)}</td>
+              <td>${formatar(analise.custoEquipe)}</td>
+              <td>${formatar(analise.custoLogistica)}</td>
+            `;
+
+            tbody.appendChild(linha);
+          });
+        })
+        .catch(err => {
+          console.error("Erro ao carregar eventos:", err);
+          tbody.innerHTML = `<tr><td colspan="8">Erro ao carregar eventos.</td></tr>`;
         });
-      })
-      .catch(error => {
-        console.error("Erro ao carregar eventos:", error);
-        tbody.innerHTML = "<tr><td colspan='8'>Erro ao carregar eventos.</td></tr>";
-      });
+    }
+
+    document.addEventListener("DOMContentLoaded", carregarEventos);
   </script>
 </body>
 </html>
