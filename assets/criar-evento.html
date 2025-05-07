@@ -1,124 +1,196 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
-
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title id="form-title">Criar Evento</title>
-  <link rel="stylesheet" href="style.css" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Criar / Editar Evento</title>
+  <link rel="stylesheet" href="assets/style.css">
 </head>
-
 <body>
   <div class="container">
-    <h1 id="form-title">Criar Evento</h1>
-    <form id="evento-form">
-      <label for="nome">Nome do Evento:</label>
-      <input type="text" id="nome" name="nome" required />
+    <h2 id="form-title">Criar Novo Evento</h2>
+    <form id="form-evento">
+      <label for="nome">Nome do Evento:
+        <input type="text" id="nome" name="nome" required />
+      </label>
+      <label for="data">Data:
+        <input type="date" id="data" name="data" required />
+      </label>
+      <label for="responsavel">Responsável:
+        <input type="text" id="responsavel" name="responsavel" required />
+      </label>
 
-      <label for="data">Data:</label>
-      <input type="date" id="data" name="data" required />
-
-      <label for="local">Local:</label>
-      <input type="text" id="local" name="local" required />
-
-      <label for="cliente">Cliente:</label>
-      <input type="text" id="cliente" name="cliente" required />
+      <label for="vendaPDV">Venda no PDV (R$):
+        <input type="number" id="vendaPDV" name="vendaPDV" step="0.01" min="0" />
+      </label>
 
       <h3>Equipe</h3>
-      <div class="equipe-item">
-        <label for="equipe1">Pessoa 1 (R$):</label>
-        <input type="number" id="equipe1" class="equipe" name="equipe1" min="0" step="0.01" />
-      </div>
-      <div class="equipe-item">
-        <label for="equipe2">Pessoa 2 (R$):</label>
-        <input type="number" id="equipe2" class="equipe" name="equipe2" min="0" step="0.01" />
-      </div>
-
-      <p><strong>Custo Equipe:</strong> R$ <span id="custo-equipe">0.00</span></p>
+      <div id="equipe-container"></div>
+      <button type="button" id="add-equipe" class="botao">➕ Adicionar Membro</button>
 
       <h3>Logística</h3>
-      <div class="logistica-item">
-        <label for="log1">Transporte (R$):</label>
-        <input type="number" id="log1" class="logistica" name="log1" min="0" step="0.01" />
-      </div>
-      <div class="logistica-item">
-        <label for="log2">Combustível (R$):</label>
-        <input type="number" id="log2" class="logistica" name="log2" min="0" step="0.01" />
-      </div>
+      <div id="logistica-container"></div>
+      <button type="button" id="add-logistica" class="botao">➕ Adicionar Item Logística</button>
 
-      <p><strong>Custo Logística:</strong> R$ <span id="custo-logistica">0.00</span></p>
+      <h3>Itens</h3>
+      <datalist id="lista-produtos"></datalist>
+      <div id="itens-container"></div>
+      <button type="button" id="add-item" class="botao">➕ Adicionar Item</button>
 
-      <button type="submit" id="submit-button">Criar Evento</button>
+      <button type="submit" id="submit-btn" class="botao">Criar Evento</button>
     </form>
   </div>
 
-  <script>
-    const urlParams = new URLSearchParams(window.location.search);
-    const eventoId = urlParams.get('id');
-    const formTitle = document.getElementById('form-title');
-    const submitButton = document.getElementById('submit-button');
+  <script type="module">
+    import { initializeApp }        from "https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js";
+    import {
+      getDatabase, ref, push, update,
+      get, child
+    } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-database.js";
 
-    if (eventoId) {
-      formTitle.textContent = 'Editar Evento';
-      submitButton.textContent = 'Salvar Alterações';
-      const eventos = JSON.parse(localStorage.getItem('eventos')) || [];
-      const evento = eventos.find(e => e.id === eventoId);
-      if (evento) {
-        document.getElementById('nome').value = evento.nome;
-        document.getElementById('data').value = evento.data;
-        document.getElementById('local').value = evento.local;
-        document.getElementById('cliente').value = evento.cliente;
-        document.getElementById('equipe1').value = evento.equipe1 || '';
-        document.getElementById('equipe2').value = evento.equipe2 || '';
-        document.getElementById('log1').value = evento.log1 || '';
-        document.getElementById('log2').value = evento.log2 || '';
-        calcularTotais();
-      }
+    const firebaseConfig = {
+      apiKey: "AIzaSyBN-bmzgrlzjmrKMmuClZ8LVll-vJyx-aE",
+      authDomain: "controleestoquelepan.firebaseapp.com",
+      databaseURL: "https://controleestoquelepan-default-rtdb.firebaseio.com",
+      projectId: "controleestoquelepan",
+      storageBucket: "controleestoquelepan.appspot.com",
+      messagingSenderId: "779860276544",
+      appId: "1:779860276544:web:f45844571a8c0bab1576a5"
+    };
+    const app = initializeApp(firebaseConfig);
+    const db  = getDatabase(app);
+
+    const params   = new URLSearchParams(window.location.search);
+    const eventId  = params.get("id");
+    const isEdit   = Boolean(eventId);
+
+    const titleH2   = document.getElementById("form-title");
+    const submitBtn = document.getElementById("submit-btn");
+    const addItem   = document.getElementById("add-item");
+    const itensCt   = document.getElementById("itens-container");
+    const form      = document.getElementById("form-evento");
+    const datalist  = document.getElementById("lista-produtos");
+    const equipeCt = document.getElementById("equipe-container");
+    const addEquipeBtn = document.getElementById("add-equipe");
+    const logisticaCt = document.getElementById("logistica-container");
+    const addLogisticaBtn = document.getElementById("add-logistica");
+
+    get(ref(db, "produtos"))
+      .then(snap => {
+        const prods = snap.val() || {};
+        Object.values(prods).forEach(p => {
+          const opt = document.createElement("option");
+          opt.value = p.nome;
+          datalist.appendChild(opt);
+        });
+      });
+
+    function novaLinha(item = {}) {
+      const div = document.createElement("div");
+      div.className = "item-line";
+
+      const nome = document.createElement("input");
+      nome.type = "text"; nome.name = "item-nome";
+      nome.setAttribute("list","lista-produtos");
+      nome.placeholder = "Produto";
+      nome.required = true;
+      nome.value = item.nomeItem || item.nome || "";
+
+      const qtd = document.createElement("input");
+      qtd.type = "number"; qtd.name = "item-quantidade";
+      qtd.placeholder = "Qtd"; qtd.min = "1"; qtd.required = true;
+      qtd.value = item.quantidade ?? item.qtd ?? "";
+
+      const rem = document.createElement("button");
+      rem.type = "button"; rem.textContent = "❌";
+      rem.addEventListener("click", () => div.remove());
+
+      div.append(nome, qtd, rem);
+      itensCt.appendChild(div);
     }
 
-    function calcularTotais() {
-      const somar = (classe) => {
-        return Array.from(document.querySelectorAll('.' + classe)).reduce((total, input) => {
-          const val = parseFloat(input.value);
-          return total + (isNaN(val) ? 0 : val);
-        }, 0);
-      };
-      document.getElementById('custo-equipe').textContent = somar('equipe').toFixed(2);
-      document.getElementById('custo-logistica').textContent = somar('logistica').toFixed(2);
+    addItem.addEventListener("click", () => novaLinha());
+
+    function novaLinhaDetalhe(container, nomeCampo, placeholderNome, nomeValor, placeholderValor, item = {}) {
+      const div = document.createElement("div");
+      div.className = "detalhe-line";
+
+      const nomeInput = document.createElement("input");
+      nomeInput.type = "text";
+      nomeInput.name = nomeCampo;
+      nomeInput.placeholder = placeholderNome;
+      nomeInput.required = true;
+      nomeInput.value = item.nome || "";
+
+      const valorInput = document.createElement("input");
+      valorInput.type = "text";
+      valorInput.name = nomeValor;
+      valorInput.placeholder = placeholderValor;
+      valorInput.required = true;
+      valorInput.value = item.valor || "";
+
+      const remBtn = document.createElement("button");
+      remBtn.type = "button";
+      remBtn.textContent = "❌";
+      remBtn.addEventListener("click", () => div.remove());
+
+      div.append(nomeInput, valorInput, remBtn);
+      container.appendChild(div);
     }
 
-    document.querySelectorAll('.equipe, .logistica').forEach(input => {
-      input.addEventListener('input', calcularTotais);
-    });
+    addEquipeBtn.addEventListener("click", () => novaLinhaDetalhe(equipeCt, "equipe-nome", "Nome Membro", "equipe-valor", "Função/Cargo"));
+    addLogisticaBtn.addEventListener("click", () => novaLinhaDetalhe(logisticaCt, "logistica-nome", "Item Logística", "logistica-valor", "Detalhe/Valor"));
 
-    document.getElementById('evento-form').addEventListener('submit', function (e) {
+    if (isEdit) {
+      titleH2.textContent   = "Editar Evento";
+      submitBtn.textContent = "Salvar Alterações";
+      get(child(ref(db), `eventos/${eventId}`))
+        .then(snap => {
+          if (!snap.exists()) return;
+          const ev = snap.val();
+          form.nome.value        = ev.nome;
+          form.data.value        = ev.data;
+          form.responsavel.value = ev.responsavel;
+          form.vendaPDV.value    = ev.vendaPDV || "";
+          (ev.equipe || []).forEach(eq => novaLinhaDetalhe(equipeCt, "equipe-nome", "Nome Membro", "equipe-valor", "Função/Cargo", eq));
+          (ev.logistica || []).forEach(lg => novaLinhaDetalhe(logisticaCt, "logistica-nome", "Item Logística", "logistica-valor", "Detalhe/Valor", lg));
+          (ev.itens || []).forEach(it => novaLinha(it));
+        });
+    }
+
+    form.addEventListener("submit", e => {
       e.preventDefault();
-
-      const evento = {
-        id: eventoId || Date.now().toString(),
-        nome: document.getElementById('nome').value,
-        data: document.getElementById('data').value,
-        local: document.getElementById('local').value,
-        cliente: document.getElementById('cliente').value,
-        equipe1: parseFloat(document.getElementById('equipe1').value) || 0,
-        equipe2: parseFloat(document.getElementById('equipe2').value) || 0,
-        log1: parseFloat(document.getElementById('log1').value) || 0,
-        log2: parseFloat(document.getElementById('log2').value) || 0
+      const evObj = {
+        nome:        form.nome.value,
+        data:        form.data.value,
+        responsavel: form.responsavel.value,
+        vendaPDV:    parseFloat(form.vendaPDV.value || 0),
+        equipe: Array.from(equipeCt.children).map(div => ({
+          nome:  div.querySelector('[name="equipe-nome"]').value,
+          valor: div.querySelector('[name="equipe-valor"]').value
+        })),
+        logistica: Array.from(logisticaCt.children).map(div => ({
+          nome:  div.querySelector('[name="logistica-nome"]').value,
+          valor: div.querySelector('[name="logistica-valor"]').value
+        })),
+        itens: Array.from(itensCt.children).map(div => ({
+          nomeItem:   div.querySelector('[name="item-nome"]').value,
+          quantidade: +div.querySelector('[name="item-quantidade"]').value
+        })),
+        status: "aberto"
       };
 
-      let eventos = JSON.parse(localStorage.getItem('eventos')) || [];
+      const action = isEdit
+        ? update(ref(db, `eventos/${eventId}`), evObj)
+        : push(ref(db, "eventos"), evObj);
 
-      if (eventoId) {
-        const index = eventos.findIndex(e => e.id === eventoId);
-        if (index !== -1) eventos[index] = evento;
-      } else {
-        eventos.push(evento);
-      }
-
-      localStorage.setItem('eventos', JSON.stringify(eventos));
-      window.location.href = '../index.html';
+      action
+        .then(() => location.href = "../index.html")
+        .catch(err => {
+          console.error(err);
+          alert("Falha ao salvar.");
+        });
     });
   </script>
 </body>
-
 </html>
