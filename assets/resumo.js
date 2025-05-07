@@ -145,7 +145,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
   document.getElementById("btnSalvar").addEventListener("click", async () => {
     const vendaPDV = parseFloat(document.getElementById("vendaPDV").value || 0);
-    const valorPerda = parseFloatSafe(document.getElementById("valorPerda").value);
+    const valorVenda = parseFloatSafe(document.getElementById("valorVenda").value.replace(/[^\d,.-]/g, ""));
+    const valorPerda = parseFloatSafe(document.getElementById("valorPerda").value.replace(/[^\d,.-]/g, ""));
 
     const equipe = Array.from(document.querySelectorAll(".equipe-linha")).map(div => ({
       nome: div.querySelector('[name="equipe-nome"]').value,
@@ -162,7 +163,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
     await db.ref(`eventos/${id}/analise`).update({
       vendaPDV,
-      valorPerda, // agora salvo corretamente
+      valorVenda,
+      valorPerda,
       equipe,
       logistica,
       custoEquipe,
