@@ -1,11 +1,10 @@
-
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Resumo dos Eventos</title>
-  <link rel="stylesheet" href="assets/style.css">
+  <title>Resumo de Eventos Finalizados</title>
+  <link rel="stylesheet" href="assets/style.css" />
 </head>
 <body>
   <div class="container">
@@ -53,45 +52,45 @@
     }
 
     function carregarEventos() {
-      db.ref("eventos").once("value")
-        .then(snapshot => {
-          const dados = snapshot.val();
-          tbody.innerHTML = "";
+      db.ref("eventos").once("value").then(snapshot => {
+        const eventos = snapshot.val();
+        tbody.innerHTML = "";
 
-          if (!dados) {
-            tbody.innerHTML = `<tr><td colspan="8">Nenhum evento encontrado.</td></tr>`;
-            return;
-          }
+        if (!eventos) {
+          tbody.innerHTML = `<tr><td colspan="8">Nenhum evento encontrado.</td></tr>`;
+          return;
+        }
 
-          const eventos = Object.values(dados).filter(e => e.status === "finalizado");
+        let encontrou = false;
 
-          if (eventos.length === 0) {
-            tbody.innerHTML = `<tr><td colspan="8">Nenhum evento finalizado.</td></tr>`;
-            return;
-          }
+        Object.values(eventos).forEach(ev => {
+          if (ev.status !== "finalizado") return;
 
-          eventos.forEach(ev => {
-            const analise = ev.analise || {};
-            const linha = document.createElement("tr");
+          const a = ev.analise || {};
+          const linha = document.createElement("tr");
 
-            linha.innerHTML = `
-              <td>${ev.nome || "—"}</td>
-              <td>${ev.data || "—"}</td>
-              <td>${ev.responsavel || "—"}</td>
-              <td>${formatar(analise.vendaPDV)}</td>
-              <td>${formatar(analise.valorVenda)}</td>
-              <td>${formatar(analise.valorPerda)}</td>
-              <td>${formatar(analise.custoEquipe)}</td>
-              <td>${formatar(analise.custoLogistica)}</td>
-            `;
+          linha.innerHTML = `
+            <td>${ev.nome || "—"}</td>
+            <td>${ev.data || "—"}</td>
+            <td>${ev.responsavel || "—"}</td>
+            <td>${formatar(a.vendaPDV)}</td>
+            <td>${formatar(a.valorVenda)}</td>
+            <td>${formatar(a.valorPerda)}</td>
+            <td>${formatar(a.custoEquipe)}</td>
+            <td>${formatar(a.custoLogistica)}</td>
+          `;
 
-            tbody.appendChild(linha);
-          });
-        })
-        .catch(err => {
-          console.error("Erro ao carregar eventos:", err);
-          tbody.innerHTML = `<tr><td colspan="8">Erro ao carregar eventos.</td></tr>`;
+          tbody.appendChild(linha);
+          encontrou = true;
         });
+
+        if (!encontrou) {
+          tbody.innerHTML = `<tr><td colspan="8">Nenhum evento finalizado.</td></tr>`;
+        }
+      }).catch(err => {
+        console.error("Erro ao carregar eventos:", err);
+        tbody.innerHTML = `<tr><td colspan="8">Erro ao carregar eventos.</td></tr>`;
+      });
     }
 
     document.addEventListener("DOMContentLoaded", carregarEventos);
