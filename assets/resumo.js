@@ -11,7 +11,7 @@ function normalizar(texto) {
 }
 
 function formatar(valor) {
-  return `R$ ${parseFloat(valor || 0).toFixed(2).replace('.', ',')}`;
+  return "R$ " + parseFloat(valor || 0).toFixed(2).replace('.', ',');
 }
 
 function parseFloatSafe(v) {
@@ -127,7 +127,6 @@ async function carregarDados() {
   document.getElementById("valorVenda").value = formatar(totalVenda);
   document.getElementById("valorPerda").value = formatar(totalPerda);
 
-  // carregar equipe e logistica
   (analise.equipe || []).forEach(eq => criarLinha("equipe-container", "equipe", eq));
   (analise.logistica || []).forEach(lg => criarLinha("logistica-container", "logistica", lg));
   atualizarTotaisEquipeLogistica();
@@ -146,24 +145,30 @@ document.addEventListener("DOMContentLoaded", () => {
 
   document.getElementById("btnSalvar").addEventListener("click", async () => {
     const vendaPDV = parseFloat(document.getElementById("vendaPDV").value || 0);
+    const valorPerda = parseFloatSafe(document.getElementById("valorPerda").value);
+
     const equipe = Array.from(document.querySelectorAll(".equipe-linha")).map(div => ({
       nome: div.querySelector('[name="equipe-nome"]').value,
       valor: parseFloatSafe(div.querySelector('[name="equipe-valor"]').value)
     }));
+
     const logistica = Array.from(document.querySelectorAll(".logistica-linha")).map(div => ({
       nome: div.querySelector('[name="logistica-nome"]').value,
       valor: parseFloatSafe(div.querySelector('[name="logistica-valor"]').value)
     }));
+
     const custoEquipe = equipe.reduce((s, e) => s + e.valor, 0);
     const custoLogistica = logistica.reduce((s, l) => s + l.valor, 0);
 
     await db.ref(`eventos/${id}/analise`).update({
       vendaPDV,
+      valorPerda, // agora salvo corretamente
       equipe,
       logistica,
       custoEquipe,
       custoLogistica
     });
+
     alert("Dados salvos com sucesso!");
   });
 });
