@@ -5,46 +5,130 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Análise do Evento</title>
   <link rel="stylesheet" href="assets/style.css" />
+  <style>
+    body {
+      font-size: 14px;
+      padding: 20px;
+    }
+
+    .grupo {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 16px;
+      margin-bottom: 16px;
+    }
+
+    .grupo label {
+      flex: 1;
+      min-width: 200px;
+    }
+
+    .separador {
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      padding: 10px;
+      margin-bottom: 24px;
+      background: #f9f9f9;
+    }
+
+    table.tabela-produtos {
+      width: calc(100% - 10cm);
+      margin: 0 auto 30px auto;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+
+    .tabela-produtos th, .tabela-produtos td {
+      border: 1px solid #ccc;
+      padding: 6px 10px;
+      text-align: center;
+    }
+
+    .equipe-linha, .logistica-linha {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+
+    .equipe-linha input, .logistica-linha input {
+      flex: 1;
+    }
+
+    .button-container {
+      display: flex;
+      gap: 12px;
+    }
+
+    .botao {
+      padding: 8px 16px;
+      background-color: #f90;
+      border: none;
+      border-radius: 5px;
+      color: white;
+      cursor: pointer;
+    }
+
+    .botao:hover {
+      background-color: #d87b00;
+    }
+
+    .botao:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    h2 {
+      margin-bottom: 16px;
+    }
+
+    label {
+      font-weight: bold;
+      font-size: 13px;
+    }
+
+    input[type="text"], input[type="number"] {
+      padding: 5px;
+      width: 100%;
+      box-sizing: border-box;
+    }
+  </style>
 </head>
 <body>
   <div class="container">
-    <h1>Análise do Evento</h1>
+    <h2>Análise do Evento</h2>
 
-    <label for="nomeEvento">Nome:</label>
-    <input type="text" id="nomeEvento" readonly />
-
-    <label for="dataEvento">Data:</label>
-    <input type="text" id="dataEvento" readonly />
-
-    <label for="responsavelEvento">Responsável:</label>
-    <input type="text" id="responsavelEvento" readonly />
-
-    <label for="vendaPDV">Venda PDV:</label>
-    <input type="number" id="vendaPDV" />
-
-    <div class="grupo-duplo">
-      <div>
-        <label for="valorVenda">Total de Vendas:</label>
-        <input type="text" id="valorVenda" readonly />
-      </div>
-      <div>
-        <label for="valorPerda">Total de Perdas:</label>
-        <input type="text" id="valorPerda" readonly />
-      </div>
+    <!-- Informações gerais -->
+    <div class="grupo">
+      <label>Nome: <input type="text" id="nomeEvento" readonly /></label>
+      <label>Data: <input type="text" id="dataEvento" readonly /></label>
+      <label>Responsável: <input type="text" id="responsavelEvento" readonly /></label>
     </div>
 
-    <h3>Equipe</h3>
-    <div id="equipe-container"></div>
-    <button type="button" class="botao" id="addEquipeBtn">➕ Adicionar Membro</button>
-    <p><strong>Custo Total da Equipe:</strong> <span id="custoEquipe">R$ 0,00</span></p>
+    <div class="grupo">
+      <label>Venda PDV: <input type="number" id="vendaPDV" /></label>
+      <label>Total de Venda: <input type="text" id="valorVenda" readonly /></label>
+      <label>Total de Perda: <input type="text" id="valorPerda" readonly /></label>
+    </div>
 
-    <h3>Logística</h3>
-    <div id="logistica-container"></div>
-    <button type="button" class="botao" id="addLogisticaBtn">➕ Adicionar Item</button>
-    <p><strong>Custo Total da Logística:</strong> <span id="custoLogistica">R$ 0,00</span></p>
+    <!-- Equipe -->
+    <div class="separador">
+      <h4>Equipe</h4>
+      <div id="equipe-container"></div>
+      <button type="button" class="botao" id="addEquipeBtn">➕ Adicionar Membro</button>
+      <p><strong>Custo Total da Equipe:</strong> <span id="custoEquipe">R$ 0,00</span></p>
+    </div>
 
-    <h3>Resumo dos Produtos</h3>
-    <table id="tabelaProdutos">
+    <!-- Logística -->
+    <div class="separador">
+      <h4>Logística</h4>
+      <div id="logistica-container"></div>
+      <button type="button" class="botao" id="addLogisticaBtn">➕ Adicionar Item</button>
+      <p><strong>Custo Total da Logística:</strong> <span id="custoLogistica">R$ 0,00</span></p>
+    </div>
+
+    <!-- Produtos -->
+    <h4>Resumo dos Produtos</h4>
+    <table class="tabela-produtos" id="tabelaProdutos">
       <thead>
         <tr>
           <th>Produto</th>
@@ -56,12 +140,15 @@
           <th>Custo de Perda</th>
         </tr>
       </thead>
-      <tbody></tbody>
+      <tbody>
+        <tr><td colspan="7">Carregando...</td></tr>
+      </tbody>
     </table>
 
+    <!-- Botões -->
     <div class="button-container">
       <button class="botao" id="btnSalvar">Salvar</button>
-      <a href="index.html" class="botao botao-voltar">Voltar</a>
+      <a href="index.html" class="botao">Voltar</a>
     </div>
   </div>
 
@@ -69,12 +156,12 @@
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
   <script>
-    const firebaseConfig = {
+    firebase.initializeApp({
       databaseURL: "https://controleestoquelepan-default-rtdb.firebaseio.com"
-    };
-    firebase.initializeApp(firebaseConfig);
+    });
   </script>
 
+  <!-- Script -->
   <script src="assets/resumo.js"></script>
 </body>
 </html>
