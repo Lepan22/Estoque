@@ -35,17 +35,11 @@ async function carregarDados() {
     document.getElementById("responsavelEvento").value = evento.responsavel || "";
     document.getElementById("vendaPDV").value = evento.analise?.vendaPDV || "";
 
-    // Se não houver itens, mostrar alerta e parar
     if (!Array.isArray(itens) || itens.length === 0) {
-      alert("Este evento não possui itens cadastrados. Nenhum cálculo pode ser realizado.");
-      document.getElementById("custoLogistica").value = "R$ 0,00";
-      document.getElementById("custoEquipe").value = "R$ 0,00";
-      document.getElementById("valorVenda").value = "R$ 0,00";
-      document.getElementById("valorPerda").value = "R$ 0,00";
+      alert("Este evento não possui itens cadastrados.");
       return;
     }
 
-    // Cálculos
     let custoLogistica = 0;
     let custoEquipe = 0;
     let totalVenda = 0;
@@ -73,7 +67,6 @@ async function carregarDados() {
 
       totalVenda += valorVendaTotal;
       totalPerda += custoPerda;
-
       custoLogistica += parseFloat(item.logistica || 0);
       custoEquipe += parseFloat(item.equipe || 0);
 
@@ -90,13 +83,13 @@ async function carregarDados() {
       tabela.appendChild(linha);
     });
 
-    // Preencher campos
+    // Preencher campos na tela
     document.getElementById("custoLogistica").value = formatar(custoLogistica);
     document.getElementById("custoEquipe").value = formatar(custoEquipe);
     document.getElementById("valorVenda").value = formatar(totalVenda);
     document.getElementById("valorPerda").value = formatar(totalPerda);
 
-    // Salvar os totais na análise
+    // Salvar no banco
     await db.ref(`eventos/${id}/analise`).update({
       custoLogistica,
       custoEquipe,
@@ -105,7 +98,7 @@ async function carregarDados() {
     });
 
   } catch (err) {
-    console.error("Erro ao carregar dados do evento:", err);
+    console.error("Erro ao carregar e calcular:", err);
     alert("Erro ao carregar dados do evento.");
   }
 }
