@@ -27,12 +27,10 @@
       <h3>Equipe</h3>
       <div id="equipe-container"></div>
       <button type="button" id="add-equipe" class="botao">➕ Adicionar Membro</button>
-      <p><strong>Custo Equipe:</strong> R$ <span id="custo-equipe">0,00</span></p>
 
       <h3>Logística</h3>
       <div id="logistica-container"></div>
       <button type="button" id="add-logistica" class="botao">➕ Adicionar Item Logística</button>
-      <p><strong>Custo Logística:</strong> R$ <span id="custo-logistica">0,00</span></p>
 
       <h3>Itens</h3>
       <datalist id="lista-produtos"></datalist>
@@ -44,7 +42,7 @@
   </div>
 
   <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js";
+    import { initializeApp }        from "https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js";
     import {
       getDatabase, ref, push, update,
       get, child
@@ -77,14 +75,15 @@
     const logisticaCt = document.getElementById("logistica-container");
     const addLogisticaBtn = document.getElementById("add-logistica");
 
-    get(ref(db, "produtos")).then(snap => {
-      const prods = snap.val() || {};
-      Object.values(prods).forEach(p => {
-        const opt = document.createElement("option");
-        opt.value = p.nome;
-        datalist.appendChild(opt);
+    get(ref(db, "produtos"))
+      .then(snap => {
+        const prods = snap.val() || {};
+        Object.values(prods).forEach(p => {
+          const opt = document.createElement("option");
+          opt.value = p.nome;
+          datalist.appendChild(opt);
+        });
       });
-    });
 
     function novaLinha(item = {}) {
       const div = document.createElement("div");
@@ -110,20 +109,7 @@
       itensCt.appendChild(div);
     }
 
-    function atualizarTotais() {
-      const somar = (selector) => Array.from(document.querySelectorAll(selector))
-        .map(input => parseFloat(input.value.replace(",", ".") || 0))
-        .reduce((total, val) => total + (isNaN(val) ? 0 : val), 0);
-
-      const totalEquipe    = somar('[name="equipe-valor"]');
-      const totalLogistica = somar('[name="logistica-valor"]');
-
-      document.getElementById("custo-equipe").textContent =
-        totalEquipe.toLocaleString("pt-BR", { style: "currency", currency: "BRL" }).replace("R$", "").trim();
-
-      document.getElementById("custo-logistica").textContent =
-        totalLogistica.toLocaleString("pt-BR", { style: "currency", currency: "BRL" }).replace("R$", "").trim();
-    }
+    addItem.addEventListener("click", () => novaLinha());
 
     function novaLinhaDetalhe(container, nomeCampo, placeholderNome, nomeValor, placeholderValor, item = {}) {
       const div = document.createElement("div");
@@ -142,71 +128,38 @@
       valorInput.placeholder = placeholderValor;
       valorInput.required = true;
       valorInput.value = item.valor || "";
-      valorInput.addEventListener("input", atualizarTotais);
 
       const remBtn = document.createElement("button");
       remBtn.type = "button";
       remBtn.textContent = "❌";
-      remBtn.addEventListener("click", () => {
-        div.remove();
-        atualizarTotais();
-      });
+      remBtn.addEventListener("click", () => div.remove());
 
       div.append(nomeInput, valorInput, remBtn);
       container.appendChild(div);
-
-      atualizarTotais();
     }
 
-    addItem.addEventListener("click", () => novaLinha());
     addEquipeBtn.addEventListener("click", () => novaLinhaDetalhe(equipeCt, "equipe-nome", "Nome Membro", "equipe-valor", "Função/Cargo"));
     addLogisticaBtn.addEventListener("click", () => novaLinhaDetalhe(logisticaCt, "logistica-nome", "Item Logística", "logistica-valor", "Detalhe/Valor"));
 
     if (isEdit) {
       titleH2.textContent   = "Editar Evento";
       submitBtn.textContent = "Salvar Alterações";
-      get(child(ref(db), `eventos/${eventId}`)).then(snap => {
-        if (!snap.exists()) return;
-        const ev = snap.val();
-        form.nome.value        = ev.nome;
-        form.data.value        = ev.data;
-        form.responsavel.value = ev.responsavel;
-        form.vendaPDV.value    = ev.vendaPDV || "";
-        (ev.equipe || []).forEach(eq => novaLinhaDetalhe(equipeCt, "equipe-nome", "Nome Membro", "equipe-valor", "Função/Cargo", eq));
-        (ev.logistica || []).forEach(lg => novaLinhaDetalhe(logisticaCt, "logistica-nome", "Item Logística", "logistica-valor", "Detalhe/Valor", lg));
-        (ev.itens || []).forEach(it => novaLinha(it));
-      });
+      get(child(ref(db), `eventos/${eventId}`))
+        .then(snap => {
+          if (!snap.exists()) return;
+          const ev = snap.val();
+          form.nome.value        = ev.nome;
+          form.data.value        = ev.data;
+          form.responsavel.value = ev.responsavel;
+          form.vendaPDV.value    = ev.vendaPDV || "";
+          (ev.equipe || []).forEach(eq => novaLinhaDetalhe(equipeCt, "equipe-nome", "Nome Membro", "equipe-valor", "Função/Cargo", eq));
+          (ev.logistica || []).forEach(lg => novaLinhaDetalhe(logisticaCt, "logistica-nome", "Item Logística", "logistica-valor", "Detalhe/Valor", lg));
+          (ev.itens || []).forEach(it => novaLinha(it));
+        });
     }
 
-    form.addEventListener("submit", async (e) => {
+    form.addEventListener("submit", e => {
       e.preventDefault();
-
-      const produtosSnap = await get(ref(db, "produtos"));
-      const produtos = produtosSnap.val() || {};
-
-      let vendaTotal = 0;
-      let valorPerda = 0;
-
-      const itensForm = Array.from(itensCt.children).map(div => {
-        const nomeItem = div.querySelector('[name="item-nome"]').value;
-        const quantidade = +div.querySelector('[name="item-quantidade"]').value;
-
-        const produtoDB = Object.values(produtos).find(p => p.nome === nomeItem);
-
-        const congelados = parseInt(produtoDB?.congelados || 0);
-        const assados = parseInt(produtoDB?.assados || 0);
-        const perdas = parseInt(produtoDB?.perda || 0);
-
-        const custo = parseFloat(produtoDB?.custo || 0);
-        const valorVenda = parseFloat(produtoDB?.valorVenda || 0);
-
-        const vendido = quantidade - (congelados + assados + perdas);
-        vendaTotal += vendido * valorVenda;
-        valorPerda += perdas * custo;
-
-        return { nomeItem, quantidade };
-      });
-
       const evObj = {
         nome:        form.nome.value,
         data:        form.data.value,
@@ -220,10 +173,11 @@
           nome:  div.querySelector('[name="logistica-nome"]').value,
           valor: div.querySelector('[name="logistica-valor"]').value
         })),
-        itens: itensForm,
-        status: "aberto",
-        vendaTotal,
-        valorPerda
+        itens: Array.from(itensCt.children).map(div => ({
+          nomeItem:   div.querySelector('[name="item-nome"]').value,
+          quantidade: +div.querySelector('[name="item-quantidade"]').value
+        })),
+        status: "aberto"
       };
 
       const action = isEdit
