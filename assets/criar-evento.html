@@ -27,10 +27,12 @@
       <h3>Equipe</h3>
       <div id="equipe-container"></div>
       <button type="button" id="add-equipe" class="botao">➕ Adicionar Membro</button>
+      <p><strong>Custo Equipe:</strong> R$ <span id="custo-equipe">0,00</span></p>
 
       <h3>Logística</h3>
       <div id="logistica-container"></div>
       <button type="button" id="add-logistica" class="botao">➕ Adicionar Item Logística</button>
+      <p><strong>Custo Logística:</strong> R$ <span id="custo-logistica">0,00</span></p>
 
       <h3>Itens</h3>
       <datalist id="lista-produtos"></datalist>
@@ -42,7 +44,7 @@
   </div>
 
   <script type="module">
-    import { initializeApp }        from "https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js";
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js";
     import {
       getDatabase, ref, push, update,
       get, child
@@ -109,7 +111,22 @@
       itensCt.appendChild(div);
     }
 
-    addItem.addEventListener("click", () => novaLinha());
+    function atualizarTotais() {
+      const somar = (selector) => {
+        return Array.from(document.querySelectorAll(selector))
+          .map(input => parseFloat(input.value.replace(",", ".") || 0))
+          .reduce((total, val) => total + (isNaN(val) ? 0 : val), 0);
+      };
+
+      const totalEquipe    = somar('[name="equipe-valor"]');
+      const totalLogistica = somar('[name="logistica-valor"]');
+
+      document.getElementById("custo-equipe").textContent =
+        totalEquipe.toLocaleString("pt-BR", { style: "currency", currency: "BRL" }).replace("R$", "").trim();
+
+      document.getElementById("custo-logistica").textContent =
+        totalLogistica.toLocaleString("pt-BR", { style: "currency", currency: "BRL" }).replace("R$", "").trim();
+    }
 
     function novaLinhaDetalhe(container, nomeCampo, placeholderNome, nomeValor, placeholderValor, item = {}) {
       const div = document.createElement("div");
@@ -128,16 +145,23 @@
       valorInput.placeholder = placeholderValor;
       valorInput.required = true;
       valorInput.value = item.valor || "";
+      valorInput.addEventListener("input", atualizarTotais);
 
       const remBtn = document.createElement("button");
       remBtn.type = "button";
       remBtn.textContent = "❌";
-      remBtn.addEventListener("click", () => div.remove());
+      remBtn.addEventListener("click", () => {
+        div.remove();
+        atualizarTotais();
+      });
 
       div.append(nomeInput, valorInput, remBtn);
       container.appendChild(div);
+
+      atualizarTotais();
     }
 
+    addItem.addEventListener("click", () => novaLinha());
     addEquipeBtn.addEventListener("click", () => novaLinhaDetalhe(equipeCt, "equipe-nome", "Nome Membro", "equipe-valor", "Função/Cargo"));
     addLogisticaBtn.addEventListener("click", () => novaLinhaDetalhe(logisticaCt, "logistica-nome", "Item Logística", "logistica-valor", "Detalhe/Valor"));
 
