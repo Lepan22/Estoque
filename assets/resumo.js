@@ -1,176 +1,145 @@
-const urlParams = new URLSearchParams(window.location.search);
-const id = urlParams.get("id");
-const db = firebase.database();
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Análise do Evento</title>
+  <link rel="stylesheet" href="assets/style.css" />
+  <style>
+    body {
+      font-size: 14px;
+    }
 
-function normalizar(texto) {
-  return (texto || "")
-    .toLowerCase()
-    .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
-    .replace(/\s+/g, " ")
-    .trim();
-}
+    .grupo {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 16px;
+      margin-bottom: 16px;
+    }
 
-function formatar(valor) {
-  return "R$ " + parseFloat(valor || 0).toFixed(2).replace('.', ',');
-}
+    .grupo label {
+      flex: 1;
+      min-width: 200px;
+    }
 
-function parseFloatSafe(v) {
-  return parseFloat(String(v).replace(",", ".")) || 0;
-}
+    .separador {
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      padding: 10px;
+      margin-bottom: 24px;
+      background: #f9f9f9;
+    }
 
-function atualizarTotaisEquipeLogistica() {
-  let totalEquipe = 0;
-  document.querySelectorAll(".equipe-linha").forEach(div => {
-    const valor = parseFloatSafe(div.querySelector('[name="equipe-valor"]').value);
-    totalEquipe += valor;
-  });
-  document.getElementById("custoEquipe").textContent = formatar(totalEquipe);
+    table.tabela-produtos {
+      width: calc(100% - 10cm);
+      margin: 0 auto 30px auto;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
 
-  let totalLogistica = 0;
-  document.querySelectorAll(".logistica-linha").forEach(div => {
-    const valor = parseFloatSafe(div.querySelector('[name="logistica-valor"]').value);
-    totalLogistica += valor;
-  });
-  document.getElementById("custoLogistica").textContent = formatar(totalLogistica);
-}
+    .tabela-produtos th, .tabela-produtos td {
+      border: 1px solid #ccc;
+      padding: 6px 10px;
+      text-align: center;
+    }
 
-function criarLinha(containerId, tipo, dados = {}) {
-  const div = document.createElement("div");
-  div.className = `${tipo}-linha d-flex gap-2 mb-2`;
+    .linha-flex {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
 
-  const input1 = document.createElement("input");
-  input1.className = "form-control";
-  input1.name = `${tipo}-nome`;
-  input1.placeholder = tipo === "equipe" ? "Nome do Membro" : "Descritivo";
-  input1.value = dados.nome || "";
+    .linha-flex input {
+      flex: 1;
+    }
 
-  const input2 = document.createElement("input");
-  input2.className = "form-control";
-  input2.name = `${tipo}-valor`;
-  input2.placeholder = tipo === "equipe" ? "Valor por dia" : "Valor";
-  input2.value = dados.valor || "";
-  input2.addEventListener("input", atualizarTotaisEquipeLogistica);
+    .linha-flex button {
+      padding: 4px 8px;
+    }
 
-  const btn = document.createElement("button");
-  btn.type = "button";
-  btn.className = "btn btn-danger btn-sm";
-  btn.textContent = "❌";
-  btn.onclick = () => {
-    div.remove();
-    atualizarTotaisEquipeLogistica();
-  };
+    .botao-pequeno {
+      padding: 6px 12px;
+      margin-top: 6px;
+    }
 
-  div.append(input1, input2, btn);
-  document.getElementById(containerId).appendChild(div);
-}
+    .titulo-secao {
+      font-weight: bold;
+      margin: 10px 0 6px;
+      font-size: 15px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>Análise do Evento</h2>
 
-async function carregarDados() {
-  const [eventoSnap, produtosSnap] = await Promise.all([
-    db.ref(`eventos/${id}`).get(),
-    db.ref("produtos").get()
-  ]);
+    <!-- Informações gerais -->
+    <div class="grupo">
+      <label>Nome: <input type="text" id="nomeEvento" readonly /></label>
+      <label>Data: <input type="text" id="dataEvento" readonly /></label>
+      <label>Responsável: <input type="text" id="responsavelEvento" readonly /></label>
+    </div>
 
-  if (!eventoSnap.exists()) {
-    alert("Evento não encontrado.");
-    return;
-  }
+    <label for="vendaPDV">Venda PDV:</label>
+    <input type="number" id="vendaPDV" />
 
-  const evento = eventoSnap.val();
-  const produtos = produtosSnap.val() || {};
-  const itens = evento.itens || [];
-  const analise = evento.analise || {};
+    <div class="grupo">
+      <label>Total de Venda: <input type="text" id="valorVenda" readonly /></label>
+      <label>Total de Perda: <input type="text" id="valorPerda" readonly /></label>
+    </div>
 
-  document.getElementById("nomeEvento").value = evento.nome || "";
-  document.getElementById("dataEvento").value = evento.data || "";
-  document.getElementById("responsavelEvento").value = evento.responsavel || "";
-  document.getElementById("vendaPDV").value = analise.vendaPDV || "";
+    <!-- Equipe -->
+    <div class="separador">
+      <div class="titulo-secao">Equipe</div>
+      <div id="equipe-container"></div>
+      <button type="button" class="botao botao-pequeno" id="addEquipeBtn">➕ Adicionar Membro</button>
+      <p><strong>Custo Total:</strong> <span id="custoEquipe">R$ 0,00</span></p>
+    </div>
 
-  let totalVenda = 0;
-  let totalPerda = 0;
+    <!-- Logística -->
+    <div class="separador">
+      <div class="titulo-secao">Logística</div>
+      <div id="logistica-container"></div>
+      <button type="button" class="botao botao-pequeno" id="addLogisticaBtn">➕ Adicionar Item</button>
+      <p><strong>Custo Total:</strong> <span id="custoLogistica">R$ 0,00</span></p>
+    </div>
 
-  const tabela = document.querySelector("#tabelaProdutos tbody");
-  tabela.innerHTML = "";
+    <!-- Produtos -->
+    <div class="titulo-secao">Resumo dos Produtos</div>
+    <table class="tabela-produtos" id="tabelaProdutos">
+      <thead>
+        <tr>
+          <th>Produto</th>
+          <th>Enviado</th>
+          <th>Congelado</th>
+          <th>Assado</th>
+          <th>Perda</th>
+          <th>Valor de Venda</th>
+          <th>Custo de Perda</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td colspan="7">Carregando...</td></tr>
+      </tbody>
+    </table>
 
-  itens.forEach(item => {
-    const nomeItem = item.nomeItem || item.nome || "";
-    const nomeNorm = normalizar(nomeItem);
-    const produto = Object.values(produtos).find(p => normalizar(p.nome) === nomeNorm);
+    <!-- Ações -->
+    <div class="button-container">
+      <button class="botao" id="btnSalvar">Salvar</button>
+      <a href="index.html" class="botao">Voltar</a>
+    </div>
+  </div>
 
-    const enviado = parseInt(item.quantidade || item.qtd || 0);
-    const assado = parseInt(item.assado || 0);
-    const congelado = parseInt(item.congelado || 0);
-    const perdido = parseInt(item.perdido || 0);
-
-    const vendidos = enviado - (congelado + assado + perdido);
-    const valorVendaUnit = parseFloat(produto?.valorVenda || 0);
-    const custoUnit = parseFloat(produto?.custo || 0);
-
-    const valorVendaTotal = vendidos * valorVendaUnit;
-    const custoPerda = perdido * custoUnit;
-
-    totalVenda += valorVendaTotal;
-    totalPerda += custoPerda;
-
-    const linha = document.createElement("tr");
-    linha.innerHTML = `
-      <td>${nomeItem}</td>
-      <td>${enviado}</td>
-      <td>${congelado}</td>
-      <td>${assado}</td>
-      <td>${perdido}</td>
-      <td>${formatar(valorVendaTotal)}</td>
-      <td>${formatar(custoPerda)}</td>
-    `;
-    tabela.appendChild(linha);
-  });
-
-  document.getElementById("valorVenda").value = formatar(totalVenda);
-  document.getElementById("valorPerda").value = formatar(totalPerda);
-
-  (analise.equipe || []).forEach(eq => criarLinha("equipe-container", "equipe", eq));
-  (analise.logistica || []).forEach(lg => criarLinha("logistica-container", "logistica", lg));
-  atualizarTotaisEquipeLogistica();
-}
-
-document.addEventListener("DOMContentLoaded", () => {
-  carregarDados();
-
-  document.getElementById("addEquipeBtn").addEventListener("click", () => {
-    criarLinha("equipe-container", "equipe");
-  });
-
-  document.getElementById("addLogisticaBtn").addEventListener("click", () => {
-    criarLinha("logistica-container", "logistica");
-  });
-
-  document.getElementById("btnSalvar").addEventListener("click", async () => {
-    const vendaPDV = parseFloat(document.getElementById("vendaPDV").value || 0);
-    const valorVenda = parseFloatSafe(document.getElementById("valorVenda").value.replace(/[^\d,.-]/g, ""));
-    const valorPerda = parseFloatSafe(document.getElementById("valorPerda").value.replace(/[^\d,.-]/g, ""));
-
-    const equipe = Array.from(document.querySelectorAll(".equipe-linha")).map(div => ({
-      nome: div.querySelector('[name="equipe-nome"]').value,
-      valor: parseFloatSafe(div.querySelector('[name="equipe-valor"]').value)
-    }));
-
-    const logistica = Array.from(document.querySelectorAll(".logistica-linha")).map(div => ({
-      nome: div.querySelector('[name="logistica-nome"]').value,
-      valor: parseFloatSafe(div.querySelector('[name="logistica-valor"]').value)
-    }));
-
-    const custoEquipe = equipe.reduce((s, e) => s + e.valor, 0);
-    const custoLogistica = logistica.reduce((s, l) => s + l.valor, 0);
-
-    await db.ref(`eventos/${id}/analise`).update({
-      vendaPDV,
-      valorVenda,
-      valorPerda,
-      equipe,
-      logistica,
-      custoEquipe,
-      custoLogistica
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+  <script>
+    firebase.initializeApp({
+      databaseURL: "https://controleestoquelepan-default-rtdb.firebaseio.com"
     });
+  </script>
 
-    alert("Dados salvos com sucesso!");
-  });
-});
+  <!-- Lógica principal -->
+  <script src="assets/resumo.js"></script>
+</body>
+</html>
