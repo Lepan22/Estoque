@@ -36,11 +36,6 @@
 <body>
   <h1>Análise do Evento</h1>
 
-  <label for="select-evento">Selecione o Evento:</label>
-  <select id="select-evento">
-    <option value="">-- Selecione --</option>
-  </select>
-
   <table id="itens-tabela">
     <thead>
       <tr>
@@ -75,25 +70,12 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
-    const selectEvento = document.getElementById("select-evento");
-    const tabelaItens = document.querySelector("#itens-tabela tbody");
-    const totalVendasEventoEl = document.getElementById("total-vendas-evento");
-    const totalPerdaEventoEl = document.getElementById("total-perda-evento");
-
-    // Carrega eventos para o select
-    function carregarEventos() {
-      db.ref("eventos").once("value").then(snapshot => {
-        snapshot.forEach(eventoSnap => {
-          const evento = eventoSnap.val();
-          const option = document.createElement("option");
-          option.value = eventoSnap.key;
-          option.textContent = evento.nome || "Evento sem nome";
-          selectEvento.appendChild(option);
-        });
-      });
+    // Utilidades
+    function getIdFromURL() {
+      const params = new URLSearchParams(window.location.search);
+      return params.get("id");
     }
 
-    // Formatação de moeda
     function formatCurrency(valor) {
       return valor.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
     }
@@ -102,18 +84,10 @@
       return parseFloat(str.replace("R$", "").replace(".", "").replace(",", ".")) || 0;
     }
 
-    // Carrega os dados do evento selecionado
-    selectEvento.addEventListener("change", () => {
-      const eventoId = selectEvento.value;
-      if (!eventoId) return;
+    const tabelaItens = document.querySelector("#itens-tabela tbody");
+    const totalVendasEventoEl = document.getElementById("total-vendas-evento");
+    const totalPerdaEventoEl = document.getElementById("total-perda-evento");
 
-      db.ref(`eventos/${eventoId}`).once("value").then(snapshot => {
-        const evento = snapshot.val();
-        preencherTabela(evento.itens || []);
-      });
-    });
-
-    // Preenche a tabela com os itens do evento
     function preencherTabela(itens) {
       tabelaItens.innerHTML = "";
       itens.forEach(item => {
@@ -140,7 +114,6 @@
       atualizarTotaisGerais();
     }
 
-    // Atualiza os totais de vendas e perdas
     function atualizarTotaisGerais() {
       let totalVendas = 0;
       let totalPerdas = 0;
@@ -156,7 +129,20 @@
       totalPerdaEventoEl.textContent = formatCurrency(totalPerdas);
     }
 
-    carregarEventos();
+    // Carrega evento com ID da URL
+    const eventoId = getIdFromURL();
+    if (eventoId) {
+      db.ref(`eventos/${eventoId}`).once("value").then(snapshot => {
+        const evento = snapshot.val();
+        if (evento && evento.itens) {
+          preencherTabela(evento.itens);
+        } else {
+          alert("Evento não encontrado ou sem itens.");
+        }
+      });
+    } else {
+      alert("ID do evento não informado na URL.");
+    }
   </script>
 </body>
 </html>
