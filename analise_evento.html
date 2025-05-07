@@ -7,19 +7,22 @@
   <link rel="stylesheet" href="assets/style.css">
   <link rel="stylesheet" href="assets/form-responsive.css">
 </head>
+
 <body>
   <div class="container">
     <h1>Detalhes do Evento</h1>
     <div id="eventoInfo"></div>
 
-    <!-- Seção de Totais - Sem Logística e Equipe -->
+    <!-- Seção de Totais - Adicionados os novos campos -->
     <div id="totaisEvento" style="margin-bottom: 20px; padding: 10px; border: 1px solid #ccc; border-radius: 5px;">
       <p><strong>Total de Vendas do Evento:</strong> <span id="totalVendasEvento">R$ 0,00</span></p>
       <p><strong>Total de Perda do Evento:</strong> <span id="totalPerdaEvento">R$ 0,00</span></p>
+      <p><strong>Total de Logística:</strong> <span id="totalLogistica">R$ 0,00</span></p>
+      <p><strong>Total de Equipe:</strong> <span id="totalEquipe">R$ 0,00</span></p>
     </div>
 
     <h3>Itens:</h3>
-
+    
     <table id="itens-tabela">
       <thead>
         <tr>
@@ -56,7 +59,6 @@
       messagingSenderId: "779860276544",
       appId: "1:779860276544:web:f45844571a8c0bab1576a5",
     };
-
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
 
@@ -66,9 +68,12 @@
     const itensBody = document.getElementById("itens-tbody");
     const btnFinal = document.getElementById("finalizarEventoBtn");
     const btnSalvar = document.getElementById("salvarAlteracoesBtn");
-
+    
+    // Elementos para os totais do evento - Adicionados os novos elementos
     const totalVendasEventoEl = document.getElementById("totalVendasEvento");
     const totalPerdaEventoEl = document.getElementById("totalPerdaEvento");
+    const totalLogisticaEl = document.getElementById("totalLogistica");
+    const totalEquipeEl = document.getElementById("totalEquipe");
 
     let currentItens = [];
     let eventoAtual = {};
@@ -85,7 +90,23 @@
 
     function parseCurrency(value) {
       if (typeof value !== "string") return parseFloat(value) || 0;
-      return parseFloat(value.replace(/[^0-9,-]+/g,""").replace(",", ".")) || 0;
+      return parseFloat(value.replace(/[^0-9,-]+/g,"").replace(",", ".")) || 0;
+    }
+
+    // Função para calcular os totais de logística e equipe
+    function calcularTotaisAdicionais(itens) {
+      let logisticaTotal = 0;
+      let equipeTotal = 0;
+
+      itens.forEach(item => {
+        logisticaTotal += parseFloat(item.logistica || 0);
+        equipeTotal += parseFloat(item.equipe || 0);
+      });
+
+      return {
+        logistica: logisticaTotal,
+        equipe: equipeTotal
+      };
     }
 
     function atualizarTotaisGerais() {
@@ -101,6 +122,11 @@
 
       totalVendasEventoEl.textContent = formatCurrency(totalVendas);
       totalPerdaEventoEl.textContent = formatCurrency(totalPerdas);
+      
+      // Calcula e atualiza os novos totais
+      const { logistica, equipe } = calcularTotaisAdicionais(currentItens);
+      totalLogisticaEl.textContent = formatCurrency(logistica);
+      totalEquipeEl.textContent = formatCurrency(equipe);
     }
 
     function atualizarCalculosLinha(trElement) {
@@ -123,6 +149,7 @@
 
       trElement.querySelector(".col-valor-vendas").textContent = formatCurrency(valorVendasCalc);
       trElement.querySelector(".col-valor-perda").textContent = formatCurrency(valorPerdaCalc);
+      
       atualizarTotaisGerais();
     }
 
@@ -172,7 +199,7 @@
 
             const nomeExib = item.nomeItem || item.nome || "—";
             const quantidadeExib = item.quantidade || item.qtd || "—";
-
+            
             const produtoInfo = produtosMap[nomeExib] || { valorVenda: 0, custo: 0 };
             const valorVendaProduto = produtoInfo.valorVenda;
             const custoProduto = produtoInfo.custo;
@@ -186,8 +213,8 @@
             let valorPerdaCalc = perdidoNum * custoProduto;
 
             if (eventoAtual.status === "finalizado") {
-              valorVendasCalc = item.valorVendasCalculado !== undefined ? item.valorVendasCalculado : valorVendasCalc;
-              valorPerdaCalc = item.valorPerdaCalculado !== undefined ? item.valorPerdaCalculado : valorPerdaCalc;
+                valorVendasCalc = item.valorVendasCalculado !== undefined ? item.valorVendasCalculado : valorVendasCalc;
+                valorPerdaCalc = item.valorPerdaCalculado !== undefined ? item.valorPerdaCalculado : valorPerdaCalc;
             }
 
             tr.innerHTML = `
@@ -208,7 +235,7 @@
             }
           });
         }
-
+        
         atualizarTotaisGerais();
 
         if (eventoAtual.status === "finalizado") {
@@ -224,54 +251,97 @@
       }
     }
 
-    btnFinal.addEventListener("click", async () => {
-      if (btnFinal.disabled) return;
+    function coletarItensAtualizados(incluirValoresCalculados = false) {
+      const novosItens = [];
+      document.querySelectorAll("#itens-tabela tbody tr[data-item-index]").forEach(tr => {
+        const idx = parseInt(tr.getAttribute("data-item-index"), 10);
+        if (isNaN(idx) || idx < 0 || idx >= currentItens.length) return; 
+        const itemOriginal = currentItens[idx];
 
+        const inputAssado = tr.querySelector("input[name='assado']");
+        const inputCongelado = tr.querySelector("input[name='congelado']");
+        const inputPerdido = tr.querySelector("input[name='perdido']");
+
+        const assado = inputAssado ? (parseInt(inputAssado.value, 10) || 0) : 0;
+        const congelado = inputCongelado ? (parseInt(inputCongelado.value, 10) || 0) : 0;
+        const perdido = inputPerdido ? (parseInt(inputPerdido.value, 10) || 0) : 0;
+
+        const itemAtualizado = { ...itemOriginal, assado, congelado, perdido };
+
+        if (incluirValoresCalculados) {
+          const valorVendasTexto = tr.querySelector(".col-valor-vendas").textContent;
+          const valorPerdaTexto = tr.querySelector(".col-valor-perda").textContent;
+          itemAtualizado.valorVendasCalculado = parseCurrency(valorVendasTexto);
+          itemAtualizado.valorPerdaCalculado = parseCurrency(valorPerdaTexto);
+        }
+        novosItens.push(itemAtualizado);
+      });
+      return novosItens;
+    }
+
+    btnFinal.addEventListener("click", async () => {
+      if (btnFinal.disabled) return; 
+      
       btnFinal.disabled = true;
       btnFinal.textContent = "Processando...";
       btnSalvar.disabled = true;
 
-      const itensAtualizados = currentItens.map(item => ({
-        ...item,
-        valorVendasCalculado: item.valorVendasCalculado,
-        valorPerdaCalculado: item.valorPerdaCalculado
-      }));
+      const itensAtualizados = coletarItensAtualizados(true);
+      const totalVendasFinal = parseCurrency(totalVendasEventoEl.textContent);
+      const totalPerdaFinal = parseCurrency(totalPerdaEventoEl.textContent);
+      const { logistica, equipe } = calcularTotaisAdicionais(itensAtualizados);
 
       try {
-        await update(refEvento, {
-          itens: itensAtualizados,
+        await update(refEvento, { 
+          itens: itensAtualizados, 
           status: "finalizado",
-          totalVendasEvento: parseCurrency(totalVendasEventoEl.textContent),
-          totalPerdaEvento: parseCurrency(totalPerdaEventoEl.textContent)
+          totalVendasEvento: totalVendasFinal,
+          totalPerdaEvento: totalPerdaFinal,
+          logistica: logistica,  // Salva o total de logística
+          equipe: equipe         // Salva o total de equipe
         });
         alert("Evento finalizado e alterações salvas!");
         btnFinal.textContent = "Evento Finalizado";
         itensBody.querySelectorAll("input").forEach(i => i.disabled = true);
         eventoAtual.status = "finalizado";
+        eventoAtual.totalVendasEvento = totalVendasFinal;
+        eventoAtual.totalPerdaEvento = totalPerdaFinal;
+        eventoAtual.logistica = logistica;  // Atualiza localmente
+        eventoAtual.equipe = equipe;       // Atualiza localmente
+        currentItens = itensAtualizados; 
       } catch (err) {
         console.error("Erro ao finalizar evento:", err);
         alert("Falha ao finalizar o evento. Verifique o console para mais detalhes.");
         btnFinal.disabled = false;
         btnFinal.textContent = "Finalizar Evento e Salvar Alterações";
-        btnSalvar.disabled = false;
+        if (eventoAtual.status !== "finalizado") {
+            btnSalvar.disabled = false;
+        }
       }
     });
 
     btnSalvar.addEventListener("click", async () => {
-      if (btnSalvar.disabled) return;
-
+      if (btnSalvar.disabled) return; 
+      
       btnSalvar.disabled = true;
       btnSalvar.textContent = "Salvando...";
 
+      const itensAtualizados = coletarItensAtualizados(false);
       try {
-        await update(refEvento, { itens: currentItens });
+        await update(refEvento, { itens: itensAtualizados });
         alert("Alterações salvas com sucesso!");
+        currentItens = itensAtualizados; 
+        document.querySelectorAll("#itens-tabela tbody tr[data-item-index]").forEach(tr => {
+            atualizarCalculosLinha(tr);
+        });
       } catch (err) {
         console.error("Erro ao salvar alterações:", err);
         alert("Falha ao salvar as alterações. Verifique o console para mais detalhes.");
       } finally {
-        btnSalvar.disabled = false;
-        btnSalvar.textContent = "Salvar Alterações";
+        if (eventoAtual.status !== "finalizado") {
+            btnSalvar.disabled = false;
+            btnSalvar.textContent = "Salvar Alterações";
+        }
       }
     });
 
