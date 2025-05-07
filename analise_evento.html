@@ -1,70 +1,79 @@
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="pt-BR">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Análise do Evento</title>
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" />
+  <title>Análise de Evento</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"/>
 </head>
-<body class="container py-4">
-  <h2 class="mb-4">Análise do Evento</h2>
+<body class="p-4">
+  <div class="container">
+    <h2 class="mb-4">Análise do Evento</h2>
 
-  <div id="infoEvento" class="mb-3">
-    <p><strong>Nome:</strong> <span id="nomeEvento"></span></p>
-    <p><strong>Data:</strong> <span id="dataEvento"></span></p>
-    <p><strong>Responsável:</strong> <span id="responsavelEvento"></span></p>
-  </div>
+    <div class="mb-3">
+      <label class="form-label">Nome</label>
+      <input type="text" id="nomeEvento" class="form-control" readonly />
+    </div>
+    <div class="mb-3">
+      <label class="form-label">Data</label>
+      <input type="text" id="dataEvento" class="form-control" readonly />
+    </div>
+    <div class="mb-3">
+      <label class="form-label">Responsável</label>
+      <input type="text" id="responsavelEvento" class="form-control" readonly />
+    </div>
 
-  <div class="row g-3 mb-4">
-    <div class="col-md-4">
+    <div class="mb-3">
       <label class="form-label">Custo Logística</label>
-      <input type="text" id="custoLogistica" class="form-control" disabled />
+      <input type="text" id="custoLogistica" class="form-control" readonly />
     </div>
-    <div class="col-md-4">
+    <div class="mb-3">
       <label class="form-label">Custo Equipe</label>
-      <input type="text" id="custoEquipe" class="form-control" disabled />
+      <input type="text" id="custoEquipe" class="form-control" readonly />
     </div>
-    <div class="col-md-4">
+
+    <div class="mb-3">
       <label class="form-label">Venda PDV</label>
-      <!-- Agora editável -->
-      <input type="text" id="vendaPDV" class="form-control" />
+      <input type="number" id="vendaPDV" class="form-control" />
     </div>
-    <div class="col-md-6">
+
+    <div class="mb-3">
       <label class="form-label">Valor Total de Venda</label>
-      <input type="text" id="valorVenda" class="form-control" disabled />
+      <input type="text" id="valorVenda" class="form-control" readonly />
     </div>
-    <div class="col-md-6">
+
+    <div class="mb-4">
       <label class="form-label">Valor Total de Perda</label>
-      <input type="text" id="valorPerda" class="form-control" disabled />
+      <input type="text" id="valorPerda" class="form-control" readonly />
+    </div>
+
+    <h4 class="mt-5">Produtos</h4>
+    <div class="table-responsive">
+      <table class="table table-bordered" id="tabelaProdutos">
+        <thead>
+          <tr>
+            <th>Produto</th>
+            <th>Enviado</th>
+            <th>Congelado</th>
+            <th>Assado</th>
+            <th>Perda</th>
+            <th>Valor de Venda</th>
+            <th>Custo de Perda</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+
+    <div class="mt-4 d-flex gap-3">
+      <button class="btn btn-primary" id="btnSalvar">Salvar</button>
+      <a href="index.html" class="btn btn-secondary">Voltar</a>
     </div>
   </div>
 
-  <h4 class="mt-4">Resumo dos Produtos</h4>
-  <div class="table-responsive">
-    <table class="table table-bordered mt-2" id="tabelaProdutos">
-      <thead class="table-light">
-        <tr>
-          <th>Nome</th>
-          <th>Enviado</th>
-          <th>Congelado</th>
-          <th>Assado</th>
-          <th>Perda</th>
-          <th>Valor Venda</th>
-          <th>Custo Perda</th>
-        </tr>
-      </thead>
-      <tbody></tbody>
-    </table>
-  </div>
-
-  <div class="d-flex justify-content-between mt-4">
-    <button onclick="window.history.back()" class="btn btn-secondary">Voltar</button>
-    <button class="btn btn-primary" onclick="salvarAnalise()">Salvar</button>
-  </div>
-
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+  <script src="assets/firebase-init.js"></script>
   <script src="assets/resumo.js"></script>
 </body>
 </html>
