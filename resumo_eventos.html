@@ -2,48 +2,47 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Resumo de Eventos Finalizados</title>
   <link rel="stylesheet" href="assets/style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/choices.js/public/assets/styles/choices.min.css" />
   <style>
-    .container {
-      max-width: 1000px;
-      margin: 3cm auto;
-      padding: 20px;
+    body {
+      margin: 20px 30px 20px 30px;
       font-family: Arial, sans-serif;
     }
-    h1 {
-      margin-bottom: 10px;
+    .container {
+      max-width: 1200px;
+      margin: auto;
     }
-    .filtros {
+    .linha-form {
       display: flex;
       gap: 10px;
+      margin-bottom: 20px;
       flex-wrap: wrap;
-      margin-bottom: 15px;
     }
-    .filtros input {
-      padding: 6px;
-      border-radius: 4px;
-      border: 1px solid #ccc;
+    .linha-form > div {
       flex: 1;
-      min-width: 180px;
+      min-width: 200px;
     }
-    #tabelaResumo {
+    table {
       width: 100%;
       border-collapse: collapse;
-      margin-top: 10px;
-      border: 1px solid #ccc;
+      margin-top: 20px;
     }
-    #tabelaResumo th, #tabelaResumo td {
-      padding: 8px;
+    th, td {
       border: 1px solid #ccc;
+      padding: 8px;
       text-align: left;
     }
-    #tabelaResumo thead {
+    thead {
       background-color: #e3f2fd;
     }
-    #tabelaResumo tbody tr:nth-child(even) {
+    tbody tr:nth-child(even) {
       background-color: #f9f9f9;
+    }
+    .button-container {
+      margin-top: 20px;
     }
     .botao {
       background: #f0f0f0;
@@ -52,12 +51,7 @@
       padding: 6px 10px;
       cursor: pointer;
       font-size: 14px;
-      margin: 5px 5px 0 0;
-      text-decoration: none;
-      display: inline-block;
-    }
-    .button-container {
-      margin-top: 20px;
+      margin-right: 10px;
     }
   </style>
 </head>
@@ -65,10 +59,23 @@
   <div class="container">
     <h1>Resumo dos Eventos Finalizados</h1>
 
-    <div class="filtros">
-      <input type="text" id="filtroNome" placeholder="Filtrar por Nome" />
-      <input type="text" id="filtroData" placeholder="Filtrar por Data" />
-      <input type="text" id="filtroResponsavel" placeholder="Filtrar por Responsável" />
+    <div class="linha-form">
+      <div>
+        <label for="filtroNome">Nome:</label>
+        <select id="filtroNome" multiple></select>
+      </div>
+      <div>
+        <label for="filtroResponsavel">Responsável:</label>
+        <select id="filtroResponsavel" multiple></select>
+      </div>
+      <div>
+        <label for="dataInicio">Data Inicial:</label>
+        <input type="date" id="dataInicio" />
+      </div>
+      <div>
+        <label for="dataFim">Data Final:</label>
+        <input type="date" id="dataFim" />
+      </div>
     </div>
 
     <table id="tabelaResumo">
@@ -90,17 +97,15 @@
     </table>
 
     <div class="button-container">
-      <button class="botao" onclick="exportarXLS()">Exportar para XLS</button>
+      <button class="botao" onclick="exportarParaExcel()">Exportar XLS</button>
       <a href="index.html" class="botao">Voltar</a>
     </div>
   </div>
 
-  <!-- Firebase SDK -->
+  <script src="https://cdn.jsdelivr.net/npm/choices.js/public/assets/scripts/choices.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
-  <!-- SheetJS -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-
   <script>
     const firebaseConfig = {
       databaseURL: "https://controleestoquelepan-default-rtdb.firebaseio.com"
@@ -109,92 +114,113 @@
     const db = firebase.database();
 
     const tbody = document.querySelector("#tabelaResumo tbody");
-    const filtroNome = document.getElementById("filtroNome");
-    const filtroData = document.getElementById("filtroData");
-    const filtroResponsavel = document.getElementById("filtroResponsavel");
-
-    let eventosFinalizados = [];
+    const dataInicio = document.getElementById("dataInicio");
+    const dataFim = document.getElementById("dataFim");
+    let choicesNome, choicesResp;
 
     function formatar(valor) {
       return "R$ " + parseFloat(valor || 0).toFixed(2).replace('.', ',');
     }
 
+    function popularSelect(choicesInstance, valores) {
+      const options = valores.sort().map(v => ({ value: v, label: v }));
+      choicesInstance.clearStore();
+      choicesInstance.setChoices(options, 'value', 'label', true);
+    }
+
     function carregarEventos() {
       db.ref("eventos").once("value").then(snapshot => {
         const eventos = snapshot.val();
-        eventosFinalizados = [];
+        if (!eventos) return;
 
-        if (eventos) {
-          Object.values(eventos).forEach(ev => {
-            if (ev.status === "finalizado") {
-              eventosFinalizados.push(ev);
-            }
-          });
-        }
+        const nomesSet = new Set();
+        const responsaveisSet = new Set();
 
+        Object.values(eventos).forEach(ev => {
+          if (ev.status !== "finalizado") return;
+          if (ev.nome) nomesSet.add(ev.nome);
+          if (ev.responsavel) responsaveisSet.add(ev.responsavel);
+        });
+
+        popularSelect(choicesNome, [...nomesSet]);
+        popularSelect(choicesResp, [...responsaveisSet]);
         atualizarTabela();
-      }).catch(err => {
-        console.error("Erro ao carregar eventos:", err);
-        tbody.innerHTML = `<tr><td colspan="8">Erro ao carregar eventos.</td></tr>`;
       });
     }
 
     function atualizarTabela() {
-      const nomeFiltro = filtroNome.value.toLowerCase();
-      const dataFiltro = filtroData.value.toLowerCase();
-      const responsavelFiltro = filtroResponsavel.value.toLowerCase();
+      db.ref("eventos").once("value").then(snapshot => {
+        const eventos = snapshot.val();
+        tbody.innerHTML = "";
 
-      const filtrados = eventosFinalizados.filter(ev => {
-        return (ev.nome || "").toLowerCase().includes(nomeFiltro) &&
-               (ev.data || "").toLowerCase().includes(dataFiltro) &&
-               (ev.responsavel || "").toLowerCase().includes(responsavelFiltro);
-      });
+        if (!eventos) {
+          tbody.innerHTML = `<tr><td colspan="8">Nenhum evento encontrado.</td></tr>`;
+          return;
+        }
 
-      tbody.innerHTML = "";
+        const nomesSelecionados = choicesNome.getValue(true);
+        const responsaveisSelecionados = choicesResp.getValue(true);
+        const dtIni = dataInicio.value;
+        const dtFim = dataFim.value;
 
-      if (filtrados.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="8">Nenhum evento encontrado.</td></tr>`;
-        return;
-      }
+        let encontrou = false;
 
-      filtrados.forEach(ev => {
-        const a = ev.analise || {};
-        const linha = document.createElement("tr");
-        linha.innerHTML = `
-          <td>${ev.nome || "—"}</td>
-          <td>${ev.data || "—"}</td>
-          <td>${ev.responsavel || "—"}</td>
-          <td>${formatar(a.vendaPDV)}</td>
-          <td>${formatar(a.valorVenda)}</td>
-          <td>${formatar(a.valorPerda)}</td>
-          <td>${formatar(a.custoEquipe)}</td>
-          <td>${formatar(a.custoLogistica)}</td>
-        `;
-        tbody.appendChild(linha);
+        Object.values(eventos).forEach(ev => {
+          if (ev.status !== "finalizado") return;
+
+          const dataEvento = ev.data || "";
+          if (dtIni && dataEvento < dtIni) return;
+          if (dtFim && dataEvento > dtFim) return;
+          if (nomesSelecionados.length && !nomesSelecionados.includes(ev.nome)) return;
+          if (responsaveisSelecionados.length && !responsaveisSelecionados.includes(ev.responsavel)) return;
+
+          const a = ev.analise || {};
+          const linha = document.createElement("tr");
+          linha.innerHTML = `
+            <td>${ev.nome || "—"}</td>
+            <td>${dataEvento}</td>
+            <td>${ev.responsavel || "—"}</td>
+            <td>${formatar(a.vendaPDV)}</td>
+            <td>${formatar(a.valorVenda)}</td>
+            <td>${formatar(a.valorPerda)}</td>
+            <td>${formatar(a.custoEquipe)}</td>
+            <td>${formatar(a.custoLogistica)}</td>
+          `;
+          tbody.appendChild(linha);
+          encontrou = true;
+        });
+
+        if (!encontrou) {
+          tbody.innerHTML = `<tr><td colspan="8">Nenhum evento encontrado com esses filtros.</td></tr>`;
+        }
       });
     }
 
-    function exportarXLS() {
+    function exportarParaExcel() {
       const wb = XLSX.utils.book_new();
-      const dados = [["Nome", "Data", "Responsável", "Venda PDV", "Valor de Venda", "Valor de Perda", "Custo Equipe", "Custo Logística"]];
-
-      Array.from(tbody.querySelectorAll("tr")).forEach(row => {
-        const cells = Array.from(row.querySelectorAll("td")).map(td => td.innerText);
-        if (cells.length === 8 && !cells[0].includes("Nenhum")) {
-          dados.push(cells);
-        }
-      });
-
-      const ws = XLSX.utils.aoa_to_sheet(dados);
-      XLSX.utils.book_append_sheet(wb, ws, "Eventos");
-      XLSX.writeFile(wb, "eventos_finalizados.xlsx");
+      const ws = XLSX.utils.table_to_sheet(document.getElementById("tabelaResumo"));
+      XLSX.utils.book_append_sheet(wb, ws, "Resumo");
+      XLSX.writeFile(wb, "resumo_eventos.xlsx");
     }
 
     document.addEventListener("DOMContentLoaded", () => {
+      choicesNome = new Choices('#filtroNome', {
+        removeItemButton: true,
+        searchEnabled: true,
+        placeholderValue: 'Filtrar por nome',
+      });
+      choicesResp = new Choices('#filtroResponsavel', {
+        removeItemButton: true,
+        searchEnabled: true,
+        placeholderValue: 'Filtrar por responsável',
+      });
+
+      dataInicio.addEventListener("change", atualizarTabela);
+      dataFim.addEventListener("change", atualizarTabela);
+      document.querySelector("#filtroNome").addEventListener("change", atualizarTabela);
+      document.querySelector("#filtroResponsavel").addEventListener("change", atualizarTabela);
+
       carregarEventos();
-      filtroNome.addEventListener("input", atualizarTabela);
-      filtroData.addEventListener("input", atualizarTabela);
-      filtroResponsavel.addEventListener("input", atualizarTabela);
     });
   </script>
 </body>
