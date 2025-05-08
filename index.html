@@ -63,24 +63,26 @@
             tabelaBody.appendChild(tr);
           });
 
+        // DUPLICAÇÃO MODIFICADA
         document.querySelectorAll(".duplicar").forEach(botao => {
           botao.addEventListener("click", async e => {
             const id = e.target.dataset.id;
             if (!id) return;
 
             try {
-              const snapshotBotao = await get(ref(db, `eventos/${id}`));
-              if (!snapshotBotao.exists()) {
+              const snapshot = await get(ref(db, `eventos/${id}`));
+              if (!snapshot.exists()) {
                 alert("Evento não encontrado.");
                 return;
               }
 
-              const dados = snapshotBotao.val();
+              const dados = snapshot.val();
               const novoRef = push(ref(db, "eventos"));
               await set(novoRef, {
-                ...dados,
+                nome: `${dados.nome} (cópia)`,
+                responsavel: dados.responsavel || "",
                 status: "aberto",
-                nome: `${dados.nome} (cópia)`
+                itens: dados.itens || []
               });
 
               alert("Evento duplicado com sucesso!");
