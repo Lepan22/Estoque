@@ -17,27 +17,35 @@
     }
     label {
       display: block;
-      margin-top: 10px;
       font-weight: 500;
+      margin-bottom: 2px;
     }
     input[type="text"], input[type="number"] {
       width: 100%;
-      padding: 6px;
-      margin-bottom: 10px;
+      padding: 4px;
       border-radius: 4px;
       border: 1px solid #ccc;
+      margin-bottom: 4px;
     }
-    .grupo-duplo {
+    .grupo-triplo {
       display: flex;
-      gap: 20px;
+      gap: 10px;
     }
-    .grupo-duplo > div {
+    .grupo-triplo > div {
       flex: 1;
     }
+    #equipe-container > div,
+    #logistica-container > div {
+      margin-bottom: 0;
+    }
+    .grupo-horizontal {
+      display: flex;
+      gap: 10px;
+    }
     #equipe-container, #logistica-container {
+      flex: 1;
       border: 1px solid #e0e0e0;
       padding: 10px;
-      margin-bottom: 10px;
     }
     .botao {
       background: #f0f0f0;
@@ -49,7 +57,12 @@
       margin: 5px 5px 0 0;
     }
     .botao-voltar {
-      background: #e0e0e0;
+      background: #f0f0f0;
+    }
+    .botao-excluir {
+      padding: 4px 8px;
+      font-size: 12px;
+      margin: 0;
     }
     #tabelaProdutos {
       width: 100%;
@@ -72,12 +85,13 @@
     }
     .linha-form {
       display: flex;
-      gap: 20px;
+      gap: 10px;
       flex-wrap: wrap;
+      margin-bottom: 4px;
     }
     .linha-form > div {
       flex: 1;
-      min-width: 250px;
+      min-width: 200px;
     }
   </style>
 </head>
@@ -100,14 +114,11 @@
       </div>
     </div>
 
-    <div class="linha-form">
+    <div class="grupo-triplo">
       <div>
         <label for="vendaPDV">Venda PDV:</label>
         <input type="number" id="vendaPDV" />
       </div>
-    </div>
-
-    <div class="grupo-duplo">
       <div>
         <label for="valorVenda">Total de Vendas:</label>
         <input type="text" id="valorVenda" readonly />
@@ -118,15 +129,21 @@
       </div>
     </div>
 
-    <h3>Equipe</h3>
-    <div id="equipe-container"></div>
-    <button type="button" class="botao" id="addEquipeBtn">➕</button>
-    <p><strong>Custo Total da Equipe:</strong> <span id="custoEquipe">R$ 0,00</span></p>
+    <div class="grupo-horizontal">
+      <div>
+        <h3>Equipe</h3>
+        <div id="equipe-container"></div>
+        <button type="button" class="botao" id="addEquipeBtn">➕ Adicionar</button>
+        <p><strong>Custo Total da Equipe:</strong> <span id="custoEquipe">R$ 0,00</span></p>
+      </div>
 
-    <h3>Logística</h3>
-    <div id="logistica-container"></div>
-    <button type="button" class="botao" id="addLogisticaBtn">➕</button>
-    <p><strong>Custo Total da Logística:</strong> <span id="custoLogistica">R$ 0,00</span></p>
+      <div>
+        <h3>Logística</h3>
+        <div id="logistica-container"></div>
+        <button type="button" class="botao" id="addLogisticaBtn">➕ Adicionar</button>
+        <p><strong>Custo Total da Logística:</strong> <span id="custoLogistica">R$ 0,00</span></p>
+      </div>
+    </div>
 
     <h3>Resumo dos Produtos</h3>
     <table id="tabelaProdutos">
@@ -146,7 +163,7 @@
 
     <div class="button-container">
       <button class="botao" id="btnSalvar">Salvar</button>
-      <a href="index.html" class="botao botao-voltar">Voltar</a>
+      <a href="index.html" class="botao">Voltar</a>
     </div>
   </div>
 
