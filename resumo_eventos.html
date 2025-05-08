@@ -1,55 +1,256 @@
-<!-- Dentro do <style> -->
-<style>
-  body {
-    margin: 10px 30px;
-    font-family: Arial, sans-serif;
-    font-size: 13px;
-  }
-  h1 { font-size: 20px; margin-bottom: 10px; }
-  .container { max-width: 100%; }
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Resumo de Eventos Finalizados</title>
+  <link rel="stylesheet" href="assets/style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/choices.js/public/assets/styles/choices.min.css" />
+  <style>
+    body {
+      margin: 10px 30px;
+      font-family: Arial, sans-serif;
+      font-size: 13px;
+    }
+    h1 { font-size: 20px; margin-bottom: 10px; }
+    .container { max-width: 100%; }
+    label {
+      font-weight: bold;
+      display: block;
+      margin-bottom: 4px;
+    }
+    select, input[type="date"] {
+      padding: 4px;
+      font-size: 13px;
+      width: 100%;
+    }
+    .filtros {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-bottom: 10px;
+    }
+    .filtros > div {
+      min-width: 200px;
+      flex: 1;
+    }
+    #tabelaResumo {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    #tabelaResumo th, #tabelaResumo td {
+      padding: 4px 6px;
+      border: 1px solid #ccc;
+      text-align: left;
+    }
+    #tabelaResumo thead { background-color: #f0f0f0; }
+    .button-container {
+      margin-top: 15px;
+    }
+    .botao {
+      background: #f0f0f0;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      padding: 6px 10px;
+      cursor: pointer;
+      font-size: 13px;
+      margin: 5px 5px 0 0;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Resumo dos Eventos Finalizados</h1>
 
-  #tabelaResumo {
-    width: 100%;
-    border-collapse: collapse;
-  }
-  #tabelaResumo th, #tabelaResumo td {
-    padding: 4px 6px;
-    border: 1px solid #ccc;
-    text-align: left;
-  }
-  #tabelaResumo thead {
-    background-color: #f0f0f0;
-  }
-  #tabelaResumo tbody tr:nth-child(even) {
-    background-color: #f9f9f9;
-  }
-  #tabelaResumo tbody tr:nth-child(odd) {
-    background-color: #ffffff;
-  }
+    <div class="filtros">
+      <div>
+        <label for="filtroNome">Nome</label>
+        <select id="filtroNome" multiple></select>
+      </div>
+      <div>
+        <label for="filtroResponsavel">Responsável</label>
+        <select id="filtroResponsavel" multiple></select>
+      </div>
+      <div>
+        <label for="filtroInicio">Data Inicial</label>
+        <input type="date" id="filtroInicio">
+      </div>
+      <div>
+        <label for="filtroFim">Data Final</label>
+        <input type="date" id="filtroFim">
+      </div>
+    </div>
 
-  .perda-alerta-amarelo {
-    background-color: #fff3cd !important;
-  }
-  .perda-alerta-vermelho {
-    background-color: #f8d7da !important;
-  }
+    <table id="tabelaResumo">
+      <thead>
+        <tr>
+          <th>Nome do Evento</th>
+          <th>Data</th>
+          <th>Responsável</th>
+          <th>Valor de Venda</th>
+          <th>Venda PDV</th>
+          <th>Diferença</th>
+          <th>Custo Equipe</th>
+          <th>% Equipe</th>
+          <th>Custo Logística</th>
+          <th>% Logística</th>
+          <th>Valor de Perda</th>
+          <th>% Perda</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td colspan="12">Carregando eventos...</td></tr>
+      </tbody>
+    </table>
 
-  .positivo {
-    color: green;
-    font-weight: bold;
-  }
-  .negativo {
-    color: red;
-    font-weight: bold;
-  }
+    <div class="button-container">
+      <button class="botao" id="btnExportar">Exportar XLS</button>
+      <a href="index.html" class="botao">Voltar</a>
+    </div>
+  </div>
 
-  .botao {
-    background: #f0f0f0;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    padding: 6px 10px;
-    cursor: pointer;
-    font-size: 13px;
-    margin: 5px 5px 0 0;
-  }
-</style>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/choices.js/public/assets/scripts/choices.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <script>
+    const firebaseConfig = {
+      databaseURL: "https://controleestoquelepan-default-rtdb.firebaseio.com"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    const tbody = document.querySelector("#tabelaResumo tbody");
+    const filtroNome = document.getElementById("filtroNome");
+    const filtroResponsavel = document.getElementById("filtroResponsavel");
+    const filtroInicio = document.getElementById("filtroInicio");
+    const filtroFim = document.getElementById("filtroFim");
+
+    const selectNome = new Choices(filtroNome, { removeItemButton: true });
+    const selectResponsavel = new Choices(filtroResponsavel, { removeItemButton: true });
+
+    let eventos = [];
+
+    function formatar(valor) {
+      return "R$ " + parseFloat(valor || 0).toFixed(2).replace('.', ',');
+    }
+
+    function formatarPct(v, base) {
+      return base > 0 ? (v / base * 100).toFixed(1).replace('.', ',') + "%" : "–";
+    }
+
+    function preencherFiltros() {
+      const nomes = new Set();
+      const responsaveis = new Set();
+      eventos.forEach(ev => {
+        if (ev.status === "finalizado") {
+          nomes.add(ev.nome);
+          responsaveis.add(ev.responsavel);
+        }
+      });
+      selectNome.clearChoices();
+      selectResponsavel.clearChoices();
+      selectNome.setChoices([...nomes].map(n => ({ value: n, label: n })), 'value', 'label', true);
+      selectResponsavel.setChoices([...responsaveis].map(r => ({ value: r, label: r })), 'value', 'label', true);
+    }
+
+    function aplicarFiltros() {
+      const nomesSel = selectNome.getValue().map(opt => opt.value);
+      const respSel = selectResponsavel.getValue().map(opt => opt.value);
+      const dataIni = filtroInicio.value;
+      const dataFim = filtroFim.value;
+
+      const linhas = eventos.filter(ev => {
+        if (ev.status !== "finalizado") return false;
+        const dataEv = ev.data || "";
+        if (nomesSel.length && !nomesSel.includes(ev.nome)) return false;
+        if (respSel.length && !respSel.includes(ev.responsavel)) return false;
+        if (dataIni && dataEv < dataIni) return false;
+        if (dataFim && dataEv > dataFim) return false;
+        return true;
+      });
+
+      tbody.innerHTML = linhas.length ? "" : `<tr><td colspan="12">Nenhum evento encontrado.</td></tr>`;
+
+      let somaVendaPDV = 0, somaVenda = 0, somaPerda = 0, somaEquipe = 0, somaLog = 0;
+
+      linhas.forEach(ev => {
+        const a = ev.analise || {};
+        const vendaPDV = parseFloat(a.vendaPDV) || 0;
+        const valorVenda = parseFloat(a.valorVenda) || 0;
+        const valorPerda = parseFloat(a.valorPerda) || 0;
+        const custoEquipe = parseFloat(a.custoEquipe) || 0;
+        const custoLog = parseFloat(a.custoLogistica) || 0;
+        const dif = vendaPDV - valorVenda;
+
+        somaVendaPDV += vendaPDV;
+        somaVenda += valorVenda;
+        somaPerda += valorPerda;
+        somaEquipe += custoEquipe;
+        somaLog += custoLog;
+
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td>${ev.nome}</td>
+          <td>${ev.data}</td>
+          <td>${ev.responsavel}</td>
+          <td>${formatar(valorVenda)}</td>
+          <td>${formatar(vendaPDV)}</td>
+          <td>${formatar(dif)}</td>
+          <td>${formatar(custoEquipe)}</td>
+          <td>${formatarPct(custoEquipe, vendaPDV)}</td>
+          <td>${formatar(custoLog)}</td>
+          <td>${formatarPct(custoLog, vendaPDV)}</td>
+          <td>${formatar(valorPerda)}</td>
+          <td>${formatarPct(valorPerda, vendaPDV)}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+
+      if (linhas.length > 0) {
+        const difTotal = somaVendaPDV - somaVenda;
+        const trTotal = document.createElement("tr");
+        trTotal.innerHTML = `
+          <td><strong>Totais (${linhas.length} eventos)</strong></td>
+          <td>—</td>
+          <td>—</td>
+          <td><strong>${formatar(somaVenda)}</strong></td>
+          <td><strong>${formatar(somaVendaPDV)}</strong></td>
+          <td><strong>${formatar(difTotal)}</strong></td>
+          <td><strong>${formatar(somaEquipe)}</strong></td>
+          <td><strong>${formatarPct(somaEquipe, somaVendaPDV)}</strong></td>
+          <td><strong>${formatar(somaLog)}</strong></td>
+          <td><strong>${formatarPct(somaLog, somaVendaPDV)}</strong></td>
+          <td><strong>${formatar(somaPerda)}</strong></td>
+          <td><strong>${formatarPct(somaPerda, somaVendaPDV)}</strong></td>
+        `;
+        tbody.appendChild(trTotal);
+      }
+    }
+
+    function carregarEventos() {
+      db.ref("eventos").once("value").then(snapshot => {
+        const val = snapshot.val();
+        eventos = Object.values(val || {});
+        preencherFiltros();
+        aplicarFiltros();
+      });
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+      carregarEventos();
+      filtroNome.addEventListener("change", aplicarFiltros);
+      filtroResponsavel.addEventListener("change", aplicarFiltros);
+      filtroInicio.addEventListener("change", aplicarFiltros);
+      filtroFim.addEventListener("change", aplicarFiltros);
+    });
+
+    document.getElementById("btnExportar").addEventListener("click", () => {
+      const wb = XLSX.utils.book_new();
+      const ws = XLSX.utils.table_to_sheet(document.getElementById("tabelaResumo"));
+      XLSX.utils.book_append_sheet(wb, ws, "Resumo");
+      XLSX.writeFile(wb, "resumo_eventos.xlsx");
+    });
+  </script>
+</body>
+</html>
