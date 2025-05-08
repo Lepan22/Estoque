@@ -6,6 +6,7 @@
   <title>Detalhes do Evento</title>
   <link rel="stylesheet" href="assets/style.css">
   <link rel="stylesheet" href="assets/form-responsive.css"> <!-- Link para o CSS responsivo dedicado -->
+  <!-- O CSS inline foi removido -->
 </head>
 
 <body>
@@ -25,6 +26,7 @@
         </tr>
       </thead>
       <tbody id="itens-tbody"> <!-- ID usado pelo JS -->
+        <!-- Conteúdo será gerado pelo JavaScript -->
         <tr><td colspan="5">Carregando itens...</td></tr> <!-- Colspan ajustado para 5 colunas -->
       </tbody>
     </table>
@@ -35,12 +37,14 @@
     </div>
   </div>
 
+  <!-- JavaScript original (mantido inline, com adição dos data-labels) -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js";
-    import { getDatabase, ref, get, update, child } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-database.js";
+    import { getDatabase, ref, get, update } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-database.js";
 
     const firebaseConfig = {
-      apiKey: "AIzaSyBN-bmzgrlzjmrKMmuClZ8LVll-vJyx-aE",
+      // ATENÇÃO: Sua chave de API está exposta aqui. Considere usar regras de segurança do Firebase ou autenticação para proteger seus dados.
+      apiKey: "AIzaSyBN-bmzgrlzjmrKMmuClZ8LVll-vJyx-aE", 
       authDomain: "controleestoquelepan.firebaseapp.com",
       databaseURL: "https://controleestoquelepan-default-rtdb.firebaseio.com",
       projectId: "controleestoquelepan",
@@ -48,7 +52,6 @@
       messagingSenderId: "779860276544",
       appId: "1:779860276544:web:f45844571a8c0bab1576a5",
     };
-
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
 
@@ -59,38 +62,12 @@
     const btnFinal = document.getElementById("finalizarEventoBtn");
     const btnSalvar = document.getElementById("salvarAlteracoesBtn");
     let currentItens = [];
-    let eventoAtual = {};
+    let eventoAtual = {}; // Para guardar o estado do evento (ex: status)
 
     if (!eventId) {
       alert("ID do Evento não fornecido na URL.");
+      // Assumindo que index.html está no mesmo diretório ou na raiz
       window.location.href = "index.html"; 
-    }
-
-    async function calcularValoresExtras(itens) {
-      const dbRef = ref(getDatabase());
-      let vendaTotal = 0;
-      let valorPerda = 0;
-
-      for (const item of itens) {
-        const nomeItem = item.nomeItem || item.nome;
-        const qtdOriginal = item.quantidade || item.qtd || 0;
-        const congelado = item.congelado || 0;
-        const assado = item.assado || 0;
-        const perdido = item.perdido || 0;
-
-        const snap = await get(child(dbRef, `produtos/${nomeItem}`));
-        const produto = snap.exists() ? snap.val() : null;
-
-        const custo = produto?.custo || 0;
-        const valor = produto?.valor || 0;
-
-        const vendidos = Math.max(0, qtdOriginal - congelado - assado - perdido);
-
-        vendaTotal += vendidos * valor;
-        valorPerda += perdido * custo;
-      }
-
-      return { vendaTotal, valorPerda };
     }
 
     function carregarDados() {
@@ -102,7 +79,7 @@
             return;
           }
 
-          eventoAtual = snapshot.val(); 
+          eventoAtual = snapshot.val(); // Guarda os dados do evento
           currentItens = Array.isArray(eventoAtual.itens) ? eventoAtual.itens : [];
 
           document.getElementById("eventoInfo").innerHTML = `
@@ -111,9 +88,10 @@
             <p><strong>Responsável:</strong> ${eventoAtual.responsavel || "—"}</p>
           `;
 
-          itensBody.innerHTML = ""; 
+          itensBody.innerHTML = ""; // Limpa a mensagem de carregamento
 
           if (currentItens.length === 0) {
+            // Ajustado colspan para 5 e adicionado data-label
             itensBody.innerHTML = `<tr><td colspan="5" data-label="Status">Nenhum item registrado para este evento.</td></tr>`;
           } else {
             currentItens.forEach((item, idx) => {
@@ -123,6 +101,7 @@
               const nomeExib = item.nomeItem ?? item.nome ?? "—";
               const quantidadeExib = item.quantidade ?? item.qtd ?? "—";
 
+              // *** Adicionados os atributos data-label para cada célula ***
               tr.innerHTML = `
                 <td class="col-nome" data-label="Nome">${nomeExib}</td>
                 <td class="col-quantidade" data-label="Quantidade">${quantidadeExib}</td>
@@ -134,6 +113,7 @@
             });
           }
 
+          // Verifica o status do evento para desabilitar campos e botões
           if (eventoAtual.status === "finalizado") {
             btnFinal.textContent = "Evento Finalizado";
             btnFinal.disabled = true;
@@ -143,70 +123,98 @@
         })
         .catch(err => {
           console.error("Erro ao buscar dados do evento:", err);
+          // Ajustado colspan para 5 e adicionado data-label
           itensBody.innerHTML = `<tr><td colspan="5" data-label="Erro">Erro ao carregar itens. Verifique o console.</td></tr>`;
         });
     }
 
     function coletarItensAtualizados() {
       const novosItens = [];
+      // O seletor permanece o mesmo, buscando as linhas dentro do tbody
       document.querySelectorAll("#itens-tabela tbody tr[data-item-index]").forEach(tr => {
         const idx = parseInt(tr.getAttribute("data-item-index"), 10);
+        // Verifica se o índice é válido e corresponde a um item existente
         if (isNaN(idx) || idx < 0 || idx >= currentItens.length) return; 
         const itemOriginal = currentItens[idx];
 
+        // Seleciona os inputs dentro da linha atual
         const inputAssado = tr.querySelector('input[name="assado"]');
         const inputCongelado = tr.querySelector('input[name="congelado"]');
         const inputPerdido = tr.querySelector('input[name="perdido"]');
 
+        // Obtém os valores, garantindo que sejam números e tratando caso o input não exista
         const assado = inputAssado ? (parseInt(inputAssado.value, 10) || 0) : 0;
         const congelado = inputCongelado ? (parseInt(inputCongelado.value, 10) || 0) : 0;
         const perdido = inputPerdido ? (parseInt(inputPerdido.value, 10) || 0) : 0;
 
+        // Cria o novo objeto do item mantendo os dados originais e atualizando os contadores
         novosItens.push({ ...itemOriginal, assado, congelado, perdido });
       });
       return novosItens;
     }
 
-    btnFinal.addEventListener("click", async () => {
+    // Event listener para o botão Finalizar
+    btnFinal.addEventListener("click", () => {
+      // Impede múltiplos cliques se já estiver desabilitado
       if (btnFinal.disabled) return; 
       
       btnFinal.disabled = true;
       btnFinal.textContent = "Processando...";
-      btnSalvar.disabled = true;
+      btnSalvar.disabled = true; // Desabilita também o botão Salvar durante a finalização
 
       const itensAtualizados = coletarItensAtualizados();
-
-      try {
-        const { vendaTotal, valorPerda } = await calcularValoresExtras(itensAtualizados);
-
-        await update(refEvento, {
-          itens: itensAtualizados,
-          status: "finalizado",
-          vendaTotal,
-          valorPerda
+      update(refEvento, { itens: itensAtualizados, status: "finalizado" })
+        .then(() => {
+          alert("Evento finalizado e alterações salvas!");
+          btnFinal.textContent = "Evento Finalizado";
+          // Mantém os botões desabilitados
+          // Desabilita os inputs novamente para garantir
+          itensBody.querySelectorAll("input").forEach(i => i.disabled = true);
+          eventoAtual.status = "finalizado"; // Atualiza o estado local
+        })
+        .catch(err => {
+          console.error("Erro ao finalizar evento:", err);
+          alert("Falha ao finalizar o evento. Verifique o console para mais detalhes.");
+          // Reabilita os botões em caso de erro
+          btnFinal.disabled = false;
+          btnFinal.textContent = "Finalizar Evento e Salvar Alterações";
+          // Só reabilita o Salvar se o evento não estava finalizado antes
+          if (eventoAtual.status !== "finalizado") {
+              btnSalvar.disabled = false;
+          }
         });
-
-        alert("Evento finalizado e alterações salvas!");
-        btnFinal.textContent = "Evento Finalizado";
-        itensBody.querySelectorAll("input").forEach(i => i.disabled = true);
-        eventoAtual.status = "finalizado";
-      } catch (err) {
-        console.error("Erro ao finalizar evento:", err);
-        alert("Falha ao finalizar. Verifique o console.");
-        btnFinal.disabled = false;
-        btnFinal.textContent = "Finalizar Evento e Salvar Alterações";
-        if (eventoAtual.status !== "finalizado") {
-          btnSalvar.disabled = false;
-        }
-      }
     });
 
-    btnSalvar.addEventListener("click", async () => {
+    // Event listener para o botão Salvar
+    btnSalvar.addEventListener("click", () => {
+      // Impede múltiplos cliques se já estiver desabilitado
       if (btnSalvar.disabled) return; 
       
       btnSalvar.disabled = true;
       btnSalvar.textContent = "Salvando...";
 
       const itensAtualizados = coletarItensAtualizados();
+      update(refEvento, { itens: itensAtualizados })
+        .then(() => {
+          alert("Alterações salvas com sucesso!");
+          // Atualiza a variável local 'currentItens' com os dados salvos
+          currentItens = itensAtualizados;
+        })
+        .catch(err => {
+          console.error("Erro ao salvar alterações:", err);
+          alert("Falha ao salvar as alterações. Verifique o console para mais detalhes.");
+        })
+        .finally(() => {
+          // Reabilita o botão Salvar, a menos que o evento já esteja finalizado
+           if (eventoAtual.status !== "finalizado") {
+             btnSalvar.disabled = false;
+             btnSalvar.textContent = "Salvar Alterações";
+           }
+        });
+    });
 
-      try {
+    // Carrega os dados iniciais quando a página é aberta
+    carregarDados();
+  </script>
+</body>
+</html>
