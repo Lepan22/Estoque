@@ -60,14 +60,6 @@
       font-size: 14px;
       cursor: pointer;
     }
-    .botao-pequeno {
-      padding: 0;
-      border: none;
-      background: none;
-      margin-left: 6px;
-      font-size: 14px;
-      cursor: pointer;
-    }
     .secao-header {
       display: flex;
       justify-content: space-between;
@@ -113,10 +105,6 @@
     .item-linha input[type="number"] {
       margin-bottom: 0;
     }
-    .item-linha button {
-      all: unset;
-      cursor: pointer;
-    }
   </style>
 </head>
 <body>
@@ -157,23 +145,41 @@
       <div>
         <div class="secao-header">
           <h3>Equipe</h3>
-          <button type="button" class="botao-pequeno" id="addEquipeBtn">➕</button>
+          <button type="button" style="border:none;background:none;padding:0 4px;margin-left:4px;font-size:16px;cursor:pointer;">➕</button>
         </div>
         <div id="equipe-container">
-          <!-- Itens da equipe serão adicionados dinamicamente aqui -->
+          <div class="item-linha">
+            <input type="text" value="Degiane" />
+            <input type="number" value="165" />
+            <button type="button" style="border:none;background:none;padding:0 4px;font-size:16px;cursor:pointer;">🗑️</button>
+          </div>
+          <div class="item-linha">
+            <input type="text" value="Bianca" />
+            <input type="number" value="165" />
+            <button type="button" style="border:none;background:none;padding:0 4px;font-size:16px;cursor:pointer;">🗑️</button>
+          </div>
         </div>
-        <p><strong>Custo Total da Equipe:</strong> <span id="custoEquipe">R$ 0,00</span></p>
+        <p><strong>Custo Total da Equipe:</strong> <span id="custoEquipe">R$ 330,00</span></p>
       </div>
 
       <div>
         <div class="secao-header">
           <h3>Logística</h3>
-          <button type="button" class="botao-pequeno" id="addLogisticaBtn">➕</button>
+          <button type="button" style="border:none;background:none;padding:0 4px;margin-left:4px;font-size:16px;cursor:pointer;">➕</button>
         </div>
         <div id="logistica-container">
-          <!-- Itens de logística serão adicionados dinamicamente aqui -->
+          <div class="item-linha">
+            <input type="text" value="Uber" />
+            <input type="number" value="50" />
+            <button type="button" style="border:none;background:none;padding:0 4px;font-size:16px;cursor:pointer;">🗑️</button>
+          </div>
+          <div class="item-linha">
+            <input type="text" value="Uber" />
+            <input type="number" value="30" />
+            <button type="button" style="border:none;background:none;padding:0 4px;font-size:16px;cursor:pointer;">🗑️</button>
+          </div>
         </div>
-        <p><strong>Custo Total da Logística:</strong> <span id="custoLogistica">R$ 0,00</span></p>
+        <p><strong>Custo Total da Logística:</strong> <span id="custoLogistica">R$ 80,00</span></p>
       </div>
     </div>
 
