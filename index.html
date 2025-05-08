@@ -128,6 +128,7 @@
                 <a href="analise_evento.html?id=${id}" class="botao">📊</a>
                 <a href="assets/criar-evento.html?id=${id}" class="botao">✏️</a>
                 <button class="botao duplicar" data-id="${id}">📄</button>
+                <button class="botao copiar-link" data-id="${id}">📋 Copiar Link</button>
               </td>
             `;
             tabelaBody.appendChild(tr);
@@ -159,6 +160,19 @@
               console.error("Erro ao duplicar:", error);
               alert("Erro ao duplicar o evento.");
             }
+          });
+        });
+
+        document.querySelectorAll(".copiar-link").forEach(botao => {
+          botao.addEventListener("click", e => {
+            const id = e.target.dataset.id;
+            const link = `${window.location.origin}/Estoque/form.html?id=${id}`;
+            navigator.clipboard.writeText(link).then(() => {
+              alert("Link copiado para a área de transferência!");
+            }).catch(err => {
+              console.error("Erro ao copiar link:", err);
+              alert("Erro ao copiar link.");
+            });
           });
         });
       }, err => {
