@@ -64,8 +64,8 @@
       background: #f0f0f0;
       border: 1px solid #ccc;
       border-radius: 4px;
-      padding: 2px 6px;
-      font-size: 12px;
+      padding: 1px 4px;
+      font-size: 10px;
       margin-left: 6px;
       vertical-align: middle;
     }
@@ -110,8 +110,9 @@
       justify-content: space-between;
       margin-bottom: 2px;
     }
-    .item-linha span {
-      flex: 1;
+    .item-linha button {
+      padding: 1px 4px;
+      font-size: 10px;
     }
   </style>
 </head>
@@ -156,11 +157,7 @@
           <button type="button" class="botao-pequeno" id="addEquipeBtn">➕</button>
         </div>
         <div id="equipe-container">
-          <!-- Exemplo de item -->
-          <div class="item-linha">
-            <span>Membro 1</span>
-            <button class="botao-pequeno">🗑️</button>
-          </div>
+          <!-- Itens da equipe serão adicionados dinamicamente aqui -->
         </div>
         <p><strong>Custo Total da Equipe:</strong> <span id="custoEquipe">R$ 0,00</span></p>
       </div>
@@ -171,11 +168,7 @@
           <button type="button" class="botao-pequeno" id="addLogisticaBtn">➕</button>
         </div>
         <div id="logistica-container">
-          <!-- Exemplo de item -->
-          <div class="item-linha">
-            <span>Item 1</span>
-            <button class="botao-pequeno">🗑️</button>
-          </div>
+          <!-- Itens de logística serão adicionados dinamicamente aqui -->
         </div>
         <p><strong>Custo Total da Logística:</strong> <span id="custoLogistica">R$ 0,00</span></p>
       </div>
