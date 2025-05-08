@@ -5,6 +5,47 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Resumo de Eventos Finalizados</title>
   <link rel="stylesheet" href="assets/style.css" />
+  <style>
+    .container {
+      max-width: 900px;
+      margin: auto;
+      padding: 20px;
+      font-family: Arial, sans-serif;
+    }
+    h1 {
+      margin-bottom: 10px;
+    }
+    #tabelaResumo {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+    }
+    #tabelaResumo thead {
+      background-color: #e3f2fd;
+    }
+    #tabelaResumo th, #tabelaResumo td {
+      padding: 8px;
+      text-align: left;
+      border-bottom: 1px solid #ccc;
+    }
+    #tabelaResumo tbody tr:nth-child(even) {
+      background-color: #f9f9f9;
+    }
+    .botao {
+      background: #f0f0f0;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      padding: 6px 10px;
+      cursor: pointer;
+      font-size: 14px;
+      margin: 5px 5px 0 0;
+      text-decoration: none;
+      display: inline-block;
+    }
+    .button-container {
+      margin-top: 20px;
+    }
+  </style>
 </head>
 <body>
   <div class="container">
