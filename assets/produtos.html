@@ -20,6 +20,7 @@
       display: flex;
       gap: 10px;
       margin-bottom: 10px;
+      flex-wrap: wrap;
     }
 
     .form-inline input {
@@ -71,6 +72,13 @@
     .edit-button:hover {
       background-color: #218838;
     }
+
+    .xls-buttons {
+      margin-top: 20px;
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
   </style>
 </head>
 <body>
@@ -82,6 +90,7 @@
 
     <div class="form-inline">
       <input type="text" id="nome" placeholder="Nome do Produto" required />
+      <input type="text" id="nomenclatura" placeholder="Nomenclatura" />
       <input type="number" id="valorVenda" step="0.01" placeholder="Valor de Venda (R$)" />
       <input type="number" id="custo" step="0.01" placeholder="Custo (R$)" />
     </div>
@@ -89,22 +98,78 @@
     <button type="submit">Salvar Produto</button>
   </form>
 
+  <div class="xls-buttons">
+    <button onclick="exportToExcel()">Exportar XLS</button>
+    <input type="file" id="importFile" accept=".xlsx, .xls" onchange="importFromExcel()" />
+  </div>
+
   <h2 style="margin-top: 40px;">Lista de Produto Criado</h2>
 
-  <table>
+  <table id="tabela-produtos">
     <thead>
       <tr>
         <th>Nome</th>
+        <th>Nomenclatura</th>
         <th>Valor de Venda</th>
         <th>Custo</th>
-        <th>Ações</th>
       </tr>
     </thead>
     <tbody id="produtosContainer">
-      <tr><td colspan="4">Carregando produtos...</td></tr>
+      <tr><td colspan="4">Nenhum produto cadastrado.</td></tr>
     </tbody>
   </table>
 
-  <script type="module" src="produtos.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <script>
+    const form = document.getElementById("produtoForm");
+    const tbody = document.getElementById("produtosContainer");
+
+    form.addEventListener("submit", function(e) {
+      e.preventDefault();
+      const nome = document.getElementById("nome").value;
+      const nomenclatura = document.getElementById("nomenclatura").value;
+      const valorVenda = document.getElementById("valorVenda").value;
+      const custo = document.getElementById("custo").value;
+
+      const linha = tbody.insertRow();
+      linha.insertCell(0).textContent = nome;
+      linha.insertCell(1).textContent = nomenclatura;
+      linha.insertCell(2).textContent = valorVenda;
+      linha.insertCell(3).textContent = custo;
+
+      form.reset();
+    });
+
+    function exportToExcel() {
+      const tabela = document.getElementById("tabela-produtos");
+      const wb = XLSX.utils.table_to_book(tabela, { sheet: "Produtos" });
+      XLSX.writeFile(wb, "produtos.xlsx");
+    }
+
+    function importFromExcel() {
+      const file = document.getElementById("importFile").files[0];
+      const reader = new FileReader();
+
+      reader.onload = function(e) {
+        const data = new Uint8Array(e.target.result);
+        const workbook = XLSX.read(data, { type: "array" });
+        const sheetName = workbook.SheetNames[0];
+        const sheet = workbook.Sheets[sheetName];
+        const produtos = XLSX.utils.sheet_to_json(sheet);
+
+        tbody.innerHTML = ""; // limpa a tabela
+
+        produtos.forEach(prod => {
+          const linha = tbody.insertRow();
+          linha.insertCell(0).textContent = prod.Nome || "";
+          linha.insertCell(1).textContent = prod.Nomenclatura || "";
+          linha.insertCell(2).textContent = prod["Valor de Venda"] || "";
+          linha.insertCell(3).textContent = prod.Custo || "";
+        });
+      };
+
+      reader.readAsArrayBuffer(file);
+    }
+  </script>
 </body>
 </html>
