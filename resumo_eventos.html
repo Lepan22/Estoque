@@ -8,17 +8,12 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/choices.js/public/assets/styles/choices.min.css" />
   <style>
     body {
-      margin: 10px 30px 10px 30px;
+      margin: 10px 30px;
       font-family: Arial, sans-serif;
       font-size: 13px;
     }
-    h1 {
-      font-size: 20px;
-      margin-bottom: 10px;
-    }
-    .container {
-      max-width: 100%;
-    }
+    h1 { font-size: 20px; margin-bottom: 10px; }
+    .container { max-width: 100%; }
     label {
       font-weight: bold;
       display: block;
@@ -48,9 +43,7 @@
       border: 1px solid #ccc;
       text-align: left;
     }
-    #tabelaResumo thead {
-      background-color: #f0f0f0;
-    }
+    #tabelaResumo thead { background-color: #f0f0f0; }
     .button-container {
       margin-top: 15px;
     }
@@ -94,15 +87,19 @@
           <th>Nome do Evento</th>
           <th>Data</th>
           <th>Responsável</th>
-          <th>Venda PDV</th>
           <th>Valor de Venda</th>
-          <th>Valor de Perda</th>
+          <th>Venda PDV</th>
+          <th>Diferença</th>
           <th>Custo Equipe</th>
+          <th>% Equipe</th>
           <th>Custo Logística</th>
+          <th>% Logística</th>
+          <th>Valor de Perda</th>
+          <th>% Perda</th>
         </tr>
       </thead>
       <tbody>
-        <tr><td colspan="8">Carregando eventos...</td></tr>
+        <tr><td colspan="12">Carregando eventos...</td></tr>
       </tbody>
     </table>
 
@@ -138,6 +135,10 @@
       return "R$ " + parseFloat(valor || 0).toFixed(2).replace('.', ',');
     }
 
+    function formatarPct(v, base) {
+      return base > 0 ? (v / base * 100).toFixed(1).replace('.', ',') + "%" : "–";
+    }
+
     function preencherFiltros() {
       const nomes = new Set();
       const responsaveis = new Set();
@@ -147,10 +148,8 @@
           responsaveis.add(ev.responsavel);
         }
       });
-
       selectNome.clearChoices();
       selectResponsavel.clearChoices();
-
       selectNome.setChoices([...nomes].map(n => ({ value: n, label: n })), 'value', 'label', true);
       selectResponsavel.setChoices([...responsaveis].map(r => ({ value: r, label: r })), 'value', 'label', true);
     }
@@ -164,31 +163,69 @@
       const linhas = eventos.filter(ev => {
         if (ev.status !== "finalizado") return false;
         const dataEv = ev.data || "";
-
         if (nomesSel.length && !nomesSel.includes(ev.nome)) return false;
         if (respSel.length && !respSel.includes(ev.responsavel)) return false;
         if (dataIni && dataEv < dataIni) return false;
         if (dataFim && dataEv > dataFim) return false;
-
         return true;
       });
 
-      tbody.innerHTML = linhas.length ? "" : `<tr><td colspan="8">Nenhum evento encontrado.</td></tr>`;
+      tbody.innerHTML = linhas.length ? "" : `<tr><td colspan="12">Nenhum evento encontrado.</td></tr>`;
+
+      let somaVendaPDV = 0, somaVenda = 0, somaPerda = 0, somaEquipe = 0, somaLog = 0;
+
       linhas.forEach(ev => {
         const a = ev.analise || {};
+        const vendaPDV = parseFloat(a.vendaPDV) || 0;
+        const valorVenda = parseFloat(a.valorVenda) || 0;
+        const valorPerda = parseFloat(a.valorPerda) || 0;
+        const custoEquipe = parseFloat(a.custoEquipe) || 0;
+        const custoLog = parseFloat(a.custoLogistica) || 0;
+        const dif = vendaPDV - valorVenda;
+
+        somaVendaPDV += vendaPDV;
+        somaVenda += valorVenda;
+        somaPerda += valorPerda;
+        somaEquipe += custoEquipe;
+        somaLog += custoLog;
+
         const tr = document.createElement("tr");
         tr.innerHTML = `
           <td>${ev.nome}</td>
           <td>${ev.data}</td>
           <td>${ev.responsavel}</td>
-          <td>${formatar(a.vendaPDV)}</td>
-          <td>${formatar(a.valorVenda)}</td>
-          <td>${formatar(a.valorPerda)}</td>
-          <td>${formatar(a.custoEquipe)}</td>
-          <td>${formatar(a.custoLogistica)}</td>
+          <td>${formatar(valorVenda)}</td>
+          <td>${formatar(vendaPDV)}</td>
+          <td>${formatar(dif)}</td>
+          <td>${formatar(custoEquipe)}</td>
+          <td>${formatarPct(custoEquipe, vendaPDV)}</td>
+          <td>${formatar(custoLog)}</td>
+          <td>${formatarPct(custoLog, vendaPDV)}</td>
+          <td>${formatar(valorPerda)}</td>
+          <td>${formatarPct(valorPerda, vendaPDV)}</td>
         `;
         tbody.appendChild(tr);
       });
+
+      if (linhas.length > 0) {
+        const difTotal = somaVendaPDV - somaVenda;
+        const trTotal = document.createElement("tr");
+        trTotal.innerHTML = `
+          <td><strong>Totais (${linhas.length} eventos)</strong></td>
+          <td>—</td>
+          <td>—</td>
+          <td><strong>${formatar(somaVenda)}</strong></td>
+          <td><strong>${formatar(somaVendaPDV)}</strong></td>
+          <td><strong>${formatar(difTotal)}</strong></td>
+          <td><strong>${formatar(somaEquipe)}</strong></td>
+          <td><strong>${formatarPct(somaEquipe, somaVendaPDV)}</strong></td>
+          <td><strong>${formatar(somaLog)}</strong></td>
+          <td><strong>${formatarPct(somaLog, somaVendaPDV)}</strong></td>
+          <td><strong>${formatar(somaPerda)}</strong></td>
+          <td><strong>${formatarPct(somaPerda, somaVendaPDV)}</strong></td>
+        `;
+        tbody.appendChild(trTotal);
+      }
     }
 
     function carregarEventos() {
