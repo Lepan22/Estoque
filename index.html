@@ -5,6 +5,63 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Painel do Gerente</title>
   <link rel="stylesheet" href="assets/style.css">
+  <style>
+    body {
+      margin: 20px 24px 20px 24px;
+      font-family: Arial, sans-serif;
+    }
+    .container {
+      max-width: 95%;
+      margin: auto;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+    table thead {
+      background-color: #f1f1f1;
+    }
+    table th, table td {
+      border: 1px solid #ccc;
+      padding: 6px 8px;
+      text-align: left;
+    }
+    table tbody tr:nth-child(even) {
+      background-color: #f9f9f9;
+    }
+    .botao {
+      padding: 4px 8px;
+      font-size: 12px;
+      margin: 2px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      background: #f0f0f0;
+      cursor: pointer;
+      text-decoration: none;
+      display: inline-block;
+    }
+    .button-container {
+      margin-bottom: 10px;
+    }
+    h1 {
+      font-size: 20px;
+      margin-bottom: 12px;
+    }
+    .filtros {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 12px;
+      flex-wrap: wrap;
+    }
+    .filtros label {
+      font-size: 13px;
+    }
+    .filtros input, .filtros select {
+      font-size: 13px;
+      padding: 4px;
+    }
+  </style>
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js";
     import {
@@ -30,6 +87,9 @@
 
     const tabelaBody = document.getElementById("eventos-tbody");
     const loadingRow = document.getElementById("loading-row");
+    const statusFiltro = document.getElementById("filtro-status");
+    const dataInicio = document.getElementById("data-inicio");
+    const dataFim = document.getElementById("data-fim");
 
     function carregarEventos() {
       const eventosRef = ref(db, "eventos");
@@ -43,8 +103,18 @@
         }
 
         const evs = snapshot.val();
+        const filtroStatus = statusFiltro.value;
+        const inicio = new Date(dataInicio.value);
+        const fim = new Date(dataFim.value);
+
         Object.entries(evs)
           .map(([id, ev]) => ({ id, ...ev }))
+          .filter(ev => {
+            const evData = new Date(ev.data);
+            return (!filtroStatus || ev.status === filtroStatus) &&
+                   (!dataInicio.value || evData >= inicio) &&
+                   (!dataFim.value || evData <= fim);
+          })
           .sort((a, b) => new Date(b.data) - new Date(a.data))
           .forEach(({ id, nome, data, responsavel, status }) => {
             const tr = document.createElement("tr");
@@ -55,15 +125,14 @@
               <td data-label="Status">${status || "aberto"}</td>
               <td data-label="Ações">
                 <a href="form.html?id=${id}" class="botao">Ver Detalhes</a>
-                <a href="analise_evento.html?id=${id}" class="botao analisar">📊 Analisar Evento</a>
-                <a href="assets/criar-evento.html?id=${id}" class="botao editar">✏️ Editar</a>
-                <button class="botao duplicar" data-id="${id}">📄 Duplicar</button>
+                <a href="analise_evento.html?id=${id}" class="botao">📊</a>
+                <a href="assets/criar-evento.html?id=${id}" class="botao">✏️</a>
+                <button class="botao duplicar" data-id="${id}">📄</button>
               </td>
             `;
             tabelaBody.appendChild(tr);
           });
 
-        // DUPLICAÇÃO MODIFICADA
         document.querySelectorAll(".duplicar").forEach(botao => {
           botao.addEventListener("click", async e => {
             const id = e.target.dataset.id;
@@ -100,17 +169,35 @@
     }
 
     document.addEventListener("DOMContentLoaded", carregarEventos);
+    document.addEventListener("change", carregarEventos);
   </script>
 </head>
 <body>
   <div class="container">
     <h1>Painel do Gerente</h1>
-
-    <!-- Botões principais -->
-    <div class="button-container" style="margin-bottom: 20px;">
+    <div class="button-container">
       <a href="assets/criar-evento.html" class="botao">➕ Criar Novo Evento</a>
       <a href="resumo_eventos.html" class="botao">📊 Resumo dos Eventos</a>
       <a href="assets/produtos.html" class="botao">📦 Cadastro de Produto</a>
+    </div>
+
+    <div class="filtros">
+      <div>
+        <label for="filtro-status">Status:</label>
+        <select id="filtro-status">
+          <option value="">Todos</option>
+          <option value="aberto">Aberto</option>
+          <option value="finalizado">Finalizado</option>
+        </select>
+      </div>
+      <div>
+        <label for="data-inicio">Data Início:</label>
+        <input type="date" id="data-inicio" />
+      </div>
+      <div>
+        <label for="data-fim">Data Fim:</label>
+        <input type="date" id="data-fim" />
+      </div>
     </div>
 
     <table id="eventos-tabela">
