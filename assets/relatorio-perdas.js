@@ -1,4 +1,3 @@
-
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js";
 import {
   getDatabase, ref, get
@@ -61,14 +60,24 @@ form.addEventListener("submit", async (e) => {
     (ev.itens || []).forEach(item => {
       const nomeBruto = item.nomeItem || item.nome || "Sem nome";
       const nome = nomeBruto.trim().toLowerCase();
-      const qtd = parseFloat(item.perdido || item.perda || 0);
-      if (qtd > 0) {
-        if (!perdas[nome]) perdas[nome] = { nomeOriginal: nomeBruto.trim(), perda: 0, custo: 0 };
-        perdas[nome].perda += qtd;
+
+      let qtdPerdida = 0;
+      if ('perdido' in item && !isNaN(parseFloat(item.perdido))) {
+        qtdPerdida = parseFloat(item.perdido);
+      } else if ('perda' in item && !isNaN(parseFloat(item.perda))) {
+        qtdPerdida = parseFloat(item.perda);
+      }
+
+      if (qtdPerdida > 0) {
+        if (!perdas[nome]) {
+          perdas[nome] = { nomeOriginal: nomeBruto.trim(), perda: 0, custo: 0 };
+        }
+        perdas[nome].perda += qtdPerdida;
 
         const produto = Object.values(produtos).find(p =>
           (p.nome || "").trim().toLowerCase() === nome
         );
+
         if (produto && produto.custo) {
           perdas[nome].custo = parseFloat(produto.custo);
         }
@@ -95,16 +104,16 @@ form.addEventListener("submit", async (e) => {
     <tbody>
       ${Object.values(perdas).map(dados => {
         const total = (dados.perda * dados.custo).toFixed(2);
-        const custoFormatado = dados.custo ? \`R$ \${dados.custo.toFixed(2)}\` : \`<span style="color:red">–</span>\`;
-        const totalFormatado = dados.custo ? \`<strong>R$ \${total}</strong>\` : \`<span style="color:red">Sem custo</span>\`;
-        return \`
+        const custoFormatado = dados.custo ? `R$ ${dados.custo.toFixed(2)}` : `<span style="color:red">–</span>`;
+        const totalFormatado = dados.custo ? `<strong>R$ ${total}</strong>` : `<span style="color:red">Sem custo</span>`;
+        return `
           <tr>
-            <td>\${dados.nomeOriginal}</td>
-            <td>\${dados.perda}</td>
-            <td>\${custoFormatado}</td>
-            <td>\${totalFormatado}</td>
+            <td>${dados.nomeOriginal}</td>
+            <td>${dados.perda}</td>
+            <td>${custoFormatado}</td>
+            <td>${totalFormatado}</td>
           </tr>
-        \`;
+        `;
       }).join("")}
     </tbody>
   `;
