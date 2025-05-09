@@ -22,8 +22,10 @@ const exportBtn = document.getElementById("exportarXLS");
 
 const hoje = new Date();
 const inicioMes = new Date(hoje.getFullYear(), hoje.getMonth(), 1);
+const fimMes = new Date(hoje.getFullYear(), hoje.getMonth() + 1, 0);
+
 document.getElementById("data-inicio").value = inicioMes.toISOString().split("T")[0];
-document.getElementById("data-fim").value = hoje.toISOString().split("T")[0];
+document.getElementById("data-fim").value = fimMes.toISOString().split("T")[0];
 
 form.addEventListener("submit", async (e) => {
   e.preventDefault();
@@ -85,6 +87,10 @@ form.addEventListener("submit", async (e) => {
     return;
   }
 
+  const totalGeral = Object.values(perdas).reduce((soma, dados) => {
+    return soma + (dados.custo ? dados.perda * dados.custo : 0);
+  }, 0);
+
   const tabela = document.createElement("table");
   tabela.border = "1";
   tabela.innerHTML = `
@@ -110,6 +116,10 @@ form.addEventListener("submit", async (e) => {
           </tr>
         `;
       }).join("")}
+      <tr style="font-weight: bold; background: #f0f0f0;">
+        <td colspan="3" style="text-align: right;">Total Geral:</td>
+        <td>R$ ${totalGeral.toFixed(2)}</td>
+      </tr>
     </tbody>
   `;
 
@@ -124,6 +134,13 @@ form.addEventListener("submit", async (e) => {
       "Custo Unitário": dados.custo || "–",
       "Custo Total": dados.custo ? (dados.perda * dados.custo).toFixed(2) : "Sem custo"
     }));
+
+    data.push({
+      Produto: "TOTAL",
+      "Quantidade Perdida": "",
+      "Custo Unitário": "",
+      "Custo Total": totalGeral.toFixed(2)
+    });
 
     const ws = XLSX.utils.json_to_sheet(data);
     const wb = XLSX.utils.book_new();
