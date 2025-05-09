@@ -7,61 +7,107 @@
   <link rel="stylesheet" href="assets/style.css">
   <style>
     body {
-      margin: 20px 24px 20px 24px;
-      font-family: Arial, sans-serif;
+      margin: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #f9fafb;
+      color: #333;
     }
+
     .container {
-      max-width: 95%;
-      margin: auto;
+      max-width: 1200px;
+      margin: 40px auto;
+      padding: 20px;
+      background-color: white;
+      border-radius: 10px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
     }
+
+    h1 {
+      font-size: 24px;
+      margin-bottom: 24px;
+      text-align: center;
+    }
+
+    .button-container {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    .botao {
+      padding: 10px 16px;
+      font-size: 14px;
+      border: none;
+      border-radius: 6px;
+      background-color: #e2e8f0;
+      color: #1a202c;
+      text-decoration: none;
+      cursor: pointer;
+      transition: background-color 0.3s;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .botao:hover {
+      background-color: #cbd5e0;
+    }
+
+    .filtros {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 20px;
+      justify-content: center;
+      margin-bottom: 20px;
+    }
+
+    .filtros label {
+      font-size: 14px;
+      margin-bottom: 4px;
+      display: block;
+    }
+
+    .filtros input,
+    .filtros select {
+      font-size: 14px;
+      padding: 6px 10px;
+      border-radius: 4px;
+      border: 1px solid #ccc;
+      width: 180px;
+    }
+
     table {
       width: 100%;
       border-collapse: collapse;
-      font-size: 13px;
+      font-size: 14px;
     }
+
     table thead {
-      background-color: #f1f1f1;
+      background-color: #edf2f7;
     }
-    table th, table td {
-      border: 1px solid #ccc;
-      padding: 6px 8px;
+
+    table th,
+    table td {
+      border: 1px solid #e2e8f0;
+      padding: 10px;
       text-align: left;
     }
+
     table tbody tr:nth-child(even) {
-      background-color: #f9f9f9;
+      background-color: #f7fafc;
     }
-    .botao {
-      padding: 4px 8px;
-      font-size: 12px;
-      margin: 2px;
-      border: 1px solid #ccc;
-      border-radius: 4px;
-      background: #f0f0f0;
-      cursor: pointer;
-      text-decoration: none;
-      display: inline-block;
-    }
-    .button-container {
-      margin-bottom: 10px;
-    }
-    h1 {
-      font-size: 20px;
-      margin-bottom: 12px;
-    }
-    .filtros {
-      display: flex;
-      gap: 10px;
-      margin-bottom: 12px;
-      flex-wrap: wrap;
-    }
-    .filtros label {
-      font-size: 13px;
-    }
-    .filtros input, .filtros select {
-      font-size: 13px;
-      padding: 4px;
+
+    @media (max-width: 768px) {
+      .filtros {
+        flex-direction: column;
+        align-items: center;
+      }
     }
   </style>
+
+  <!-- Firebase script -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js";
     import {
@@ -82,6 +128,7 @@
       messagingSenderId: "779860276544",
       appId: "1:779860276544:web:f45844571a8c0bab1576a5",
     };
+
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
 
@@ -119,16 +166,16 @@
           .forEach(({ id, nome, data, responsavel, status }) => {
             const tr = document.createElement("tr");
             tr.innerHTML = `
-              <td data-label="Nome">${nome || "–"}</td>
-              <td data-label="Data">${data || "–"}</td>
-              <td data-label="Responsável">${responsavel || "–"}</td>
-              <td data-label="Status">${status || "aberto"}</td>
-              <td data-label="Ações">
+              <td>${nome || "–"}</td>
+              <td>${data || "–"}</td>
+              <td>${responsavel || "–"}</td>
+              <td>${status || "aberto"}</td>
+              <td>
                 <a href="form.html?id=${id}" class="botao">Ver Detalhes</a>
                 <a href="analise_evento.html?id=${id}" class="botao">📊</a>
                 <a href="assets/criar-evento.html?id=${id}" class="botao">✏️</a>
                 <button class="botao duplicar" data-id="${id}">📄</button>
-                <button class="botao copiar-link" data-id="${id}">📋 Copiar Link</button>
+                <button class="botao copiar-link" data-id="${id}">📋 Link</button>
               </td>
             `;
             tabelaBody.appendChild(tr);
@@ -189,15 +236,16 @@
 <body>
   <div class="container">
     <h1>Painel do Gerente</h1>
+
     <div class="button-container">
-      <a href="assets/criar-evento.html" class="botao">➕ Criar Novo Evento</a>
-      <a href="resumo_eventos.html" class="botao">📊 Resumo dos Eventos</a>
-      <a href="assets/produtos.html" class="botao">📦 Cadastro de Produto</a>
+      <a href="assets/criar-evento.html" class="botao">➕ Novo Evento</a>
+      <a href="relatorios.html" class="botao">📑 Relatórios</a>
+      <a href="assets/produtos.html" class="botao">📦 Produtos</a>
     </div>
 
     <div class="filtros">
       <div>
-        <label for="filtro-status">Status:</label>
+        <label for="filtro-status">Status</label>
         <select id="filtro-status">
           <option value="">Todos</option>
           <option value="aberto">Aberto</option>
@@ -205,16 +253,16 @@
         </select>
       </div>
       <div>
-        <label for="data-inicio">Data Início:</label>
+        <label for="data-inicio">Data Início</label>
         <input type="date" id="data-inicio" />
       </div>
       <div>
-        <label for="data-fim">Data Fim:</label>
+        <label for="data-fim">Data Fim</label>
         <input type="date" id="data-fim" />
       </div>
     </div>
 
-    <table id="eventos-tabela">
+    <table>
       <thead>
         <tr>
           <th>Nome</th>
