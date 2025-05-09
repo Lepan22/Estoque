@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Relatório de Perdas</title>
+  <link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+  <div class="container">
+    <h1>Relatório de Perdas (Eventos Finalizados)</h1>
+
+    <form id="filtro-form">
+      <label>Data Início:
+        <input type="date" id="data-inicio" required>
+      </label>
+      <label>Data Fim:
+        <input type="date" id="data-fim" required>
+      </label>
+      <button type="submit">Gerar Relatório</button>
+    </form>
+
+    <div style="margin-top: 20px;">
+      <button id="exportarXLS" style="display:none">Exportar para XLS</button>
+    </div>
+
+    <div id="relatorio-container" style="margin-top: 20px;"></div>
+
+    <script type="module" src="relatorio-perdas.js"></script>
+    <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
+  </div>
+</body>
+</html>
