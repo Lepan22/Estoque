@@ -20,19 +20,31 @@ const form = document.getElementById("filtro-form");
 const container = document.getElementById("relatorio-container");
 const exportBtn = document.getElementById("exportarXLS");
 
+// Preenche datas com mês atual
+const hoje = new Date();
+const inicioMes = new Date(hoje.getFullYear(), hoje.getMonth(), 1);
+document.getElementById("data-inicio").value = inicioMes.toISOString().split("T")[0];
+document.getElementById("data-fim").value = hoje.toISOString().split("T")[0];
+
 form.addEventListener("submit", async (e) => {
   e.preventDefault();
   const dataInicio = new Date(document.getElementById("data-inicio").value);
   const dataFim = new Date(document.getElementById("data-fim").value);
   dataFim.setHours(23, 59, 59);
 
-  const eventosSnap = await get(ref(db, "eventos"));
+  const [eventosSnap, produtosSnap] = await Promise.all([
+    get(ref(db, "eventos")),
+    get(ref(db, "produtos"))
+  ]);
+
   if (!eventosSnap.exists()) {
     container.innerHTML = "<p>Nenhum evento encontrado.</p>";
     return;
   }
 
   const eventos = eventosSnap.val();
+  const produtos = produtosSnap.exists() ? produtosSnap.val() : {};
+
   const eventosFiltrados = Object.values(eventos).filter(ev => {
     const dataEv = new Date(ev.data);
     return ev.status === "finalizado" && dataEv >= dataInicio && dataEv <= dataFim;
@@ -44,16 +56,19 @@ form.addEventListener("submit", async (e) => {
   }
 
   const perdas = {};
+
   eventosFiltrados.forEach(ev => {
     (ev.itens || []).forEach(item => {
       const nome = item.nomeItem || item.nome || "Sem nome";
       const qtd = parseFloat(item.perda || 0);
-      const custo = parseFloat(item.custo || 0);
-
       if (qtd > 0) {
-        if (!perdas[nome]) perdas[nome] = { perda: 0, custo: custo };
+        if (!perdas[nome]) perdas[nome] = { perda: 0, custo: 0 };
         perdas[nome].perda += qtd;
-        perdas[nome].custo = custo;
+
+        const produto = Object.values(produtos).find(p => p.nome === nome);
+        if (produto && produto.custo) {
+          perdas[nome].custo = parseFloat(produto.custo);
+        }
       }
     });
   });
