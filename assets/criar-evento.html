@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -36,7 +37,6 @@
       get, child
     } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-database.js";
 
-    // Firebase config
     const firebaseConfig = {
       apiKey: "AIzaSyBN-bmzgrlzjmrKMmuClZ8LVll-vJyx-aE",
       authDomain: "controleestoquelepan.firebaseapp.com",
@@ -49,12 +49,10 @@
     const app = initializeApp(firebaseConfig);
     const db  = getDatabase(app);
 
-    // Params
     const params   = new URLSearchParams(window.location.search);
     const eventId  = params.get("id");
     const isEdit   = Boolean(eventId);
 
-    // Elements
     const titleH2   = document.getElementById("form-title");
     const submitBtn = document.getElementById("submit-btn");
     const addItem   = document.getElementById("add-item");
@@ -62,18 +60,20 @@
     const form      = document.getElementById("form-evento");
     const datalist  = document.getElementById("lista-produtos");
 
-    // Carrega produtos no datalist
+    let produtosValidos = new Set();
+
     get(ref(db, "produtos"))
       .then(snap => {
         const prods = snap.val() || {};
         Object.values(prods).forEach(p => {
+          const nomeLimpo = (p.nome || "").trim().toLowerCase();
+          produtosValidos.add(nomeLimpo);
           const opt = document.createElement("option");
           opt.value = p.nome;
           datalist.appendChild(opt);
         });
       });
 
-    // Adiciona linha de item
     function novaLinha(item = {}) {
       const div = document.createElement("div");
       div.className = "item-line";
@@ -100,7 +100,6 @@
 
     addItem.addEventListener("click", () => novaLinha());
 
-    // Edição
     if (isEdit) {
       titleH2.textContent   = "Editar Evento";
       submitBtn.textContent = "Salvar Alterações";
@@ -115,17 +114,27 @@
         });
     }
 
-    // Submit
     form.addEventListener("submit", e => {
       e.preventDefault();
+
+      const itens = Array.from(itensCt.children).map(div => {
+        return {
+          nomeItem: div.querySelector('[name="item-nome"]').value.trim(),
+          quantidade: +div.querySelector('[name="item-quantidade"]').value
+        };
+      });
+
+      const invalidos = itens.filter(i => !produtosValidos.has(i.nomeItem.toLowerCase()));
+      if (invalidos.length > 0) {
+        alert("Os seguintes produtos não estão cadastrados:\n\n" + invalidos.map(i => "- " + i.nomeItem).join("\n"));
+        return;
+      }
+
       const evObj = {
         nome:        form.nome.value,
         data:        form.data.value,
         responsavel: form.responsavel.value,
-        itens: Array.from(itensCt.children).map(div => ({
-          nomeItem:   div.querySelector('[name="item-nome"]').value,
-          quantidade: +div.querySelector('[name="item-quantidade"]').value
-        })),
+        itens,
         status: "aberto"
       };
 
