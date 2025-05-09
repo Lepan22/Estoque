@@ -20,7 +20,6 @@ const form = document.getElementById("filtro-form");
 const container = document.getElementById("relatorio-container");
 const exportBtn = document.getElementById("exportarXLS");
 
-// Preenche datas com mês atual
 const hoje = new Date();
 const inicioMes = new Date(hoje.getFullYear(), hoje.getMonth(), 1);
 document.getElementById("data-inicio").value = inicioMes.toISOString().split("T")[0];
@@ -60,7 +59,7 @@ form.addEventListener("submit", async (e) => {
   eventosFiltrados.forEach(ev => {
     (ev.itens || []).forEach(item => {
       const nome = item.nomeItem || item.nome || "Sem nome";
-      const qtd = parseFloat(item.perda || 0);
+      const qtd = parseFloat(item.perdido || item.perda || 0);
       if (qtd > 0) {
         if (!perdas[nome]) perdas[nome] = { perda: 0, custo: 0 };
         perdas[nome].perda += qtd;
