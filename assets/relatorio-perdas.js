@@ -27,9 +27,12 @@ document.getElementById("data-fim").value = hoje.toISOString().split("T")[0];
 
 form.addEventListener("submit", async (e) => {
   e.preventDefault();
+
   const dataInicio = new Date(document.getElementById("data-inicio").value);
   const dataFim = new Date(document.getElementById("data-fim").value);
   dataFim.setHours(23, 59, 59);
+
+  container.innerHTML = "Carregando...";
 
   const [eventosSnap, produtosSnap] = await Promise.all([
     get(ref(db, "eventos")),
@@ -44,43 +47,35 @@ form.addEventListener("submit", async (e) => {
   const eventos = eventosSnap.val();
   const produtos = produtosSnap.exists() ? produtosSnap.val() : {};
 
-  const eventosFiltrados = Object.values(eventos).filter(ev => {
-    const dataEv = new Date(ev.data);
-    return ev.status === "finalizado" && dataEv >= dataInicio && dataEv <= dataFim;
-  });
-
-  if (eventosFiltrados.length === 0) {
-    container.innerHTML = "<p>Nenhum evento finalizado no período selecionado.</p>";
-    return;
-  }
-
   const perdas = {};
 
-  eventosFiltrados.forEach(ev => {
-    (ev.itens || []).forEach(item => {
-      const nomeBruto = item.nomeItem || item.nome || "Sem nome";
-      const nome = nomeBruto.trim().toLowerCase();
+  Object.values(eventos).forEach(ev => {
+    const dataEv = new Date(ev.data);
+    if (ev.status !== "finalizado" || dataEv < dataInicio || dataEv > dataFim) return;
 
-      let qtdPerdida = 0;
-      if ('perdido' in item && !isNaN(parseFloat(item.perdido))) {
-        qtdPerdida = parseFloat(item.perdido);
-      } else if ('perda' in item && !isNaN(parseFloat(item.perda))) {
-        qtdPerdida = parseFloat(item.perda);
+    (ev.itens || []).forEach(item => {
+      const nomeItem = item.nomeItem || item.nome;
+      const qtdPerdida = parseFloat(item.perdido);
+      if (!nomeItem || isNaN(qtdPerdida) || qtdPerdida <= 0) return;
+
+      const chave = nomeItem.trim().toLowerCase();
+
+      if (!perdas[chave]) {
+        perdas[chave] = {
+          nomeOriginal: nomeItem.trim(),
+          perda: 0,
+          custo: 0
+        };
       }
 
-      if (qtdPerdida > 0) {
-        if (!perdas[nome]) {
-          perdas[nome] = { nomeOriginal: nomeBruto.trim(), perda: 0, custo: 0 };
-        }
-        perdas[nome].perda += qtdPerdida;
+      perdas[chave].perda += qtdPerdida;
 
-        const produto = Object.values(produtos).find(p =>
-          (p.nome || "").trim().toLowerCase() === nome
-        );
+      const produto = Object.values(produtos).find(p =>
+        (p.nome || "").trim().toLowerCase() === chave
+      );
 
-        if (produto && produto.custo) {
-          perdas[nome].custo = parseFloat(produto.custo);
-        }
+      if (produto && produto.custo) {
+        perdas[chave].custo = parseFloat(produto.custo);
       }
     });
   });
