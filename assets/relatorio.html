@@ -1,28 +1,61 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Relatório de Produtos por Evento</title>
-  <link rel="stylesheet" href="assets/style.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Relatórios</title>
+  <link rel="stylesheet" href="assets/style.css" />
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f4f6f9;
+      margin: 0;
+      padding: 20px;
+    }
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+      background: white;
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 0 15px rgba(0,0,0,0.1);
+    }
+    h1 {
+      text-align: center;
+      color: #333;
+      margin-bottom: 30px;
+    }
+    ul {
+      list-style: none;
+      padding: 0;
+    }
+    li {
+      margin-bottom: 15px;
+    }
+    a.rel-link {
+      display: block;
+      background-color: #007bff;
+      color: white;
+      padding: 15px 20px;
+      text-decoration: none;
+      border-radius: 8px;
+      transition: background-color 0.3s;
+      font-size: 16px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+    a.rel-link:hover {
+      background-color: #0056b3;
+    }
+  </style>
 </head>
 <body>
   <div class="container">
-    <h1>Relatório: Produtos por Evento</h1>
-
-    <form id="filtro-form">
-      <label>Data Início:
-        <input type="date" id="data-inicio" required>
-      </label>
-      <label>Data Fim:
-        <input type="date" id="data-fim" required>
-      </label>
-      <button type="submit">Gerar Relatório</button>
-    </form>
-
-    <div id="relatorio-container" style="margin-top: 30px;"></div>
+    <h1>📑 Central de Relatórios</h1>
+    <ul>
+      <li><a class="rel-link" href="relatorio-produtos-eventos.html">📦 Produtos por Evento</a></li>
+      <li><a class="rel-link" href="relatorio-perdas.html">❌ Perdas por Evento Finalizado</a></li>
+      <li><a class="rel-link" href="https://lepan22.github.io/Estoque/resumo_eventos.html">📋 Resumo Geral de Eventos</a></li>
+    </ul>
   </div>
-
-  <script type="module" src="relatorio.js"></script>
 </body>
 </html>
