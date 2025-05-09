@@ -1,3 +1,4 @@
+
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js";
 import {
   getDatabase, ref, get
@@ -58,13 +59,16 @@ form.addEventListener("submit", async (e) => {
 
   eventosFiltrados.forEach(ev => {
     (ev.itens || []).forEach(item => {
-      const nome = item.nomeItem || item.nome || "Sem nome";
+      const nomeBruto = item.nomeItem || item.nome || "Sem nome";
+      const nome = nomeBruto.trim().toLowerCase();
       const qtd = parseFloat(item.perdido || item.perda || 0);
       if (qtd > 0) {
-        if (!perdas[nome]) perdas[nome] = { perda: 0, custo: 0 };
+        if (!perdas[nome]) perdas[nome] = { nomeOriginal: nomeBruto.trim(), perda: 0, custo: 0 };
         perdas[nome].perda += qtd;
 
-        const produto = Object.values(produtos).find(p => p.nome === nome);
+        const produto = Object.values(produtos).find(p =>
+          (p.nome || "").trim().toLowerCase() === nome
+        );
         if (produto && produto.custo) {
           perdas[nome].custo = parseFloat(produto.custo);
         }
@@ -89,16 +93,18 @@ form.addEventListener("submit", async (e) => {
       </tr>
     </thead>
     <tbody>
-      ${Object.entries(perdas).map(([produto, dados]) => {
+      ${Object.values(perdas).map(dados => {
         const total = (dados.perda * dados.custo).toFixed(2);
-        return `
+        const custoFormatado = dados.custo ? \`R$ \${dados.custo.toFixed(2)}\` : \`<span style="color:red">–</span>\`;
+        const totalFormatado = dados.custo ? \`<strong>R$ \${total}</strong>\` : \`<span style="color:red">Sem custo</span>\`;
+        return \`
           <tr>
-            <td>${produto}</td>
-            <td>${dados.perda}</td>
-            <td>R$ ${dados.custo.toFixed(2)}</td>
-            <td><strong>R$ ${total}</strong></td>
+            <td>\${dados.nomeOriginal}</td>
+            <td>\${dados.perda}</td>
+            <td>\${custoFormatado}</td>
+            <td>\${totalFormatado}</td>
           </tr>
-        `;
+        \`;
       }).join("")}
     </tbody>
   `;
@@ -108,11 +114,11 @@ form.addEventListener("submit", async (e) => {
   exportBtn.style.display = "inline-block";
 
   exportBtn.onclick = () => {
-    const data = Object.entries(perdas).map(([produto, dados]) => ({
-      Produto: produto,
+    const data = Object.values(perdas).map(dados => ({
+      Produto: dados.nomeOriginal,
       "Quantidade Perdida": dados.perda,
-      "Custo Unitário": dados.custo,
-      "Custo Total": (dados.perda * dados.custo).toFixed(2)
+      "Custo Unitário": dados.custo || "–",
+      "Custo Total": dados.custo ? (dados.perda * dados.custo).toFixed(2) : "Sem custo"
     }));
 
     const ws = XLSX.utils.json_to_sheet(data);
