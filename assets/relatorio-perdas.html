@@ -5,6 +5,72 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Relatório de Perdas</title>
   <link rel="stylesheet" href="assets/style.css">
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f4f6f9;
+      margin: 0;
+      padding: 20px;
+    }
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+      background: white;
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 0 15px rgba(0,0,0,0.1);
+    }
+    h1 {
+      text-align: center;
+      color: #333;
+      margin-bottom: 30px;
+    }
+    form {
+      display: flex;
+      gap: 20px;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: center;
+    }
+    form label {
+      display: flex;
+      flex-direction: column;
+      font-weight: bold;
+      color: #444;
+    }
+    input[type="date"] {
+      padding: 8px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+    button {
+      padding: 10px 20px;
+      font-weight: bold;
+      border: none;
+      border-radius: 6px;
+      background-color: #007bff;
+      color: white;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #0056b3;
+    }
+    table {
+      width: 100%;
+      margin-top: 30px;
+      border-collapse: collapse;
+    }
+    table, th, td {
+      border: 1px solid #ccc;
+    }
+    th, td {
+      padding: 12px;
+      text-align: left;
+    }
+    th {
+      background-color: #f0f0f0;
+    }
+  </style>
 </head>
 <body>
   <div class="container">
@@ -20,14 +86,14 @@
       <button type="submit">Gerar Relatório</button>
     </form>
 
-    <div style="margin-top: 20px;">
-      <button id="exportarXLS" style="display:none">Exportar para XLS</button>
+    <div style="margin-top: 20px; text-align: right;">
+      <button id="exportarXLS" style="display:none">📤 Exportar para XLS</button>
     </div>
 
     <div id="relatorio-container" style="margin-top: 20px;"></div>
 
-    <script type="module" src="relatorio-perdas.js"></script>
     <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
+    <script type="module" src="relatorio-perdas.js"></script>
   </div>
 </body>
 </html>
