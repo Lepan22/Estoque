@@ -58,6 +58,37 @@ function criarLinha(containerId, tipo, dados = {}) {
   btn.onclick = () => {
     div.remove();
     atualizarTotaisEquipeLogistica();
+  // Cálculo do CMV e resultados
+  let totalCMV = 0;
+
+  itens.forEach(item => {
+    const nomeItem = item.nomeItem || item.nome || "";
+    const nomeNorm = normalizar(nomeItem);
+    const produto = Object.values(produtos).find(p => normalizar(p.nome) === nomeNorm);
+
+    const enviado = parseInt(item.quantidade || item.qtd || 0);
+    const assado = parseInt(item.assado || 0);
+    const congelado = parseInt(item.congelado || 0);
+    const perdido = parseInt(item.perdido || 0);
+    const vendidos = enviado - (congelado + assado + perdido);
+    const custoUnit = parseFloat(produto?.custo || 0);
+
+    totalCMV += vendidos * custoUnit;
+  });
+
+  const custoEquipe = equipe.reduce((s, e) => s + e.valor, 0);
+  const custoLogistica = logistica.reduce((s, l) => s + l.valor, 0);
+
+  const resultadoEvento = vendaPDV - totalCMV - custoEquipe - custoLogistica;
+
+  const cmvPercent = vendaPDV > 0 ? (totalCMV / vendaPDV) * 100 : 0;
+  const resultadoPercent = vendaPDV > 0 ? (resultadoEvento / vendaPDV) * 100 : 0;
+
+  document.getElementById("valorCMV").textContent = formatar(totalCMV);
+  document.getElementById("percentualCMV").textContent = `${cmvPercent.toFixed(1)}%`;
+  document.getElementById("resultadoEvento").textContent = formatar(resultadoEvento);
+  document.getElementById("percentualResultado").textContent = `${resultadoPercent.toFixed(1)}%`;
+
   };
 
   div.append(input1, input2, btn);
@@ -130,6 +161,37 @@ async function carregarDados() {
   (analise.equipe || []).forEach(eq => criarLinha("equipe-container", "equipe", eq));
   (analise.logistica || []).forEach(lg => criarLinha("logistica-container", "logistica", lg));
   atualizarTotaisEquipeLogistica();
+  // Cálculo do CMV e resultados
+  let totalCMV = 0;
+
+  itens.forEach(item => {
+    const nomeItem = item.nomeItem || item.nome || "";
+    const nomeNorm = normalizar(nomeItem);
+    const produto = Object.values(produtos).find(p => normalizar(p.nome) === nomeNorm);
+
+    const enviado = parseInt(item.quantidade || item.qtd || 0);
+    const assado = parseInt(item.assado || 0);
+    const congelado = parseInt(item.congelado || 0);
+    const perdido = parseInt(item.perdido || 0);
+    const vendidos = enviado - (congelado + assado + perdido);
+    const custoUnit = parseFloat(produto?.custo || 0);
+
+    totalCMV += vendidos * custoUnit;
+  });
+
+  const custoEquipe = equipe.reduce((s, e) => s + e.valor, 0);
+  const custoLogistica = logistica.reduce((s, l) => s + l.valor, 0);
+
+  const resultadoEvento = vendaPDV - totalCMV - custoEquipe - custoLogistica;
+
+  const cmvPercent = vendaPDV > 0 ? (totalCMV / vendaPDV) * 100 : 0;
+  const resultadoPercent = vendaPDV > 0 ? (resultadoEvento / vendaPDV) * 100 : 0;
+
+  document.getElementById("valorCMV").textContent = formatar(totalCMV);
+  document.getElementById("percentualCMV").textContent = `${cmvPercent.toFixed(1)}%`;
+  document.getElementById("resultadoEvento").textContent = formatar(resultadoEvento);
+  document.getElementById("percentualResultado").textContent = `${resultadoPercent.toFixed(1)}%`;
+
 }
 
 document.addEventListener("DOMContentLoaded", () => {
