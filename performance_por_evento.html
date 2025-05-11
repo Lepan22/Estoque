@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -60,8 +61,12 @@ function carregarEventos() {
   db.ref("eventos").once("value").then(snap => {
     const eventos = snap.val() || {};
     const eventosFinalizados = Object.values(eventos).filter(e => e.status === "finalizado" && e.nome);
-    const nomes = [...new Set(eventosFinalizados.map(e => e.nome))].sort();
+    
+    const nomes = [...new Set(Object.entries(eventos)
+      .filter(([id, e]) => e.status === "finalizado" && e.nome)
+      .map(([id, e]) => e.nome))].sort();
     selectEvento.innerHTML = "<option value=''>Selecione</option>" + nomes.map(n => `<option value="${n}">${n}</option>`).join("");
+    
     selectEvento.addEventListener("change", () => filtrar(eventos));
   });
 }
