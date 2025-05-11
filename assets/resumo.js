@@ -121,6 +121,10 @@ async function carregarDados() {
       <td>${formatar(valorVendaTotal)}</td>
       <td>${formatar(custoPerda)}</td>
     `;
+    
+    const cmv = vendidos * custoUnit;
+    linha.innerHTML += `<td>${vendidos}</td><td>${formatar(cmv)}</td>`;
+
     tabela.appendChild(linha);
   });
 
