@@ -143,8 +143,11 @@ function getMesAntesHoje() {
 function carregarEventos() {
   db.ref("eventos").once("value").then(snap => {
     const eventos = snap.val() || {};
-    const nomes = [...new Set(Object.values(eventos).map(e => e.nome))].sort();
-    selectEvento.innerHTML = "<option value=''>Selecione</option>" + nomes.map(n => \`<option value="\${n}">\${n}</option>\`).join("");
+    
+    const nomesValidos = Object.values(eventos).filter(e => e.status === "finalizado" && e.nome);
+    const nomes = [...new Set(nomesValidos.map(e => e.nome))].sort();
+    selectEvento.innerHTML = "<option value=''>Selecione</option>" + nomes.map(n => `<option value="${n}">${n}</option>`).join("");
+    
     inputInicio.value = getMesAntesHoje();
     inputFim.value = new Date().toISOString().slice(0, 10);
 
