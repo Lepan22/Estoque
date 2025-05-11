@@ -1,45 +1,16 @@
-
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
   <title>Performance por Evento</title>
   <style>
-    body {
-      margin: 20px;
-      font-family: Arial, sans-serif;
-      font-size: 13px;
-    }
-    h1 {
-      font-size: 20px;
-      margin-bottom: 20px;
-    }
-    .filtros {
-      display: flex;
-      gap: 10px;
-      flex-wrap: wrap;
-      margin-bottom: 20px;
-    }
-    .filtros > div {
-      min-width: 200px;
-    }
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-bottom: 25px;
-    }
-    th, td {
-      border: 1px solid #ccc;
-      padding: 4px 6px;
-      text-align: center;
-    }
-    thead {
-      background-color: #f0f0f0;
-    }
-    .totais {
-      font-weight: bold;
-      background-color: #f9f9f9;
-    }
+    body { margin: 20px; font-family: Arial, sans-serif; font-size: 13px; }
+    h1 { font-size: 20px; margin-bottom: 20px; }
+    .filtros { margin-bottom: 20px; }
+    table { width: 100%; border-collapse: collapse; margin-bottom: 25px; }
+    th, td { border: 1px solid #ccc; padding: 4px 6px; text-align: center; }
+    thead { background-color: #f0f0f0; }
+    .totais { font-weight: bold; background-color: #f9f9f9; }
   </style>
 </head>
 <body>
@@ -47,21 +18,10 @@
 <h1>Performance por Evento</h1>
 
 <div class="filtros">
-  <div>
-    <label for="eventoSelect"><strong>Evento:</strong></label>
-    <select id="eventoSelect"></select>
-  </div>
-  <div>
-    <label for="dataInicio"><strong>Data Início:</strong></label>
-    <input type="date" id="dataInicio">
-  </div>
-  <div>
-    <label for="dataFim"><strong>Data Fim:</strong></label>
-    <input type="date" id="dataFim">
-  </div>
+  <label for="eventoSelect"><strong>Nome do Evento:</strong></label>
+  <select id="eventoSelect"></select>
 </div>
 
-<h3>Resumo Financeiro</h3>
 <table id="resumoFinanceiro">
   <thead>
     <tr>
@@ -75,111 +35,45 @@
   <tbody>
     <tr><td colspan="5">Selecione um evento para visualizar os dados.</td></tr>
   </tbody>
-  <tfoot>
-    <tr class="totais">
-      <td>Total</td>
-      <td id="totalVendaPDV">–</td>
-      <td id="totalDiferenca">–</td>
-      <td id="totalPerda">–</td>
-      <td id="totalResultado">–</td>
-    </tr>
-  </tfoot>
-</table>
-
-<h3>Resumo por Produto</h3>
-<table id="resumoProdutos">
-  <thead>
-    <tr id="headerProdutos">
-      <th>Produto</th>
-    </tr>
-  </thead>
-  <tbody>
-  </tbody>
-  <tfoot>
-  </tfoot>
 </table>
 
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 <script>
-  const firebaseConfig = {
-    databaseURL: "https://controleestoquelepan-default-rtdb.firebaseio.com"
-  };
-  firebase.initializeApp(firebaseConfig);
-</script>
-
-
-<script>
+const firebaseConfig = {
+  databaseURL: "https://controleestoquelepan-default-rtdb.firebaseio.com"
+};
+firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
 
 const selectEvento = document.getElementById("eventoSelect");
-const inputInicio = document.getElementById("dataInicio");
-const inputFim = document.getElementById("dataFim");
-const tbodyFinanceiro = document.querySelector("#resumoFinanceiro tbody");
-const tfootFinanceiro = {
-  vendaPDV: document.getElementById("totalVendaPDV"),
-  diferenca: document.getElementById("totalDiferenca"),
-  perda: document.getElementById("totalPerda"),
-  resultado: document.getElementById("totalResultado")
-};
-const tabelaProdutos = document.getElementById("resumoProdutos");
-const headerProdutos = document.getElementById("headerProdutos");
-const corpoProdutos = tabelaProdutos.querySelector("tbody");
+const tbody = document.querySelector("#resumoFinanceiro tbody");
 
 function formatar(valor) {
   return "R$ " + parseFloat(valor || 0).toFixed(2).replace(".", ",");
 }
-
 function formatarData(iso) {
   return iso ? iso.split("-").reverse().join("/") : "–";
-}
-
-function getMesAntesHoje() {
-  const hoje = new Date();
-  const mesAntes = new Date(hoje.setMonth(hoje.getMonth() - 1));
-  return mesAntes.toISOString().slice(0, 10);
 }
 
 function carregarEventos() {
   db.ref("eventos").once("value").then(snap => {
     const eventos = snap.val() || {};
-    
-    const nomesValidos = Object.values(eventos).filter(e => e.status === "finalizado" && e.nome);
-    const nomes = [...new Set(nomesValidos.map(e => e.nome))].sort();
+    const eventosFinalizados = Object.values(eventos).filter(e => e.status === "finalizado" && e.nome);
+    const nomes = [...new Set(eventosFinalizados.map(e => e.nome))].sort();
     selectEvento.innerHTML = "<option value=''>Selecione</option>" + nomes.map(n => `<option value="${n}">${n}</option>`).join("");
-    
-    inputInicio.value = getMesAntesHoje();
-    inputFim.value = new Date().toISOString().slice(0, 10);
-
     selectEvento.addEventListener("change", () => filtrar(eventos));
-    inputInicio.addEventListener("change", () => filtrar(eventos));
-    inputFim.addEventListener("change", () => filtrar(eventos));
   });
 }
 
 function filtrar(eventos) {
-  const nomeSel = selectEvento.value;
-  const ini = inputInicio.value;
-  const fim = inputFim.value;
+  const nome = selectEvento.value;
+  if (!nome) return;
 
-  if (!nomeSel) return;
+  const filtrados = Object.values(eventos).filter(ev => ev.nome === nome && ev.status === "finalizado");
+  tbody.innerHTML = "";
 
-  const filtrados = Object.values(eventos).filter(ev => {
-    return ev.nome === nomeSel &&
-           (!ini || ev.data >= ini) &&
-           (!fim || ev.data <= fim) &&
-           ev.status === "finalizado";
-  }).sort((a, b) => a.data.localeCompare(b.data));
-
-  preencherFinanceiro(filtrados);
-  preencherProdutos(filtrados);
-}
-
-function preencherFinanceiro(eventos) {
-  tbodyFinanceiro.innerHTML = "";
-  let somaPDV = 0, somaDif = 0, somaPerda = 0, somaRes = 0;
-
-  eventos.forEach(ev => {
+  filtrados.sort((a, b) => a.data.localeCompare(b.data)).forEach(ev => {
     const a = ev.analise || {};
     const vendaPDV = parseFloat(a.vendaPDV) || 0;
     const valorVenda = parseFloat(a.valorVenda) || 0;
@@ -188,69 +82,21 @@ function preencherFinanceiro(eventos) {
     const log = parseFloat(a.custoLogistica) || 0;
     const cmv = parseFloat(a.cmvTotal) || 0;
     const resultado = vendaPDV - cmv - equipe - log;
-    const dif = vendaPDV - valorVenda;
-
-    somaPDV += vendaPDV;
-    somaDif += dif;
-    somaPerda += perda;
-    somaRes += resultado;
+    const diferenca = vendaPDV - valorVenda;
 
     const tr = document.createElement("tr");
     tr.innerHTML = \`
       <td>\${formatarData(ev.data)}</td>
       <td>\${formatar(vendaPDV)}</td>
-      <td>\${formatar(dif)}</td>
+      <td>\${formatar(diferenca)}</td>
       <td>\${formatar(perda)}</td>
       <td>\${formatar(resultado)}</td>
     \`;
-    tbodyFinanceiro.appendChild(tr);
-  });
-
-  tfootFinanceiro.vendaPDV.textContent = formatar(somaPDV);
-  tfootFinanceiro.diferenca.textContent = formatar(somaDif);
-  tfootFinanceiro.perda.textContent = formatar(somaPerda);
-  tfootFinanceiro.resultado.textContent = formatar(somaRes);
-}
-
-function preencherProdutos(eventos) {
-  const produtosMap = new Map();
-  const datas = eventos.map(ev => ev.data);
-
-  headerProdutos.innerHTML = "<th>Produto</th>" + datas.map(d => \`<th>\${formatarData(d)}</th>\`).join("") + "<th>Total</th>";
-  corpoProdutos.innerHTML = "";
-
-  eventos.forEach(ev => {
-    const itens = ev.itens || [];
-    itens.forEach(item => {
-      const nome = item.nomeItem || item.nome;
-      const enviado = parseInt(item.quantidade || item.qtd || 0);
-      const congelado = parseInt(item.congelado || 0);
-      const assado = parseInt(item.assado || 0);
-      const perdido = parseInt(item.perdido || 0);
-      const vendidos = enviado - congelado - assado - perdido;
-
-      if (!produtosMap.has(nome)) produtosMap.set(nome, []);
-      produtosMap.get(nome).push({ data: ev.data, vendidos });
-    });
-  });
-
-  produtosMap.forEach((vendas, produto) => {
-    const linha = document.createElement("tr");
-    let total = 0;
-    const vendasPorData = datas.map(d => {
-      const venda = vendas.find(v => v.data === d);
-      const qtd = venda ? venda.vendidos : 0;
-      total += qtd;
-      return \`<td>\${qtd}</td>\`;
-    }).join("");
-
-    linha.innerHTML = \`<td>\${produto}</td>\${vendasPorData}<td>\${total}</td>\`;
-    corpoProdutos.appendChild(linha);
+    tbody.appendChild(tr);
   });
 }
 
 document.addEventListener("DOMContentLoaded", carregarEventos);
 </script>
-
 </body>
 </html>
