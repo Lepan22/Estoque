@@ -87,6 +87,7 @@ async function carregarDados() {
 
   let totalVenda = 0;
   let totalPerda = 0;
+  let totalCMV = 0;
 
   const tabela = document.querySelector("#tabelaProdutos tbody");
   tabela.innerHTML = "";
@@ -107,9 +108,11 @@ async function carregarDados() {
 
     const valorVendaTotal = vendidos * valorVendaUnit;
     const custoPerda = perdido * custoUnit;
+    const cmv = vendidos * custoUnit;
 
     totalVenda += valorVendaTotal;
     totalPerda += custoPerda;
+    totalCMV += cmv;
 
     const linha = document.createElement("tr");
     linha.innerHTML = `
@@ -120,10 +123,9 @@ async function carregarDados() {
       <td>${perdido}</td>
       <td>${formatar(valorVendaTotal)}</td>
       <td>${formatar(custoPerda)}</td>
+      <td>${vendidos}</td>
+      <td>${formatar(cmv)}</td>
     `;
-    
-    const cmv = vendidos * custoUnit;
-    linha.innerHTML += `<td>${vendidos}</td><td>${formatar(cmv)}</td>`;
 
     tabela.appendChild(linha);
   });
@@ -134,6 +136,9 @@ async function carregarDados() {
   (analise.equipe || []).forEach(eq => criarLinha("equipe-container", "equipe", eq));
   (analise.logistica || []).forEach(lg => criarLinha("logistica-container", "logistica", lg));
   atualizarTotaisEquipeLogistica();
+
+  // Salvar valor calculado para uso posterior
+  window.totalCMVCalculado = totalCMV;
 }
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -172,7 +177,8 @@ document.addEventListener("DOMContentLoaded", () => {
       equipe,
       logistica,
       custoEquipe,
-      custoLogistica
+      custoLogistica,
+      cmvTotal: window.totalCMVCalculado || 0
     });
 
     alert("Dados salvos com sucesso!");
