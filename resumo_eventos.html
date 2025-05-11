@@ -96,6 +96,10 @@
           <th>% Logística</th>
           <th>Valor de Perda</th>
           <th>% Perda</th>
+          <th>CMV Total</th>
+          <th>CMV %</th>
+          <th>Resultado</th>
+          <th>Resultado %</th>
         </tr>
       </thead>
       <tbody>
@@ -172,7 +176,7 @@
 
       tbody.innerHTML = linhas.length ? "" : `<tr><td colspan="12">Nenhum evento encontrado.</td></tr>`;
 
-      let somaVendaPDV = 0, somaVenda = 0, somaPerda = 0, somaEquipe = 0, somaLog = 0;
+      let somaVendaPDV = 0, somaVenda = 0, somaPerda = 0, somaEquipe = 0, somaLog = 0, somaCMV = 0, somaResultado = 0;
 
       linhas.forEach(ev => {
         const a = ev.analise || {};
@@ -181,6 +185,8 @@
         const valorPerda = parseFloat(a.valorPerda) || 0;
         const custoEquipe = parseFloat(a.custoEquipe) || 0;
         const custoLog = parseFloat(a.custoLogistica) || 0;
+        const cmvTotal = parseFloat(a.cmvTotal) || 0;
+        const resultado = vendaPDV - cmvTotal - custoEquipe - custoLog;
         const dif = vendaPDV - valorVenda;
 
         somaVendaPDV += vendaPDV;
@@ -188,6 +194,8 @@
         somaPerda += valorPerda;
         somaEquipe += custoEquipe;
         somaLog += custoLog;
+        somaCMV += cmvTotal;
+        somaResultado += resultado;
 
         const tr = document.createElement("tr");
         tr.innerHTML = `
@@ -203,6 +211,10 @@
           <td>${formatarPct(custoLog, vendaPDV)}</td>
           <td>${formatar(valorPerda)}</td>
           <td>${formatarPct(valorPerda, vendaPDV)}</td>
+          <td>${formatar(cmvTotal)}</td>
+          <td>${formatarPct(cmvTotal, vendaPDV)}</td>
+          <td>${formatar(resultado)}</td>
+          <td>${formatarPct(resultado, vendaPDV)}</td>
         `;
         tbody.appendChild(tr);
       });
@@ -216,13 +228,17 @@
           <td>—</td>
           <td><strong>${formatar(somaVenda)}</strong></td>
           <td><strong>${formatar(somaVendaPDV)}</strong></td>
-          <td><strong>${formatar(difTotal)}</strong></td>
+          <td><strong>${formatar(somaVendaPDV - somaVenda)}</strong></td>
           <td><strong>${formatar(somaEquipe)}</strong></td>
           <td><strong>${formatarPct(somaEquipe, somaVendaPDV)}</strong></td>
           <td><strong>${formatar(somaLog)}</strong></td>
           <td><strong>${formatarPct(somaLog, somaVendaPDV)}</strong></td>
           <td><strong>${formatar(somaPerda)}</strong></td>
           <td><strong>${formatarPct(somaPerda, somaVendaPDV)}</strong></td>
+          <td><strong>${formatar(somaCMV)}</strong></td>
+          <td><strong>${formatarPct(somaCMV, somaVendaPDV)}</strong></td>
+          <td><strong>${formatar(somaResultado)}</strong></td>
+          <td><strong>${formatarPct(somaResultado, somaVendaPDV)}</strong></td>
         `;
         tbody.appendChild(trTotal);
       }
