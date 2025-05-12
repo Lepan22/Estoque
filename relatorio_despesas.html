@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Relatório de Despesas por Evento (Dinâmico)</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            margin: 20px;
+            background-color: #f4f4f4;
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+        .filtros {
+            margin-bottom: 20px;
+            padding: 15px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .filtros label {
+            margin-right: 10px;
+        }
+        .filtros input[type="date"], .filtros button {
+            padding: 8px;
+            margin-right: 10px;
+            border-radius: 4px;
+            border: 1px solid #ddd;
+        }
+        .filtros button {
+            background-color: #007bff;
+            color: white;
+            cursor: pointer;
+        }
+        .filtros button:hover {
+            background-color: #0056b3;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+            background-color: #fff;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 10px;
+            text-align: left;
+        }
+        th {
+            background-color: #e9ecef;
+            color: #333;
+        }
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+        .total-geral {
+            font-weight: bold;
+            text-align: right;
+            padding: 10px;
+            background-color: #e9ecef;
+        }
+        #exportarXLSX {
+            padding: 10px 15px;
+            background-color: #28a745;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        #exportarXLSX:hover {
+            background-color: #218838;
+        }
+    </style>
+    <!-- Firebase App (Core) -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <!-- Firebase Realtime Database -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+    <!-- SheetJS (XLSX) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+</head>
+<body>
+    <h1>Relatório de Despesas por Evento (Dinâmico)</h1>
+
+    <div class="filtros">
+        <label for="dataInicio">Data Início:</label>
+        <input type="date" id="dataInicio">
+        <label for="dataFim">Data Fim:</label>
+        <input type="date" id="dataFim">
+        <button id="aplicarFiltro">Aplicar Filtro</button>
+        <button id="limparFiltro">Limpar Filtro</button>
+    </div>
+
+    <button id="exportarXLSX">Exportar para XLSX</button>
+
+    <table id="tabelaDespesas">
+        <thead>
+            <tr>
+                <th>Nome do Evento</th>
+                <th>Data</th>
+                <th>Tipo da Despesa</th>
+                <th>Nome (Pessoa/Transportador)</th>
+                <th>Valor (R$)</th>
+            </tr>
+        </thead>
+        <tbody id="corpoTabelaDespesas">
+            <tr><td colspan="5">Carregando dados do Firebase...</td></tr>
+        </tbody>
+        <tfoot>
+            <tr>
+                <td colspan="4" class="total-geral">Total Geral:</td>
+                <td id="valorTotalGeral" class="total-geral">R$ 0,00</td>
+            </tr>
+        </tfoot>
+    </table>
+
+    <script>
+        let todasAsDespesas = [];
+
+        // Your web app's Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyBN-bmzgrlzjmrKMmuClZ8LVll-vJyx-aE",
+            authDomain: "controleestoquelepan.firebaseapp.com",
+            databaseURL: "https://controleestoquelepan-default-rtdb.firebaseio.com",
+            projectId: "controleestoquelepan",
+            storageBucket: "controleestoquelepan.firebasestorage.app", // Corrigido para firebasestorage.app
+            messagingSenderId: "779860276544",
+            appId: "1:779860276544:web:f45844571a8c0bab1576a5",
+            measurementId: "G-EDKYH7TKMG"
+        };
+
+        // Initialize Firebase
+        if (!firebase.apps.length) {
+            firebase.initializeApp(firebaseConfig);
+        } else {
+            firebase.app(); // if already initialized, use that one
+        }
+        const database = firebase.database();
+
+        document.addEventListener("DOMContentLoaded", () => {
+            carregarDadosDoFirebase();
+            configurarFiltros();
+            configurarExportacao();
+        });
+
+        function processarDadosFirebase(eventosData) {
+            const despesasProcessadas = [];
+            if (!eventosData) return despesasProcessadas;
+
+            for (const id_evento in eventosData) {
+                const dados_evento = eventosData[id_evento];
+                const nome_evento = dados_evento.nome;
+                const data_evento = dados_evento.data;
+
+                if (!nome_evento || !data_evento) continue;
+
+                const analise = dados_evento.analise;
+                if (analise) {
+                    if (analise.equipe && Array.isArray(analise.equipe)) {
+                        analise.equipe.forEach(despesa_equipe => {
+                            if (despesa_equipe && typeof despesa_equipe.nome !== 'undefined' && typeof despesa_equipe.valor === 'number') {
+                                despesasProcessadas.push({
+                                    nome_evento: nome_evento,
+                                    data_evento: data_evento,
+                                    tipo_despesa: "Equipe",
+                                    nome_responsavel_despesa: despesa_equipe.nome,
+                                    valor: despesa_equipe.valor
+                                });
+                            }
+                        });
+                    }
+                    if (analise.logistica && Array.isArray(analise.logistica)) {
+                        analise.logistica.forEach(despesa_logistica => {
+                            if (despesa_logistica && typeof despesa_logistica.nome !== 'undefined' && typeof despesa_logistica.valor === 'number') {
+                                despesasProcessadas.push({
+                                    nome_evento: nome_evento,
+                                    data_evento: data_evento,
+                                    tipo_despesa: "Logistica",
+                                    nome_responsavel_despesa: despesa_logistica.nome,
+                                    valor: despesa_logistica.valor
+                                });
+                            }
+                        });
+                    }
+                }
+            }
+            return despesasProcessadas;
+        }
+
+        async function carregarDadosDoFirebase() {
+            const corpoTabela = document.getElementById("corpoTabelaDespesas");
+            try {
+                const eventosRef = database.ref('eventos');
+                eventosRef.on('value', (snapshot) => {
+                    const eventosData = snapshot.val();
+                    todasAsDespesas = processarDadosFirebase(eventosData);
+                    aplicarFiltroPadrao(); // Aplica filtro padrão e renderiza
+                }, (error) => {
+                    console.error("Erro ao ler dados do Firebase: ", error);
+                    if(corpoTabela) corpoTabela.innerHTML = '<tr><td colspan="5">Erro ao carregar dados do Firebase. Verifique as permissões e a conexão.</td></tr>';
+                    document.getElementById("valorTotalGeral").textContent = "R$ 0,00";
+                });
+            } catch (error) {
+                console.error("Falha ao configurar o listener do Firebase:", error);
+                if(corpoTabela) corpoTabela.innerHTML = '<tr><td colspan="5">Falha ao conectar com o Firebase.</td></tr>';
+                document.getElementById("valorTotalGeral").textContent = "R$ 0,00";
+            }
+        }
+
+        function configurarFiltros() {
+            document.getElementById("aplicarFiltro").addEventListener("click", filtrarDespesasManualmente);
+            document.getElementById("limparFiltro").addEventListener("click", limparFiltrosEExibirTodas);
+        }
+
+        function aplicarFiltroPadrao() {
+            const dataFimInput = document.getElementById("dataFim");
+            const dataInicioInput = document.getElementById("dataInicio");
+
+            const hoje = new Date();
+            dataFimInput.valueAsDate = new Date(hoje.getFullYear(), hoje.getMonth(), hoje.getDate());
+
+            const dataInicioPadrao = new Date(hoje);
+            dataInicioPadrao.setDate(hoje.getDate() - 4); // Últimos 5 dias (hoje + 4 dias atrás)
+            dataInicioInput.valueAsDate = new Date(dataInicioPadrao.getFullYear(), dataInicioPadrao.getMonth(), dataInicioPadrao.getDate());
+            
+            filtrarDespesasManualmente();
+        }
+
+        function limparFiltrosEExibirTodas() {
+            document.getElementById("dataInicio").value = "";
+            document.getElementById("dataFim").value = "";
+            renderizarTabela(todasAsDespesas);
+        }
+
+        function filtrarDespesasManualmente() {
+            const dataInicioStr = document.getElementById("dataInicio").value;
+            const dataFimStr = document.getElementById("dataFim").value;
+
+            const dataInicio = dataInicioStr ? new Date(dataInicioStr + "T00:00:00") : null;
+            const dataFim = dataFimStr ? new Date(dataFimStr + "T23:59:59") : null;
+
+            const despesasFiltradas = todasAsDespesas.filter(despesa => {
+                if (!despesa.data_evento) return false;
+                const dataDespesa = new Date(despesa.data_evento + "T00:00:00");
+
+                const atendeDataInicio = dataInicio ? dataDespesa >= dataInicio : true;
+                const atendeDataFim = dataFim ? dataDespesa <= dataFim : true;
+                return atendeDataInicio && atendeDataFim;
+            });
+            renderizarTabela(despesasFiltradas);
+        }
+
+        function formatarValor(valor) {
+            if (typeof valor !== 'number') {
+                return "R$ 0,00";
+            }
+            return valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+        }
+
+        function renderizarTabela(despesas) {
+            const corpoTabela = document.getElementById("corpoTabelaDespesas");
+            corpoTabela.innerHTML = ""; 
+            let totalGeral = 0;
+
+            if (!Array.isArray(despesas) || despesas.length === 0) {
+                corpoTabela.innerHTML = '<tr><td colspan="5">Nenhuma despesa encontrada para os filtros aplicados ou dados não carregados.</td></tr>';
+                document.getElementById("valorTotalGeral").textContent = formatarValor(0);
+                return;
+            }
+
+            despesas.forEach(despesa => {
+                const linha = corpoTabela.insertRow();
+                linha.insertCell().textContent = despesa.nome_evento || "N/A";
+                linha.insertCell().textContent = despesa.data_evento ? new Date(despesa.data_evento + "T00:00:00").toLocaleDateString('pt-BR') : "N/A";
+                linha.insertCell().textContent = despesa.tipo_despesa || "N/A";
+                linha.insertCell().textContent = despesa.nome_responsavel_despesa || "N/A";
+                const valor = typeof despesa.valor === 'number' ? despesa.valor : 0;
+                linha.insertCell().textContent = formatarValor(valor);
+                totalGeral += valor;
+            });
+            document.getElementById("valorTotalGeral").textContent = formatarValor(totalGeral);
+        }
+
+        function configurarExportacao() {
+            document.getElementById("exportarXLSX").addEventListener("click", () => {
+                const tabela = document.getElementById("tabelaDespesas");
+                const nomeArquivo = "Relatorio_Despesas_Eventos_Dinamico.xlsx";
+                
+                const tabelaClone = tabela.cloneNode(true);
+                const tfootClone = tabelaClone.querySelector('tfoot');
+                if (tfootClone) {
+                    tfootClone.remove();
+                }
+
+                const wb = XLSX.utils.table_to_book(tabelaClone, {sheet: "Despesas"});
+                XLSX.writeFile(wb, nomeArquivo);
+            });
+        }
+    </script>
+</body>
+</html>
+
