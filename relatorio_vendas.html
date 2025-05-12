@@ -136,16 +136,24 @@
         th.textContent = `${dia}/${mes}`;
         cabecalhoTabela.appendChild(th);
       });
+      // Adiciona coluna "Média"
+      const thMedia = document.createElement('th');
+      thMedia.textContent = 'Média';
+      cabecalhoTabela.appendChild(thMedia);
 
       // Corpo da Tabela
       corpoTabela.innerHTML = '';
       Object.keys(produtos).sort().forEach(produto => {
         const tr = document.createElement('tr');
         tr.innerHTML = `<td style="max-width: 200px; word-break: break-word;">${produto}</td>`;
+        let soma = 0;
         datas.forEach(data => {
           const valor = produtos[produto][data] || 0;
+          soma += valor;
           tr.innerHTML += `<td>${valor}</td>`;
         });
+        const media = soma / datas.length;
+        tr.innerHTML += `<td>${media.toFixed(1)}</td>`;
         corpoTabela.appendChild(tr);
       });
     }
