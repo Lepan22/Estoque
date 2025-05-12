@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <title>Relatório de Pagamentos por Evento</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 20px; }
+    table { border-collapse: collapse; width: 100%; margin-top: 20px; }
+    th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
+    th { background-color: #f2f2f2; }
+    h2 { margin-bottom: 10px; }
+    .filtros { margin-bottom: 20px; }
+    .filtros input { margin-right: 10px; }
+  </style>
+</head>
+<body>
+  <h2>Relatório de Pagamentos por Evento</h2>
+
+  <div class="filtros">
+    <label>Data Início: <input type="date" id="dataInicio"></label>
+    <label>Data Fim: <input type="date" id="dataFim"></label>
+    <button onclick="carregarRelatorio()">Filtrar</button>
+    <button onclick="exportarParaExcel()">Exportar para XLS</button>
+  </div>
+
+  <div id="tabela-container"></div>
+
+  <script>
+    // Configuração Firebase
+    const firebaseConfig = {
+      databaseURL: "https://controleestoquelepan-default-rtdb.firebaseio.com/"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    // Datas padrão: últimos 5 dias
+    const hoje = new Date();
+    const cincoDiasAtras = new Date();
+    cincoDiasAtras.setDate(hoje.getDate() - 5);
+    document.getElementById("dataInicio").value = cincoDiasAtras.toISOString().split('T')[0];
+    document.getElementById("dataFim").value = hoje.toISOString().split('T')[0];
+
+    async function carregarRelatorio() {
+      const inicio = new Date(document.getElementById("dataInicio").value);
+      const fim = new Date(document.getElementById("dataFim").value);
+      fim.setHours(23, 59, 59, 999);
+
+      const snapshot = await db.ref("eventos").once("value");
+      const eventos = snapshot.val();
+      const tabela = [];
+
+      for (const id in eventos) {
+        const ev = eventos[id];
+        const dataEvento = new Date(ev.data);
+
+        if (ev.status === "Finalizado" && dataEvento >= inicio && dataEvento <= fim) {
+          const linhaBase = {
+            "Nome do Evento": ev.nome,
+            "Data": ev.data
+          };
+
+          const logistica = ev.gastos?.logistica || [];
+          const equipe = ev.gastos?.equipe || [];
+
+          logistica.forEach(item => {
+            tabela.push({ ...linhaBase, Categoria: "Logística", Nome: item.nome, Valor: item.valor });
+          });
+
+          equipe.forEach(item => {
+            tabela.push({ ...linhaBase, Categoria: "Equipe", Nome: item.nome, Valor: item.valor });
+          });
+        }
+      }
+
+      exibirTabela(tabela);
+    }
+
+    function exibirTabela(dados) {
+      if (!dados.length) {
+        document.getElementById("tabela-container").innerHTML = "<p>Nenhum dado encontrado para o período.</p>";
+        return;
+      }
+
+      let html = "<table><thead><tr>";
+      html += "<th>Nome do Evento</th><th>Data</th><th>Categoria</th><th>Nome</th><th>Valor</th>";
+      html += "</tr></thead><tbody>";
+
+      dados.forEach(l => {
+        html += `<tr>
+          <td>${l["Nome do Evento"]}</td>
+          <td>${l["Data"]}</td>
+          <td>${l["Categoria"]}</td>
+          <td>${l["Nome"]}</td>
+          <td>R$ ${parseFloat(l["Valor"]).toFixed(2)}</td>
+        </tr>`;
+      });
+
+      html += "</tbody></table>";
+      document.getElementById("tabela-container").innerHTML = html;
+    }
+
+    function exportarParaExcel() {
+      const tabela = document.querySelector("table");
+      if (!tabela) return;
+
+      const wb = XLSX.utils.book_new();
+      const ws = XLSX.utils.table_to_sheet(tabela);
+      XLSX.utils.book_append_sheet(wb, ws, "Pagamentos");
+      XLSX.writeFile(wb, "relatorio-pagamentos.xlsx");
+    }
+
+    window.onload = carregarRelatorio;
+  </script>
+</body>
+</html>
