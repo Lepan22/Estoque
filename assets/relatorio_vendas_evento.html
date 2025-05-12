@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Relatório de Vendas por Evento</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            margin: 20px;
+            background-color: #f4f4f4;
+        }
+        .container {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+        }
+        label {
+            display: block;
+            margin-top: 10px;
+            margin-bottom: 5px;
+            color: #555;
+        }
+        select, button {
+            padding: 10px;
+            margin-top: 5px;
+            border-radius: 4px;
+            border: 1px solid #ddd;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        #reportArea {
+            margin-top: 20px;
+            padding: 15px;
+            border: 1px solid #eee;
+            border-radius: 4px;
+            background-color: #f9f9f9;
+        }
+        .event-date-header {
+            font-size: 1.2em;
+            font-weight: bold;
+            margin-top: 15px;
+            margin-bottom: 8px;
+            color: #333;
+            border-bottom: 1px solid #ccc;
+            padding-bottom: 5px;
+        }
+        .item-list {
+            list-style-type: none;
+            padding-left: 0;
+        }
+        .item-list li {
+            padding: 5px 0;
+            border-bottom: 1px dashed #eee;
+        }
+        .item-list li:last-child {
+            border-bottom: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Relatório de Vendas por Evento</h1>
+
+        <label for="eventSelector">Selecione o Evento:</label>
+        <select id="eventSelector">
+            <option value="">-- Selecione um Evento --</option>
+        </select>
+
+        <div id="reportArea">
+            <p>Selecione um evento para ver os itens vendidos.</p>
+        </div>
+    </div>
+
+    <script>
+        let salesData = [];
+
+        async function loadSalesData() {
+            try {
+                const response = await fetch("./processed_sales_data.json");
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                salesData = await response.json();
+                populateEventSelector();
+            } catch (error) {
+                console.error("Erro ao carregar os dados de vendas:", error);
+                document.getElementById("reportArea").innerHTML = "<p style='color:red;'>Erro ao carregar dados. Verifique o console para mais detalhes.</p>";
+            }
+        }
+
+        function populateEventSelector() {
+            const selector = document.getElementById("eventSelector");
+            const uniqueEventNames = [...new Set(salesData.map(event => event.eventName))];
+            
+            uniqueEventNames.sort().forEach(eventName => {
+                const option = document.createElement("option");
+                option.value = eventName;
+                option.textContent = eventName;
+                selector.appendChild(option);
+            });
+
+            selector.addEventListener("change", displayReport);
+        }
+
+        function displayReport() {
+            const selectedEventName = document.getElementById("eventSelector").value;
+            const reportArea = document.getElementById("reportArea");
+            reportArea.innerHTML = ""; // Limpa a área do relatório
+
+            if (!selectedEventName) {
+                reportArea.innerHTML = "<p>Selecione um evento para ver os itens vendidos.</p>";
+                return;
+            }
+
+            // Filtra todos os eventos com o nome selecionado (pode haver múltiplos com o mesmo nome em datas diferentes)
+            const eventsToShow = salesData.filter(event => event.eventName === selectedEventName);
+
+            if (eventsToShow.length === 0) {
+                reportArea.innerHTML = "<p>Nenhum dado encontrado para este evento.</p>";
+                return;
+            }
+
+            // Agrupa itens por data do evento
+            const itemsByDate = {};
+            eventsToShow.forEach(event => {
+                const eventDate = event.eventDate;
+                if (!itemsByDate[eventDate]) {
+                    itemsByDate[eventDate] = [];
+                }
+                event.items.forEach(item => {
+                    itemsByDate[eventDate].push(item);
+                });
+            });
+
+            // Ordena as datas
+            const sortedDates = Object.keys(itemsByDate).sort((a, b) => new Date(a) - new Date(b));
+
+            if (sortedDates.length === 0) {
+                 reportArea.innerHTML = "<p>Nenhum item vendido encontrado para este evento.</p>";
+                return;
+            }
+
+            sortedDates.forEach(date => {
+                const dateHeader = document.createElement("div");
+                dateHeader.className = "event-date-header";
+                // Formata a data para dd/mm/yyyy
+                const [year, month, day] = date.split('-');
+                dateHeader.textContent = `Data: ${day}/${month}/${year}`;
+                reportArea.appendChild(dateHeader);
+
+                const itemList = document.createElement("ul");
+                itemList.className = "item-list";
+                
+                itemsByDate[date].forEach(item => {
+                    if (item.quantidadeVendida > 0) { // Mostra apenas itens com quantidade vendida > 0
+                        const listItem = document.createElement("li");
+                        listItem.textContent = `${item.nomeItem}: ${item.quantidadeVendida} unidade(s)`;
+                        itemList.appendChild(listItem);
+                    }
+                });
+                if (itemList.children.length > 0) {
+                    reportArea.appendChild(itemList);
+                } else {
+                     const noItemsMessage = document.createElement("p");
+                     noItemsMessage.textContent = "Nenhum item vendido nesta data para este evento.";
+                     reportArea.appendChild(noItemsMessage);
+                }
+            });
+        }
+
+        // Carrega os dados quando a página é carregada
+        document.addEventListener("DOMContentLoaded", loadSalesData);
+    </script>
+</body>
+</html>
+
