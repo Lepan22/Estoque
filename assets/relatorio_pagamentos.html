@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Relatório de Pagamentos por Evento</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <style>
+        body { font-family: sans-serif; margin: 20px; background-color: #f4f4f4; color: #333; }
+        .container { background-color: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
+        h1 { color: #333; text-align: center; }
+        .filtros { margin-bottom: 20px; padding: 15px; border: 1px solid #ddd; border-radius: 5px; background-color: #f9f9f9; display: flex; flex-wrap: wrap; gap: 15px; align-items: center; }
+        .filtros label { font-weight: bold; margin-right: 5px; }
+        .filtros input[type="date"], .filtros button { padding: 8px; border-radius: 4px; border: 1px solid #ccc; }
+        .filtros button { background-color: #007bff; color: white; cursor: pointer; }
+        .filtros button:hover { background-color: #0056b3; }
+        .evento { border: 1px solid #eee; padding: 15px; margin-bottom: 15px; border-radius: 5px; background-color: #fff; }
+        .evento h2 { margin-top: 0; color: #0056b3; font-size: 1.2em; }
+        .evento p { margin: 5px 0; }
+        .gastos-secao { margin-top: 10px; }
+        .gastos-secao h3 { font-size: 1em; color: #555; border-bottom: 1px solid #eee; padding-bottom: 5px; margin-bottom: 8px; }
+        .gastos-secao ul { list-style-type: none; padding-left: 0; }
+        .gastos-secao li { padding: 3px 0; display: flex; justify-content: space-between; }
+        .total-evento { font-weight: bold; margin-top:10px; text-align: right; }
+        #relatorio-container { margin-top: 20px; }
+        .sem-dados { text-align: center; color: #777; padding: 20px; }
+        #export-button { background-color: #28a745; color: white; padding: 10px 15px; border: none; border-radius: 4px; cursor: pointer; font-size: 1em; margin-top: 10px; margin-bottom: 20px; }
+        #export-button:hover { background-color: #218838; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Relatório de Pagamentos por Evento</h1>
+
+        <div class="filtros">
+            <label for="data_inicio">Data Início:</label>
+            <input type="date" id="data_inicio">
+            <label for="data_fim">Data Fim:</label>
+            <input type="date" id="data_fim">
+            <button id="aplicar_filtro">Aplicar Filtro</button>
+        </div>
+
+        <button id="export-button">Exportar para XLSX</button>
+
+        <div id="relatorio-container">
+            <!-- Os dados do relatório serão inseridos aqui -->
+        </div>
+    </div>
+
+    <script>
+        let todosOsEventos = [];
+        let eventosFiltradosParaExportar = [];
+
+        document.addEventListener("DOMContentLoaded", () => {
+            const dataFimInput = document.getElementById("data_fim");
+            const dataInicioInput = document.getElementById("data_inicio");
+            const aplicarFiltroButton = document.getElementById("aplicar_filtro");
+            const exportButton = document.getElementById("export-button");
+
+            // Definir datas padrão
+            const hoje = new Date();
+            const dataFimPadrao = new Date(hoje);
+            const dataInicioPadrao = new Date(hoje);
+            dataInicioPadrao.setDate(hoje.getDate() - 4); // Últimos 5 dias (hoje - 4 dias)
+
+            dataInicioInput.value = dataInicioPadrao.toISOString().split("T")[0];
+            dataFimInput.value = dataFimPadrao.toISOString().split("T")[0];
+
+            carregarDadosErenderizar();
+
+            aplicarFiltroButton.addEventListener("click", carregarDadosErenderizar);
+            exportButton.addEventListener("click", exportarParaXLSX);
+        });
+
+        async function carregarDadosErenderizar() {
+            try {
+                const response = await fetch("eventos_filtrados.json"); // Assume que o JSON está na mesma pasta
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                todosOsEventos = await response.json();
+                filtrarErenderizarEventos();
+            } catch (error) {
+                console.error("Erro ao carregar dados dos eventos:", error);
+                document.getElementById("relatorio-container").innerHTML = 
+                    `<p class="sem-dados">Erro ao carregar os dados. Verifique se o arquivo 'eventos_filtrados.json' está acessível e no formato correto. Detalhes: ${error.message}</p>`;
+            }
+        }
+
+        function filtrarErenderizarEventos() {
+            const dataInicioStr = document.getElementById("data_inicio").value;
+            const dataFimStr = document.getElementById("data_fim").value;
+            const relatorioContainer = document.getElementById("relatorio-container");
+            relatorioContainer.innerHTML = ""; // Limpa o container
+
+            if (!dataInicioStr || !dataFimStr) {
+                relatorioContainer.innerHTML = "<p class=\"sem-dados\">Por favor, selecione as datas de início e fim.</p>";
+                eventosFiltradosParaExportar = [];
+                return;
+            }
+
+            const dataInicio = new Date(dataInicioStr + "T00:00:00");
+            const dataFim = new Date(dataFimStr + "T23:59:59");
+
+            eventosFiltradosParaExportar = todosOsEventos.filter(evento => {
+                const dataEvento = new Date(evento.data_evento + "T00:00:00");
+                return dataEvento >= dataInicio && dataEvento <= dataFim;
+            });
+
+            if (eventosFiltradosParaExportar.length === 0) {
+                relatorioContainer.innerHTML = "<p class=\"sem-dados\">Nenhum evento encontrado para o período selecionado.</p>";
+                return;
+            }
+
+            eventosFiltradosParaExportar.forEach(evento => {
+                const eventoDiv = document.createElement("div");
+                eventoDiv.classList.add("evento");
+
+                let totalEvento = 0;
+
+                let conteudoHTML = `<h2>${evento.nome_evento}</h2><p>Data: ${formatarData(evento.data_evento)}</p>`;
+
+                if (evento.logistica && evento.logistica.length > 0) {
+                    conteudoHTML += `<div class="gastos-secao"><h3>Logística</h3><ul>`;
+                    evento.logistica.forEach(item => {
+                        conteudoHTML += `<li><span>${item.nome}:</span> <span>R$ ${item.valor.toFixed(2)}</span></li>`;
+                        totalEvento += item.valor;
+                    });
+                    conteudoHTML += `</ul></div>`;
+                }
+
+                if (evento.equipe && evento.equipe.length > 0) {
+                    conteudoHTML += `<div class="gastos-secao"><h3>Equipe</h3><ul>`;
+                    evento.equipe.forEach(item => {
+                        conteudoHTML += `<li><span>${item.nome}:</span> <span>R$ ${item.valor.toFixed(2)}</span></li>`;
+                        totalEvento += item.valor;
+                    });
+                    conteudoHTML += `</ul></div>`;
+                }
+                
+                conteudoHTML += `<p class="total-evento">Total do Evento: R$ ${totalEvento.toFixed(2)}</p>`;
+
+                eventoDiv.innerHTML = conteudoHTML;
+                relatorioContainer.appendChild(eventoDiv);
+            });
+        }
+
+        function formatarData(dataStr) {
+            const [ano, mes, dia] = dataStr.split("-");
+            return `${dia}/${mes}/${ano}`;
+        }
+
+        function exportarParaXLSX() {
+            if (eventosFiltradosParaExportar.length === 0) {
+                alert("Não há dados para exportar. Por favor, aplique um filtro primeiro.");
+                return;
+            }
+
+            const dadosParaExportar = [];
+            // Cabeçalho
+            dadosParaExportar.push(["Nome do Evento", "Data", "Tipo de Gasto", "Nome do Item", "Valor (R$)"]);
+
+            eventosFiltradosParaExportar.forEach(evento => {
+                if (evento.logistica && evento.logistica.length > 0) {
+                    evento.logistica.forEach(item => {
+                        dadosParaExportar.push([
+                            evento.nome_evento,
+                            formatarData(evento.data_evento),
+                            "Logística",
+                            item.nome,
+                            item.valor
+                        ]);
+                    });
+                }
+                if (evento.equipe && evento.equipe.length > 0) {
+                    evento.equipe.forEach(item => {
+                        dadosParaExportar.push([
+                            evento.nome_evento,
+                            formatarData(evento.data_evento),
+                            "Equipe",
+                            item.nome,
+                            item.valor
+                        ]);
+                    });
+                }
+                 // Adiciona uma linha em branco entre eventos se não houver gastos ou para separar visualmente
+                if (!((evento.logistica && evento.logistica.length > 0) || (evento.equipe && evento.equipe.length > 0))) {
+                     dadosParaExportar.push([evento.nome_evento, formatarData(evento.data_evento), "Sem gastos registrados", "", ""]);
+                } else {
+                    // Linha de total do evento (opcional, mas pode ser útil)
+                    let totalEvento = 0;
+                    (evento.logistica || []).forEach(i => totalEvento += i.valor);
+                    (evento.equipe || []).forEach(i => totalEvento += i.valor);
+                    dadosParaExportar.push([evento.nome_evento, "", "TOTAL EVENTO", "", totalEvento]);
+                }
+                dadosParaExportar.push([]); // Linha em branco para separar eventos
+            });
+
+            const worksheet = XLSX.utils.aoa_to_sheet(dadosParaExportar);
+            const workbook = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(workbook, worksheet, "PagamentosPorEvento");
+
+            // Tenta formatar as colunas de valor como número
+            // A coluna E (índice 4) é a de valor
+            for (let i = 1; i < dadosParaExportar.length; i++) { // Começa de 1 para pular o cabeçalho
+                const cellRef = XLSX.utils.encode_cell({r: i, c: 4});
+                if (worksheet[cellRef] && typeof worksheet[cellRef].v === 'number') {
+                    worksheet[cellRef].t = 'n';
+                    worksheet[cellRef].z = 'R$ #,##0.00'; 
+                }
+            }
+
+            XLSX.writeFile(workbook, "Relatorio_Pagamentos_Por_Evento.xlsx");
+        }
+
+    </script>
+</body>
+</html>
+
