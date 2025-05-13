@@ -84,11 +84,11 @@ async function carregarDados() {
   document.getElementById("dataEvento").value = evento.data || "";
   document.getElementById("responsavelEvento").value = evento.responsavel || "";
   document.getElementById("vendaPDV").value = analise.vendaPDV || "";
-  document.getElementById("estimativaTotal").value = analise.estimativaTotal || "";
 
   let totalVenda = 0;
   let totalPerda = 0;
   let totalCMV = 0;
+  let totalEstimativaVenda = 0;
 
   const tabela = document.querySelector("#tabelaProdutos tbody");
   tabela.innerHTML = "";
@@ -102,15 +102,17 @@ async function carregarDados() {
     const assado = parseInt(item.assado || 0);
     const congelado = parseInt(item.congelado || 0);
     const perdido = parseInt(item.perdido || 0);
-
     const vendidos = enviado - (congelado + assado + perdido);
-    const valorVendaUnit = parseFloat(produto?.valorVenda || 0);
-    const custoUnit = parseFloat(produto?.custo || 0);
 
+    const valorVendaUnit = parseFloat(produto?.valorVenda);
+    const custoUnit = parseFloat(produto?.custo);
+
+    const estimativaVenda = enviado * valorVendaUnit;
     const valorVendaTotal = vendidos * valorVendaUnit;
     const custoPerda = perdido * custoUnit;
     const cmv = vendidos * custoUnit;
 
+    totalEstimativaVenda += estimativaVenda;
     totalVenda += valorVendaTotal;
     totalPerda += custoPerda;
     totalCMV += cmv;
@@ -126,6 +128,7 @@ async function carregarDados() {
       <td>${formatar(custoPerda)}</td>
       <td>${vendidos}</td>
       <td>${formatar(cmv)}</td>
+      <td>${formatar(estimativaVenda)}</td>
     `;
 
     tabela.appendChild(linha);
@@ -133,12 +136,15 @@ async function carregarDados() {
 
   document.getElementById("valorVenda").value = formatar(totalVenda);
   document.getElementById("valorPerda").value = formatar(totalPerda);
+  const estimativaField = document.getElementById("estimativaTotal");
+  if (estimativaField) {
+    estimativaField.value = formatar(totalEstimativaVenda);
+  }
 
   (analise.equipe || []).forEach(eq => criarLinha("equipe-container", "equipe", eq));
   (analise.logistica || []).forEach(lg => criarLinha("logistica-container", "logistica", lg));
   atualizarTotaisEquipeLogistica();
 
-  // Salvar valor calculado para uso posterior
   window.totalCMVCalculado = totalCMV;
 }
 
@@ -154,7 +160,6 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   document.getElementById("btnSalvar").addEventListener("click", async () => {
-    const estimativaTotal = parseFloatSafe(document.getElementById("estimativaTotal").value || 0);
     const vendaPDV = parseFloat(document.getElementById("vendaPDV").value || 0);
     const valorVenda = parseFloatSafe(document.getElementById("valorVenda").value.replace(/[^\d,.-]/g, ""));
     const valorPerda = parseFloatSafe(document.getElementById("valorPerda").value.replace(/[^\d,.-]/g, ""));
