@@ -115,7 +115,8 @@
       onValue,
       get,
       push,
-      set
+      set,
+      remove
     } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-database.js";
 
     const firebaseConfig = {
@@ -175,6 +176,7 @@
                 <a href="assets/criar-evento.html?id=${id}" class="botao">✏️</a>
                 <button class="botao duplicar" data-id="${id}">📄</button>
                 <button class="botao copiar-link" data-id="${id}">📋 Link</button>
+                <button class="botao excluir-evento" data-id="${id}">🗑️ Excluir</button>
               </td>
             `;
             tabelaBody.appendChild(tr);
@@ -219,6 +221,24 @@
               console.error("Erro ao copiar link:", err);
               alert("Erro ao copiar link.");
             });
+          });
+        });
+        document.querySelectorAll(".excluir-evento").forEach(botao => {
+          botao.addEventListener("click", async e => {
+            const id = e.target.dataset.id;
+            if (!id) return;
+
+            const confirmacao = confirm("⚠️ Tem certeza que deseja excluir este evento? Essa ação não pode ser desfeita.");
+            if (!confirmacao) return;
+
+            try {
+              await remove(ref(db, `eventos/${id}`));
+              alert("Evento excluído com sucesso.");
+              carregarEventos(); // Atualiza a lista
+            } catch (error) {
+              console.error("Erro ao excluir evento:", error);
+              alert("Erro ao excluir o evento.");
+            }
           });
         });
       }, err => {
