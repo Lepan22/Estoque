@@ -94,8 +94,9 @@ async function carregarDados() {
   tabela.innerHTML = "";
 
   itens.forEach(item => {
-    const produto = produtos[item.idProduto];
-    const nomeItem = produto?.nome || item.nomeItem || item.nome || "Desconhecido";
+    const nomeItem = item.nomeItem || item.nome || "";
+    const nomeNorm = normalizar(nomeItem);
+    const produto = Object.values(produtos).find(p => normalizar(p.nome) === nomeNorm);
 
     const enviado = parseInt(item.quantidade || item.qtd || 0);
     const assado = parseInt(item.assado || 0);
