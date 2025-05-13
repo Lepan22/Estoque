@@ -1,3 +1,4 @@
+
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js";
 import {
   getDatabase,
@@ -28,6 +29,7 @@ const nomeInput = document.getElementById("nome");
 const nomenclaturaInput = document.getElementById("nomenclatura");
 const valorVendaInput = document.getElementById("valorVenda");
 const custoInput = document.getElementById("custo");
+const quantidadePorCaixaInput = document.getElementById("quantidadePorCaixa");
 const container = document.getElementById("produtosContainer");
 
 form.addEventListener("submit", async (e) => {
@@ -37,6 +39,7 @@ form.addEventListener("submit", async (e) => {
   const nomenclatura = nomenclaturaInput.value.trim();
   const valorVenda = parseFloat(valorVendaInput.value) || 0;
   const custo = parseFloat(custoInput.value) || 0;
+  const quantidadePorCaixa = parseInt(quantidadePorCaixaInput.value) || 0;
 
   if (!nome) {
     alert("Informe o nome do produto.");
@@ -44,12 +47,13 @@ form.addEventListener("submit", async (e) => {
   }
 
   const id = idInput.value;
+  const produtoData = { nome, nomenclatura, valorVenda, custo, quantidadePorCaixa };
 
   if (id) {
-    await update(ref(db, `produtos/${id}`), { nome, nomenclatura, valorVenda, custo });
+    await update(ref(db, `produtos/${id}`), produtoData);
   } else {
     const novoRef = push(ref(db, "produtos"));
-    await set(novoRef, { nome, nomenclatura, valorVenda, custo });
+    await set(novoRef, produtoData);
   }
 
   form.reset();
@@ -64,7 +68,7 @@ function carregarProdutos() {
     container.innerHTML = "";
 
     if (!snapshot.exists()) {
-      container.innerHTML = "<tr><td colspan='5'>Nenhum produto cadastrado.</td></tr>";
+      container.innerHTML = "<tr><td colspan='6'>Nenhum produto cadastrado.</td></tr>";
       return;
     }
 
@@ -77,6 +81,7 @@ function carregarProdutos() {
         <td>${produto.nomenclatura || ""}</td>
         <td>R$ ${produto.valorVenda?.toFixed(2) || "0,00"}</td>
         <td>R$ ${produto.custo?.toFixed(2) || "0,00"}</td>
+        <td>${produto.quantidadePorCaixa || ""}</td>
         <td><button class="edit-button" data-id="${id}">Editar</button></td>
       `;
       container.appendChild(row);
@@ -100,6 +105,7 @@ function preencherFormulario(id) {
       nomenclaturaInput.value = produto.nomenclatura || "";
       valorVendaInput.value = produto.valorVenda || "";
       custoInput.value = produto.custo || "";
+      quantidadePorCaixaInput.value = produto.quantidadePorCaixa || "";
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   });
@@ -137,7 +143,8 @@ document.getElementById("importarXLS").addEventListener("change", async (e) => {
         nome: prod.nome || "",
         nomenclatura: prod.nomenclatura || "",
         valorVenda: parseFloat(prod.valorVenda) || 0,
-        custo: parseFloat(prod.custo) || 0
+        custo: parseFloat(prod.custo) || 0,
+        quantidadePorCaixa: parseInt(prod.quantidadePorCaixa) || 0
       });
     }
 
