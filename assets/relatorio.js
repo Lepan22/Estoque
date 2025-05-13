@@ -1,87 +1,193 @@
-import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js";
-import {
-  getDatabase, ref, get
-} from "https://www.gstatic.com/firebasejs/9.22.2/firebase-database.js";
+const urlParams = new URLSearchParams(window.location.search);
+const id = urlParams.get("id");
+const db = firebase.database();
 
-const firebaseConfig = {
-  apiKey: "AIzaSyBN-bmzgrlzjmrKMmuClZ8LVll-vJyx-aE",
-  authDomain: "controleestoquelepan.firebaseapp.com",
-  databaseURL: "https://controleestoquelepan-default-rtdb.firebaseio.com",
-  projectId: "controleestoquelepan",
-  storageBucket: "controleestoquelepan.appspot.com",
-  messagingSenderId: "779860276544",
-  appId: "1:779860276544:web:f45844571a8c0bab1576a5"
-};
+function normalizar(texto) {
+  return (texto || "")
+    .toLowerCase()
+    .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+    .replace(/\s+/g, " ")
+    .trim();
+}
 
-const app = initializeApp(firebaseConfig);
-const db = getDatabase(app);
+function formatar(valor) {
+  return "R$ " + parseFloat(valor || 0).toFixed(2).replace('.', ',');
+}
 
-const form = document.getElementById("filtro-form");
-const container = document.getElementById("relatorio-container");
+function parseFloatSafe(v) {
+  return parseFloat(String(v).replace(",", ".")) || 0;
+}
 
-form.addEventListener("submit", async (e) => {
-  e.preventDefault();
-  const dataInicio = new Date(document.getElementById("data-inicio").value);
-  const dataFim = new Date(document.getElementById("data-fim").value);
-  dataFim.setHours(23, 59, 59); // incluir o fim do dia
+function atualizarTotaisEquipeLogistica() {
+  let totalEquipe = 0;
+  document.querySelectorAll(".equipe-linha").forEach(div => {
+    const valor = parseFloatSafe(div.querySelector('[name="equipe-valor"]').value);
+    totalEquipe += valor;
+  });
+  document.getElementById("custoEquipe").textContent = formatar(totalEquipe);
 
-  const eventosSnap = await get(ref(db, "eventos"));
-  if (!eventosSnap.exists()) {
-    container.innerHTML = "<p>Nenhum evento encontrado.</p>";
+  let totalLogistica = 0;
+  document.querySelectorAll(".logistica-linha").forEach(div => {
+    const valor = parseFloatSafe(div.querySelector('[name="logistica-valor"]').value);
+    totalLogistica += valor;
+  });
+  document.getElementById("custoLogistica").textContent = formatar(totalLogistica);
+}
+
+function criarLinha(containerId, tipo, dados = {}) {
+  const div = document.createElement("div");
+  div.className = `${tipo}-linha d-flex gap-2 mb-2`;
+
+  const input1 = document.createElement("input");
+  input1.className = "form-control";
+  input1.name = `${tipo}-nome`;
+  input1.placeholder = tipo === "equipe" ? "Nome do Membro" : "Descritivo";
+  input1.value = dados.nome || "";
+
+  const input2 = document.createElement("input");
+  input2.className = "form-control";
+  input2.name = `${tipo}-valor`;
+  input2.placeholder = tipo === "equipe" ? "Valor por dia" : "Valor";
+  input2.value = dados.valor || "";
+  input2.addEventListener("input", atualizarTotaisEquipeLogistica);
+
+  const btn = document.createElement("button");
+  btn.type = "button";
+  btn.className = "btn btn-danger btn-sm";
+  btn.textContent = "❌";
+  btn.onclick = () => {
+    div.remove();
+    atualizarTotaisEquipeLogistica();
+  };
+
+  div.append(input1, input2, btn);
+  document.getElementById(containerId).appendChild(div);
+}
+
+async function carregarDados() {
+  const [eventoSnap, produtosSnap] = await Promise.all([
+    db.ref(`eventos/${id}`).get(),
+    db.ref("produtos").get()
+  ]);
+
+  if (!eventoSnap.exists()) {
+    alert("Evento não encontrado.");
     return;
   }
 
-  const eventos = eventosSnap.val();
-  const eventosFiltrados = Object.entries(eventos)
-    .map(([id, ev]) => ({ id, ...ev }))
-    .filter(ev => {
-      const dataEv = new Date(ev.data);
-      return dataEv >= dataInicio && dataEv <= dataFim;
-    });
+  const evento = eventoSnap.val();
+  const produtos = produtosSnap.val() || {};
+  const itens = evento.itens || [];
+  const analise = evento.analise || {};
 
-  if (eventosFiltrados.length === 0) {
-    container.innerHTML = "<p>Nenhum evento no período selecionado.</p>";
-    return;
-  }
+  document.getElementById("nomeEvento").value = evento.nome || "";
+  document.getElementById("dataEvento").value = evento.data || "";
+  document.getElementById("responsavelEvento").value = evento.responsavel || "";
+  document.getElementById("vendaPDV").value = analise.vendaPDV || "";
 
-  // Agrupar por produto
-  const produtoEventoMap = {};
+  let totalVenda = 0;
+  let totalPerda = 0;
+  let totalCMV = 0;
+  let totalEstimativaVenda = 0;
 
-  eventosFiltrados.forEach(ev => {
-    (ev.itens || []).forEach(item => {
-      const nome = item.nomeItem || item.nome || "Sem nome";
-      const qtd = parseFloat(item.quantidade || 0);
+  const tabela = document.querySelector("#tabelaProdutos tbody");
+  tabela.innerHTML = "";
 
-      if (!produtoEventoMap[nome]) produtoEventoMap[nome] = {};
-      produtoEventoMap[nome][ev.nome] = (produtoEventoMap[nome][ev.nome] || 0) + qtd;
-    });
+  itens.forEach(item => {
+    const nomeItem = item.nomeItem || item.nome || "";
+    const nomeNorm = normalizar(nomeItem);
+    const produto = Object.values(produtos).find(p => normalizar(p.nome) === nomeNorm);
+
+    const enviado = parseInt(item.quantidade || item.qtd || 0);
+    const assado = parseInt(item.assado || 0);
+    const congelado = parseInt(item.congelado || 0);
+    const perdido = parseInt(item.perdido || 0);
+
+    const vendidos = enviado - (congelado + assado + perdido);
+    const valorVendaUnit = parseFloat(produto?.valorVenda || 0);
+    const custoUnit = parseFloat(produto?.custo || 0);
+
+    const valorVendaTotal = vendidos * valorVendaUnit;
+    const custoPerda = perdido * custoUnit;
+    const cmv = vendidos * custoUnit;
+    const estimativaVenda = enviado * valorVendaUnit;
+
+    totalVenda += valorVendaTotal;
+    totalPerda += custoPerda;
+    totalCMV += cmv;
+    totalEstimativaVenda += estimativaVenda;
+
+    const linha = document.createElement("tr");
+    linha.innerHTML = `
+      <td>${nomeItem}</td>
+      <td>${enviado}</td>
+      <td>${congelado}</td>
+      <td>${assado}</td>
+      <td>${perdido}</td>
+      <td>${formatar(valorVendaTotal)}</td>
+      <td>${formatar(custoPerda)}</td>
+      <td>${vendidos}</td>
+      <td>${formatar(cmv)}</td>
+      <td>${formatar(estimativaVenda)}</td>
+    `;
+
+    tabela.appendChild(linha);
   });
 
-  const eventosNomes = eventosFiltrados.map(e => e.nome);
-  const tabela = document.createElement("table");
-  tabela.border = "1";
-  tabela.innerHTML = `
-    <thead>
-      <tr>
-        <th>Produto</th>
-        ${eventosNomes.map(nome => `<th>${nome}</th>`).join("")}
-        <th>Total</th>
-      </tr>
-    </thead>
-    <tbody>
-      ${Object.entries(produtoEventoMap).map(([produto, eventoQtds]) => {
-        const total = eventosNomes.reduce((soma, evNome) => soma + (eventoQtds[evNome] || 0), 0);
-        return `
-          <tr>
-            <td>${produto}</td>
-            ${eventosNomes.map(ev => `<td>${eventoQtds[ev] || ""}</td>`).join("")}
-            <td><strong>${total}</strong></td>
-          </tr>
-        `;
-      }).join("")}
-    </tbody>
-  `;
+  document.getElementById("valorVenda").value = formatar(totalVenda);
+  document.getElementById("valorPerda").value = formatar(totalPerda);
+  const estimativaField = document.getElementById("estimativaTotal");
+  if (estimativaField) {
+    estimativaField.value = formatar(totalEstimativaVenda);
+  }
 
-  container.innerHTML = "";
-  container.appendChild(tabela);
+  (analise.equipe || []).forEach(eq => criarLinha("equipe-container", "equipe", eq));
+  (analise.logistica || []).forEach(lg => criarLinha("logistica-container", "logistica", lg));
+  atualizarTotaisEquipeLogistica();
+
+  window.totalCMVCalculado = totalCMV;
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+  carregarDados();
+
+  document.getElementById("addEquipeBtn").addEventListener("click", () => {
+    criarLinha("equipe-container", "equipe");
+  });
+
+  document.getElementById("addLogisticaBtn").addEventListener("click", () => {
+    criarLinha("logistica-container", "logistica");
+  });
+
+  document.getElementById("btnSalvar").addEventListener("click", async () => {
+    const vendaPDV = parseFloat(document.getElementById("vendaPDV").value || 0);
+    const valorVenda = parseFloatSafe(document.getElementById("valorVenda").value.replace(/[^\d,.-]/g, ""));
+    const valorPerda = parseFloatSafe(document.getElementById("valorPerda").value.replace(/[^\d,.-]/g, ""));
+
+    const equipe = Array.from(document.querySelectorAll(".equipe-linha")).map(div => ({
+      nome: div.querySelector('[name="equipe-nome"]').value,
+      valor: parseFloatSafe(div.querySelector('[name="equipe-valor"]').value)
+    }));
+
+    const logistica = Array.from(document.querySelectorAll(".logistica-linha")).map(div => ({
+      nome: div.querySelector('[name="logistica-nome"]').value,
+      valor: parseFloatSafe(div.querySelector('[name="logistica-valor"]').value)
+    }));
+
+    const custoEquipe = equipe.reduce((s, e) => s + e.valor, 0);
+    const custoLogistica = logistica.reduce((s, l) => s + l.valor, 0);
+
+    await db.ref(`eventos/${id}/analise`).update({
+      vendaPDV,
+      valorVenda,
+      valorPerda,
+      equipe,
+      logistica,
+      custoEquipe,
+      custoLogistica,
+      cmvTotal: window.totalCMVCalculado || 0
+    });
+
+    alert("Dados salvos com sucesso!");
+  });
 });
