@@ -1,103 +1,27 @@
+
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-br">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Cadastro de Produto</title>
-  <link rel="stylesheet" href="style.css" />
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      margin-left: 4cm;
-      margin-top: 20px;
-    }
-
-    h1 {
-      margin-bottom: 20px;
-    }
-
-    .form-inline {
-      display: flex;
-      gap: 10px;
-      margin-bottom: 10px;
-      flex-wrap: wrap;
-    }
-
-    .form-inline input {
-      padding: 6px;
-      border: 1px solid #ccc;
-      border-radius: 4px;
-      width: 180px;
-    }
-
-    button {
-      padding: 8px 16px;
-      background-color: #007bff;
-      color: white;
-      border: none;
-      border-radius: 5px;
-      font-weight: bold;
-      cursor: pointer;
-    }
-
-    button:hover {
-      background-color: #0056b3;
-    }
-
-    table {
-      width: 90%;
-      border-collapse: collapse;
-      margin-top: 30px;
-    }
-
-    table th, table td {
-      padding: 10px;
-      border: 1px solid #ccc;
-      text-align: left;
-    }
-
-    table th {
-      background-color: #f2f2f2;
-    }
-
-    .edit-button {
-      background-color: #28a745;
-      color: white;
-      border: none;
-      padding: 4px 8px;
-      border-radius: 4px;
-      cursor: pointer;
-    }
-
-    .edit-button:hover {
-      background-color: #218838;
-    }
-  </style>
+  <title>Cadastro de Produtos</title>
+  <link rel="stylesheet" href="style.css"/>
 </head>
 <body>
-
-  <h1>Cadastro de Produto</h1>
-
+  <h1>Cadastro de Produtos</h1>
   <form id="produtoForm">
     <input type="hidden" id="produtoId" />
-
     <div class="form-inline">
       <input type="text" id="nome" placeholder="Nome do Produto" required />
       <input type="text" id="nomenclatura" placeholder="Nomenclatura" />
       <input type="number" id="valorVenda" step="0.01" placeholder="Valor de Venda (R$)" />
       <input type="number" id="custo" step="0.01" placeholder="Custo (R$)" />
+      <input type="number" id="quantidadePorCaixa" placeholder="Qtd por Caixa" />
     </div>
-
     <button type="submit">Salvar Produto</button>
   </form>
 
-  <div style="margin-top: 20px;">
-    <button id="exportarXLS">Exportar XLS</button>
-    <input type="file" id="importarXLS" accept=".xlsx" />
-  </div>
-
-  <h2 style="margin-top: 40px;">Lista de Produto Criado</h2>
-
+  <h2>Produtos Cadastrados</h2>
   <table>
     <thead>
       <tr>
@@ -105,15 +29,17 @@
         <th>Nomenclatura</th>
         <th>Valor de Venda</th>
         <th>Custo</th>
+        <th>Qtd por Caixa</th>
         <th>Ações</th>
       </tr>
     </thead>
-    <tbody id="produtosContainer">
-      <tr><td colspan="5">Carregando produtos...</td></tr>
-    </tbody>
+    <tbody id="produtosContainer"></tbody>
   </table>
 
-  <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
+  <button id="exportarXLS">Exportar XLS</button>
+  <input type="file" id="importarXLS" />
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
   <script type="module" src="produtos.js"></script>
 </body>
 </html>
