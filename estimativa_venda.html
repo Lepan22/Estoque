@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <title>Relatório - Estimativa de Venda</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
   <script src="https://cdn.sheetjs.com/xlsx-0.20.0/package/dist/xlsx.full.min.js"></script>
   <style>
     table th, table td {
@@ -13,6 +14,13 @@
     .table-responsive {
       max-height: 70vh;
       overflow-y: auto;
+    }
+    .select2-container {
+      width: 100% !important;
+    }
+    input[type="number"] {
+      width: 80px;
+      text-align: center;
     }
   </style>
 </head>
@@ -42,6 +50,9 @@
   <!-- Firebase -->
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+  <!-- Select2 -->
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 
   <script>
     const firebaseConfig = {
@@ -82,19 +93,26 @@
           filtroNomes.appendChild(opt);
         });
 
+        // Ativa o Select2 após preenchimento
+        $('#filtroNomes').select2({
+          placeholder: "Selecione os nomes de evento",
+          width: 'resolve'
+        });
+
+        $('#filtroNomes').on('change', atualizarTabela);
+
         atualizarTabela();
       });
     }
 
     function atualizarTabela() {
-      const nomesSelecionados = Array.from(filtroNomes.selectedOptions).map(opt => opt.value);
-      if (nomesSelecionados.length === 0) {
+      const nomesSelecionados = $('#filtroNomes').val();
+      if (!nomesSelecionados || nomesSelecionados.length === 0) {
         cabecalhoTabela.innerHTML = '<th style="width: 200px;">Produto</th>';
         corpoTabela.innerHTML = '';
         return;
       }
 
-      // Últimos eventos por nome
       const ultimosEventos = {};
       nomesSelecionados.forEach(nome => {
         const eventosDoNome = eventos.filter(e => e.nome === nome);
@@ -104,7 +122,6 @@
         }
       });
 
-      // Construir dados
       const produtos = {};
 
       for (const nome in ultimosEventos) {
@@ -117,34 +134,69 @@
           const congelado = item.congelado || 0;
           const vendido = enviado - (assado + perdido + congelado);
 
-          if (!produtos[nomeProduto]) produtos[nomeProduto] = {};
-          produtos[nomeProduto][nome] = (produtos[nomeProduto][nome] || 0) + vendido;
+          if (!produtos[nomeProduto]) produtos[nomeProduto] = { total: 0, porNome: {} };
+          produtos[nomeProduto].porNome[nome] = vendido;
+          produtos[nomeProduto].total += vendido;
         });
       }
 
-      // Cabeçalho
       cabecalhoTabela.innerHTML = '<th style="width: 200px;">Produto</th>';
       nomesSelecionados.forEach(nome => {
-        const th = document.createElement('th');
-        th.textContent = nome;
-        cabecalhoTabela.appendChild(th);
+        cabecalhoTabela.innerHTML += `<th>${nome}</th>`;
       });
-      cabecalhoTabela.innerHTML += '<th>Total</th>';
+      cabecalhoTabela.innerHTML += `
+        <th>Total</th>
+        <th>Qtd. por Caixa</th>
+        <th>Pedido</th>
+      `;
 
-      // Corpo da Tabela
       corpoTabela.innerHTML = '';
       Object.keys(produtos).sort().forEach(produto => {
+        const dados = produtos[produto];
         const tr = document.createElement('tr');
         tr.innerHTML = `<td style="max-width: 200px; word-break: break-word;">${produto}</td>`;
-        let soma = 0;
+
         nomesSelecionados.forEach(nome => {
-          const val = produtos[produto][nome] || 0;
-          soma += val;
+          const val = dados.porNome[nome] || 0;
           tr.innerHTML += `<td>${val}</td>`;
         });
-        tr.innerHTML += `<td>${soma}</td>`;
+
+        const total = dados.total;
+        tr.innerHTML += `<td class="soma">${total}</td>`;
+
+        // Quantidade por caixa editável e pedido calculado
+        const input = document.createElement('input');
+        input.type = "number";
+        input.min = 1;
+        input.classList.add("form-control", "quantidadeCaixa");
+        input.dataset.total = total;
+        input.addEventListener("input", calcularPedido);
+
+        const tdQtd = document.createElement('td');
+        tdQtd.appendChild(input);
+
+        const tdPedido = document.createElement('td');
+        tdPedido.className = 'pedido';
+        tdPedido.textContent = '-';
+
+        tr.appendChild(tdQtd);
+        tr.appendChild(tdPedido);
+
         corpoTabela.appendChild(tr);
       });
+    }
+
+    function calcularPedido(e) {
+      const input = e.target;
+      const tr = input.closest('tr');
+      const total = parseFloat(input.dataset.total || 0);
+      const qtd = parseFloat(input.value || 0);
+      const tdPedido = tr.querySelector('.pedido');
+      if (qtd > 0) {
+        tdPedido.textContent = Math.ceil(total / qtd);
+      } else {
+        tdPedido.textContent = '-';
+      }
     }
 
     function exportarExcel() {
@@ -152,8 +204,6 @@
       const wb = XLSX.utils.table_to_book(tabela, { sheet: "Estimativa Venda" });
       XLSX.writeFile(wb, "estimativa_venda.xlsx");
     }
-
-    filtroNomes.addEventListener('change', atualizarTabela);
 
     carregarEventos();
   </script>
