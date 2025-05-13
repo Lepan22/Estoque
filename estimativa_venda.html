@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Relatório - Estimativa de Venda</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <script src="https://cdn.sheetjs.com/xlsx-0.20.0/package/dist/xlsx.full.min.js"></script>
+  <style>
+    table th, table td {
+      text-align: center;
+      vertical-align: middle;
+    }
+    .table-responsive {
+      max-height: 70vh;
+      overflow-y: auto;
+    }
+  </style>
+</head>
+<body class="p-4">
+  <h3>Relatório de Estimativa de Venda</h3>
+
+  <div class="mb-3">
+    <label for="filtroNomes" class="form-label">Selecione os nomes de evento:</label>
+    <select id="filtroNomes" class="form-select" multiple></select>
+  </div>
+
+  <div class="mb-3">
+    <button class="btn btn-success" onclick="exportarExcel()">Exportar para Excel</button>
+  </div>
+
+  <div class="table-responsive">
+    <table class="table table-bordered table-striped" id="tabelaEstimativa">
+      <thead>
+        <tr id="cabecalhoTabela">
+          <th style="width: 200px;">Produto</th>
+        </tr>
+      </thead>
+      <tbody id="corpoTabela"></tbody>
+    </table>
+  </div>
+
+  <!-- Firebase -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+
+  <script>
+    const firebaseConfig = {
+      databaseURL: "https://controleestoquelepan-default-rtdb.firebaseio.com/"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    const filtroNomes = document.getElementById('filtroNomes');
+    const cabecalhoTabela = document.getElementById('cabecalhoTabela');
+    const corpoTabela = document.getElementById('corpoTabela');
+
+    let eventos = [];
+
+    function carregarEventos() {
+      db.ref('eventos').once('value', snapshot => {
+        const dados = snapshot.val();
+        eventos = [];
+
+        const nomesSet = new Set();
+
+        for (const id in dados) {
+          const evento = dados[id];
+          if (evento.status === 'finalizado') {
+            eventos.push({ ...evento, id });
+            if (evento.nome) {
+              nomesSet.add(evento.nome);
+            }
+          }
+        }
+
+        filtroNomes.innerHTML = '';
+        Array.from(nomesSet).sort().forEach(nome => {
+          const opt = document.createElement('option');
+          opt.value = nome;
+          opt.textContent = nome;
+          filtroNomes.appendChild(opt);
+        });
+
+        atualizarTabela();
+      });
+    }
+
+    function atualizarTabela() {
+      const nomesSelecionados = Array.from(filtroNomes.selectedOptions).map(opt => opt.value);
+      if (nomesSelecionados.length === 0) {
+        cabecalhoTabela.innerHTML = '<th style="width: 200px;">Produto</th>';
+        corpoTabela.innerHTML = '';
+        return;
+      }
+
+      // Últimos eventos por nome
+      const ultimosEventos = {};
+      nomesSelecionados.forEach(nome => {
+        const eventosDoNome = eventos.filter(e => e.nome === nome);
+        if (eventosDoNome.length > 0) {
+          const ultimo = eventosDoNome.sort((a, b) => b.data.localeCompare(a.data))[0];
+          ultimosEventos[nome] = ultimo;
+        }
+      });
+
+      // Construir dados
+      const produtos = {};
+
+      for (const nome in ultimosEventos) {
+        const evento = ultimosEventos[nome];
+        evento.itens.forEach(item => {
+          const nomeProduto = item.nomeItem.trim();
+          const enviado = item.quantidade || 0;
+          const assado = item.assado || 0;
+          const perdido = item.perdido || 0;
+          const congelado = item.congelado || 0;
+          const vendido = enviado - (assado + perdido + congelado);
+
+          if (!produtos[nomeProduto]) produtos[nomeProduto] = {};
+          produtos[nomeProduto][nome] = (produtos[nomeProduto][nome] || 0) + vendido;
+        });
+      }
+
+      // Cabeçalho
+      cabecalhoTabela.innerHTML = '<th style="width: 200px;">Produto</th>';
+      nomesSelecionados.forEach(nome => {
+        const th = document.createElement('th');
+        th.textContent = nome;
+        cabecalhoTabela.appendChild(th);
+      });
+      cabecalhoTabela.innerHTML += '<th>Total</th>';
+
+      // Corpo da Tabela
+      corpoTabela.innerHTML = '';
+      Object.keys(produtos).sort().forEach(produto => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `<td style="max-width: 200px; word-break: break-word;">${produto}</td>`;
+        let soma = 0;
+        nomesSelecionados.forEach(nome => {
+          const val = produtos[produto][nome] || 0;
+          soma += val;
+          tr.innerHTML += `<td>${val}</td>`;
+        });
+        tr.innerHTML += `<td>${soma}</td>`;
+        corpoTabela.appendChild(tr);
+      });
+    }
+
+    function exportarExcel() {
+      const tabela = document.getElementById("tabelaEstimativa");
+      const wb = XLSX.utils.table_to_book(tabela, { sheet: "Estimativa Venda" });
+      XLSX.writeFile(wb, "estimativa_venda.xlsx");
+    }
+
+    filtroNomes.addEventListener('change', atualizarTabela);
+
+    carregarEventos();
+  </script>
+</body>
+</html>
