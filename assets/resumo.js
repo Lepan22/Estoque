@@ -102,20 +102,20 @@ async function carregarDados() {
     const assado = parseInt(item.assado || 0);
     const congelado = parseInt(item.congelado || 0);
     const perdido = parseInt(item.perdido || 0);
-
     const vendidos = enviado - (congelado + assado + perdido);
-    const valorVendaUnit = parseFloat(produto?.valorVenda || 0);
-    const custoUnit = parseFloat(produto?.custo || 0);
 
+    const valorVendaUnit = parseFloat(produto?.valorVenda);
+    const custoUnit = parseFloat(produto?.custo);
+
+    const estimativaVenda = enviado * valorVendaUnit;
     const valorVendaTotal = vendidos * valorVendaUnit;
     const custoPerda = perdido * custoUnit;
     const cmv = vendidos * custoUnit;
-    const estimativaVenda = enviado * valorVendaUnit;
 
+    totalEstimativaVenda += estimativaVenda;
     totalVenda += valorVendaTotal;
     totalPerda += custoPerda;
     totalCMV += cmv;
-    totalEstimativaVenda += estimativaVenda;
 
     const linha = document.createElement("tr");
     linha.innerHTML = `
