@@ -1,177 +1,211 @@
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="pt-BR">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Estimativa de Venda</title>
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" />
-  <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-database-compat.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <meta charset="UTF-8">
+  <title>Relatório - Estimativa de Venda</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+  <script src="https://cdn.sheetjs.com/xlsx-0.20.0/package/dist/xlsx.full.min.js"></script>
+  <style>
+    table th, table td {
+      text-align: center;
+      vertical-align: middle;
+    }
+    .table-responsive {
+      max-height: 70vh;
+      overflow-y: auto;
+    }
+    .select2-container {
+      width: 100% !important;
+    }
+    input[type="number"] {
+      width: 80px;
+      text-align: center;
+    }
+  </style>
 </head>
 <body class="p-4">
-  <h2>Estimativa de Venda</h2>
+  <h3>Relatório de Estimativa de Venda</h3>
 
-  <div class="row my-3">
-    <div class="col-md-6">
-      <label for="eventoSelect" class="form-label">Selecione os nomes de eventos:</label>
-      <select id="eventoSelect" class="form-select" multiple></select>
-    </div>
-    <div class="col-md-2 align-self-end">
-      <button class="btn btn-primary" onclick="gerarRelatorio()">Gerar Relatório</button>
-    </div>
-    <div class="col-md-2 align-self-end">
-      <button class="btn btn-success" onclick="exportarExcel()">Exportar Excel</button>
-    </div>
+  <div class="mb-3">
+    <label for="filtroNomes" class="form-label">Selecione os nomes de evento:</label>
+    <select id="filtroNomes" class="form-select" multiple></select>
+  </div>
+
+  <div class="mb-3">
+    <button class="btn btn-success" onclick="exportarExcel()">Exportar para Excel</button>
   </div>
 
   <div class="table-responsive">
-    <table class="table table-bordered table-sm align-middle text-center" id="tabelaRelatorio">
-      <thead class="table-light">
-        <tr id="cabecalho">
-          <th>Produto</th>
+    <table class="table table-bordered table-striped" id="tabelaEstimativa">
+      <thead>
+        <tr id="cabecalhoTabela">
+          <th style="width: 200px;">Produto</th>
         </tr>
       </thead>
       <tbody id="corpoTabela"></tbody>
     </table>
   </div>
 
+  <!-- Firebase -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+  <!-- Select2 -->
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
   <script>
     const firebaseConfig = {
-      databaseURL: "https://controleestoquelepan-default-rtdb.firebaseio.com/",
+      databaseURL: "https://controleestoquelepan-default-rtdb.firebaseio.com/"
     };
+
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
-    async function carregarNomesEventos() {
-      const snapshot = await db.ref("controle").once("value");
-      const nomesSet = new Set();
-      snapshot.forEach(child => {
-        const nome = child.val().nomeEvento;
-        if (nome) nomesSet.add(nome);
-      });
-      const select = document.getElementById("eventoSelect");
-      [...nomesSet].sort().forEach(nome => {
-        const opt = document.createElement("option");
-        opt.value = nome;
-        opt.textContent = nome;
-        select.appendChild(opt);
-      });
-    }
+    const filtroNomes = document.getElementById('filtroNomes');
+    const cabecalhoTabela = document.getElementById('cabecalhoTabela');
+    const corpoTabela = document.getElementById('corpoTabela');
 
-    function calcularQuantidadeVendida(prod) {
-      return (prod.enviado || 0) - ((prod.assado || 0) + (prod.perda || 0) + (prod.congelado || 0));
-    }
+    let eventos = [];
 
-    async function gerarRelatorio() {
-      const select = document.getElementById("eventoSelect");
-      const nomesSelecionados = Array.from(select.selectedOptions).map(opt => opt.value);
-      if (nomesSelecionados.length === 0) return;
+    function carregarEventos() {
+      db.ref('eventos').once('value', snapshot => {
+        const dados = snapshot.val();
+        eventos = [];
 
-      const [controleSnap, produtosSnap] = await Promise.all([
-        db.ref("controle").once("value"),
-        db.ref("produtos").once("value")
-      ]);
+        const nomesSet = new Set();
 
-      const produtosData = produtosSnap.val() || {};
-      const eventos = {};
-      controleSnap.forEach(child => {
-        const item = child.val();
-        const nome = item.nomeEvento;
-        if (nomesSelecionados.includes(nome)) {
-          if (!eventos[nome] || new Date(item.data) > new Date(eventos[nome].data)) {
-            eventos[nome] = item;
+        for (const id in dados) {
+          const evento = dados[id];
+          if (evento.status === 'finalizado') {
+            eventos.push({ ...evento, id });
+            if (evento.nome) {
+              nomesSet.add(evento.nome);
+            }
           }
         }
-      });
 
-      const produtoMap = {};
-      for (const nome of nomesSelecionados) {
-        const evento = eventos[nome];
-        if (!evento || !evento.produtos) continue;
-
-        for (const [id, prod] of Object.entries(evento.produtos)) {
-          const nomeProduto = prod.nome || "Sem nome";
-          if (!produtoMap[nomeProduto]) {
-            produtoMap[nomeProduto] = {
-              nome: nomeProduto,
-              porEvento: {},
-              quantidadePorCaixa: produtosData[id]?.quantidadePorCaixa || ""
-            };
-          }
-          produtoMap[nomeProduto].porEvento[nome] = calcularQuantidadeVendida(prod);
-        }
-      }
-
-      // Construção da tabela
-      const tabela = document.getElementById("tabelaRelatorio");
-      const thead = document.getElementById("cabecalho");
-      const tbody = document.getElementById("corpoTabela");
-      thead.innerHTML = "<th>Produto</th>";
-      nomesSelecionados.forEach(nome => {
-        const th = document.createElement("th");
-        th.textContent = nome;
-        thead.appendChild(th);
-      });
-      thead.innerHTML += `
-        <th>Total</th>
-        <th>Quantidade por Caixa</th>
-        <th>Pedido</th>
-      `;
-      tbody.innerHTML = "";
-
-      Object.values(produtoMap).forEach(prod => {
-        const tr = document.createElement("tr");
-        tr.innerHTML = `<td class="text-start">${prod.nome}</td>`;
-        let total = 0;
-
-        nomesSelecionados.forEach(nome => {
-          const valor = prod.porEvento[nome] || 0;
-          total += valor;
-          tr.innerHTML += `<td>${valor}</td>`;
+        filtroNomes.innerHTML = '';
+        Array.from(nomesSet).sort().forEach(nome => {
+          const opt = document.createElement('option');
+          opt.value = nome;
+          opt.textContent = nome;
+          filtroNomes.appendChild(opt);
         });
 
-        const idLinha = `linha-${prod.nome.replace(/\s+/g, "_")}`;
-        tr.innerHTML += `<td class="total" data-total="${total}">${total}</td>`;
-        tr.innerHTML += `
-          <td>
-            <input type="number" class="form-control form-control-sm caixa-input" data-id="${idLinha}" value="${prod.quantidadePorCaixa}" min="1">
-          </td>
-          <td class="pedido" id="${idLinha}-pedido"></td>
-        `;
+        // Ativa o Select2 após preenchimento
+        $('#filtroNomes').select2({
+          placeholder: "Selecione os nomes de evento",
+          width: 'resolve'
+        });
 
-        tbody.appendChild(tr);
-      });
+        $('#filtroNomes').on('change', atualizarTabela);
 
-      calcularPedidos();
-      document.querySelectorAll(".caixa-input").forEach(input => {
-        input.addEventListener("input", calcularPedidos);
+        atualizarTabela();
       });
     }
 
-    function calcularPedidos() {
-      document.querySelectorAll("tr").forEach(tr => {
-        const totalTd = tr.querySelector(".total");
-        const input = tr.querySelector(".caixa-input");
-        const pedidoTd = tr.querySelector(".pedido");
-        if (totalTd && input && pedidoTd) {
-          const total = parseFloat(totalTd.dataset.total) || 0;
-          const porCaixa = parseFloat(input.value) || 0;
-          const pedido = porCaixa > 0 ? (total / porCaixa).toFixed(2) : "-";
-          pedidoTd.textContent = pedido;
+    function atualizarTabela() {
+      const nomesSelecionados = $('#filtroNomes').val();
+      if (!nomesSelecionados || nomesSelecionados.length === 0) {
+        cabecalhoTabela.innerHTML = '<th style="width: 200px;">Produto</th>';
+        corpoTabela.innerHTML = '';
+        return;
+      }
+
+      const ultimosEventos = {};
+      nomesSelecionados.forEach(nome => {
+        const eventosDoNome = eventos.filter(e => e.nome === nome);
+        if (eventosDoNome.length > 0) {
+          const ultimo = eventosDoNome.sort((a, b) => b.data.localeCompare(a.data))[0];
+          ultimosEventos[nome] = ultimo;
         }
       });
+
+      const produtos = {};
+
+      for (const nome in ultimosEventos) {
+        const evento = ultimosEventos[nome];
+        evento.itens.forEach(item => {
+          const nomeProduto = item.nomeItem.trim();
+          const enviado = item.quantidade || 0;
+          const assado = item.assado || 0;
+          const perdido = item.perdido || 0;
+          const congelado = item.congelado || 0;
+          const vendido = enviado - (assado + perdido + congelado);
+
+          if (!produtos[nomeProduto]) produtos[nomeProduto] = { total: 0, porNome: {} };
+          produtos[nomeProduto].porNome[nome] = vendido;
+          produtos[nomeProduto].total += vendido;
+        });
+      }
+
+      cabecalhoTabela.innerHTML = '<th style="width: 200px;">Produto</th>';
+      nomesSelecionados.forEach(nome => {
+        cabecalhoTabela.innerHTML += `<th>${nome}</th>`;
+      });
+      cabecalhoTabela.innerHTML += `
+        <th>Total</th>
+        <th>Qtd. por Caixa</th>
+        <th>Pedido</th>
+      `;
+
+      corpoTabela.innerHTML = '';
+      Object.keys(produtos).sort().forEach(produto => {
+        const dados = produtos[produto];
+        const tr = document.createElement('tr');
+        tr.innerHTML = `<td style="max-width: 200px; word-break: break-word;">${produto}</td>`;
+
+        nomesSelecionados.forEach(nome => {
+          const val = dados.porNome[nome] || 0;
+          tr.innerHTML += `<td>${val}</td>`;
+        });
+
+        const total = dados.total;
+        tr.innerHTML += `<td class="soma">${total}</td>`;
+
+        // Quantidade por caixa editável e pedido calculado
+        const input = document.createElement('input');
+        input.type = "number";
+        input.min = 1;
+        input.classList.add("form-control", "quantidadeCaixa");
+        input.dataset.total = total;
+        input.addEventListener("input", calcularPedido);
+
+        const tdQtd = document.createElement('td');
+        tdQtd.appendChild(input);
+
+        const tdPedido = document.createElement('td');
+        tdPedido.className = 'pedido';
+        tdPedido.textContent = '-';
+
+        tr.appendChild(tdQtd);
+        tr.appendChild(tdPedido);
+
+        corpoTabela.appendChild(tr);
+      });
+    }
+
+    function calcularPedido(e) {
+      const input = e.target;
+      const tr = input.closest('tr');
+      const total = parseFloat(input.dataset.total || 0);
+      const qtd = parseFloat(input.value || 0);
+      const tdPedido = tr.querySelector('.pedido');
+      if (qtd > 0) {
+        tdPedido.textContent = Math.ceil(total / qtd);
+      } else {
+        tdPedido.textContent = '-';
+      }
     }
 
     function exportarExcel() {
-      const wb = XLSX.utils.book_new();
-      const tabela = document.getElementById("tabelaRelatorio");
-      const ws = XLSX.utils.table_to_sheet(tabela);
-      XLSX.utils.book_append_sheet(wb, ws, "EstimativaVenda");
-      XLSX.writeFile(wb, "EstimativaVenda.xlsx");
+      const tabela = document.getElementById("tabelaEstimativa");
+      const wb = XLSX.utils.table_to_book(tabela, { sheet: "Estimativa Venda" });
+      XLSX.writeFile(wb, "estimativa_venda.xlsx");
     }
 
-    window.onload = carregarNomesEventos;
+    carregarEventos();
   </script>
 </body>
 </html>
