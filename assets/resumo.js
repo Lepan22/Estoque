@@ -88,14 +88,14 @@ async function carregarDados() {
   let totalVenda = 0;
   let totalPerda = 0;
   let totalCMV = 0;
+  let totalEstimativaVenda = 0;
 
   const tabela = document.querySelector("#tabelaProdutos tbody");
   tabela.innerHTML = "";
 
   itens.forEach(item => {
-    const nomeItem = item.nomeItem || item.nome || "";
-    const nomeNorm = normalizar(nomeItem);
-    const produto = Object.values(produtos).find(p => normalizar(p.nome) === nomeNorm);
+    const produto = produtos[item.idProduto];
+    const nomeItem = produto?.nome || item.nomeItem || item.nome || "Desconhecido";
 
     const enviado = parseInt(item.quantidade || item.qtd || 0);
     const assado = parseInt(item.assado || 0);
@@ -109,10 +109,12 @@ async function carregarDados() {
     const valorVendaTotal = vendidos * valorVendaUnit;
     const custoPerda = perdido * custoUnit;
     const cmv = vendidos * custoUnit;
+    const estimativaVenda = enviado * valorVendaUnit;
 
     totalVenda += valorVendaTotal;
     totalPerda += custoPerda;
     totalCMV += cmv;
+    totalEstimativaVenda += estimativaVenda;
 
     const linha = document.createElement("tr");
     linha.innerHTML = `
@@ -125,6 +127,7 @@ async function carregarDados() {
       <td>${formatar(custoPerda)}</td>
       <td>${vendidos}</td>
       <td>${formatar(cmv)}</td>
+      <td>${formatar(estimativaVenda)}</td>
     `;
 
     tabela.appendChild(linha);
@@ -132,12 +135,15 @@ async function carregarDados() {
 
   document.getElementById("valorVenda").value = formatar(totalVenda);
   document.getElementById("valorPerda").value = formatar(totalPerda);
+  const estimativaField = document.getElementById("estimativaTotal");
+  if (estimativaField) {
+    estimativaField.value = formatar(totalEstimativaVenda);
+  }
 
   (analise.equipe || []).forEach(eq => criarLinha("equipe-container", "equipe", eq));
   (analise.logistica || []).forEach(lg => criarLinha("logistica-container", "logistica", lg));
   atualizarTotaisEquipeLogistica();
 
-  // Salvar valor calculado para uso posterior
   window.totalCMVCalculado = totalCMV;
 }
 
