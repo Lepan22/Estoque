@@ -86,9 +86,9 @@ async function carregarDados() {
   document.getElementById("vendaPDV").value = analise.vendaPDV || "";
 
   let totalVenda = 0;
+  let totalEstimativaVenda = 0;
   let totalPerda = 0;
   let totalCMV = 0;
-  let totalEstimativaVenda = 0;
 
   const tabela = document.querySelector("#tabelaProdutos tbody");
   tabela.innerHTML = "";
@@ -102,20 +102,22 @@ async function carregarDados() {
     const assado = parseInt(item.assado || 0);
     const congelado = parseInt(item.congelado || 0);
     const perdido = parseInt(item.perdido || 0);
+
     const vendidos = enviado - (congelado + assado + perdido);
+    const valorVendaUnit = parseFloat(produto?.valorVenda || 0);
+    const custoUnit = parseFloat(produto?.custo || 0);
 
-    const valorVendaUnit = parseFloat(produto?.valorVenda);
-    const custoUnit = parseFloat(produto?.custo);
-
-    const estimativaVenda = enviado * valorVendaUnit;
     const valorVendaTotal = vendidos * valorVendaUnit;
     const custoPerda = perdido * custoUnit;
     const cmv = vendidos * custoUnit;
 
-    totalEstimativaVenda += estimativaVenda;
     totalVenda += valorVendaTotal;
     totalPerda += custoPerda;
     totalCMV += cmv;
+
+    
+    const estimativaVendaItem = enviado * valorVendaUnit;
+    totalEstimativaVenda += estimativaVendaItem;
 
     const linha = document.createElement("tr");
     linha.innerHTML = `
@@ -128,23 +130,20 @@ async function carregarDados() {
       <td>${formatar(custoPerda)}</td>
       <td>${vendidos}</td>
       <td>${formatar(cmv)}</td>
-      <td>${formatar(estimativaVenda)}</td>
     `;
 
     tabela.appendChild(linha);
+
   });
 
   document.getElementById("valorVenda").value = formatar(totalVenda);
   document.getElementById("valorPerda").value = formatar(totalPerda);
-  const estimativaField = document.getElementById("estimativaTotal");
-  if (estimativaField) {
-    estimativaField.value = formatar(totalEstimativaVenda);
-  }
 
   (analise.equipe || []).forEach(eq => criarLinha("equipe-container", "equipe", eq));
   (analise.logistica || []).forEach(lg => criarLinha("logistica-container", "logistica", lg));
   atualizarTotaisEquipeLogistica();
 
+  // Salvar valor calculado para uso posterior
   window.totalCMVCalculado = totalCMV;
 }
 
@@ -178,6 +177,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const custoLogistica = logistica.reduce((s, l) => s + l.valor, 0);
 
     await db.ref(`eventos/${id}/analise`).update({
+
       vendaPDV,
       valorVenda,
       valorPerda,
@@ -186,8 +186,12 @@ document.addEventListener("DOMContentLoaded", () => {
       custoEquipe,
       custoLogistica,
       cmvTotal: window.totalCMVCalculado || 0
-    });
+    ,
+  estimativaTotal: totalEstimativaVenda
+});
 
     alert("Dados salvos com sucesso!");
   });
 });
+
+  document.getElementById("estimativaVenda").value = formatar(totalEstimativaVenda);
