@@ -1,11 +1,12 @@
 <!DOCTYPE html>
+
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Painel do Gerente</title>
-  <link rel="stylesheet" href="assets/style.css">
-  <style>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Painel do Gerente</title>
+<link href="assets/style.css" rel="stylesheet"/>
+<style>
     body {
       margin: 0;
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -106,8 +107,7 @@
       }
     }
   </style>
-
-  <script type="module">
+<script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js";
     import {
       getDatabase,
@@ -115,8 +115,7 @@
       onValue,
       get,
       push,
-      set,
-      remove
+      set
     } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-database.js";
 
     const firebaseConfig = {
@@ -154,6 +153,16 @@
         const inicio = new Date(dataInicio.value);
         const fim = new Date(dataFim.value);
 
+        
+            let estimadoTotal = 0;
+            if (ev.itens && Array.isArray(ev.itens)) {
+              ev.itens.forEach(item => {
+                const qtd = parseFloat(item.quantidade_enviada) || 0;
+                const preco = parseFloat(item.valor_venda) || 0;
+                estimadoTotal += qtd * preco;
+              });
+            }
+
         Object.entries(evs)
           .map(([id, ev]) => ({ id, ...ev }))
           .filter(ev => {
@@ -170,13 +179,13 @@
               <td>${data || "–"}</td>
               <td>${responsavel || "–"}</td>
               <td>${status || "aberto"}</td>
+              <td>R$ ${estimadoTotal.toFixed(2)}</td>
               <td>
                 <a href="form.html?id=${id}" class="botao">Ver Detalhes</a>
                 <a href="analise_evento.html?id=${id}" class="botao">📊</a>
                 <a href="assets/criar-evento.html?id=${id}" class="botao">✏️</a>
                 <button class="botao duplicar" data-id="${id}">📄</button>
                 <button class="botao copiar-link" data-id="${id}">📋 Link</button>
-                <button class="botao excluir-evento" data-id="${id}">🗑️ Excluir</button>
               </td>
             `;
             tabelaBody.appendChild(tr);
@@ -223,24 +232,6 @@
             });
           });
         });
-        document.querySelectorAll(".excluir-evento").forEach(botao => {
-          botao.addEventListener("click", async e => {
-            const id = e.target.dataset.id;
-            if (!id) return;
-
-            const confirmacao = confirm("⚠️ Tem certeza que deseja excluir este evento? Essa ação não pode ser desfeita.");
-            if (!confirmacao) return;
-
-            try {
-              await remove(ref(db, `eventos/${id}`));
-              alert("Evento excluído com sucesso.");
-              carregarEventos(); // Atualiza a lista
-            } catch (error) {
-              console.error("Erro ao excluir evento:", error);
-              alert("Erro ao excluir o evento.");
-            }
-          });
-        });
       }, err => {
         console.error("Erro ao carregar eventos:", err);
         loadingRow.style.display = "none";
@@ -253,50 +244,47 @@
   </script>
 </head>
 <body>
-  <div class="container">
-    <h1>Painel do Gerente</h1>
-
-    <div class="button-container">
-      <a href="assets/criar-evento.html" class="botao">➕ Novo Evento</a>
-      <a href="https://lepan22.github.io/Estoque/assets/relatorio.html" class="botao">📑 Relatórios</a>
-      <a href="assets/produtos.html" class="botao">📦 Produtos</a>
-    </div>
-
-    <div class="filtros">
-      <div>
-        <label for="filtro-status">Status</label>
-        <select id="filtro-status">
-          <option value="">Todos</option>
-          <option value="aberto">Aberto</option>
-          <option value="finalizado">Finalizado</option>
-        </select>
-      </div>
-      <div>
-        <label for="data-inicio">Data Início</label>
-        <input type="date" id="data-inicio" />
-      </div>
-      <div>
-        <label for="data-fim">Data Fim</label>
-        <input type="date" id="data-fim" />
-      </div>
-    </div>
-
-    <table>
-      <thead>
-        <tr>
-          <th>Nome</th>
-          <th>Data</th>
-          <th>Responsável</th>
-          <th>Status</th>
-          <th>Ações</th>
-        </tr>
-      </thead>
-      <tbody id="eventos-tbody">
-        <tr id="loading-row">
-          <td colspan="5">Carregando eventos...</td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
+<div class="container">
+<h1>Painel do Gerente</h1>
+<div class="button-container">
+<a class="botao" href="assets/criar-evento.html">➕ Novo Evento</a>
+<a class="botao" href="https://lepan22.github.io/Estoque/assets/relatorio.html">📑 Relatórios</a>
+<a class="botao" href="assets/produtos.html">📦 Produtos</a>
+</div>
+<div class="filtros">
+<div>
+<label for="filtro-status">Status</label>
+<select id="filtro-status">
+<option value="">Todos</option>
+<option value="aberto">Aberto</option>
+<option value="finalizado">Finalizado</option>
+</select>
+</div>
+<div>
+<label for="data-inicio">Data Início</label>
+<input id="data-inicio" type="date"/>
+</div>
+<div>
+<label for="data-fim">Data Fim</label>
+<input id="data-fim" type="date"/>
+</div>
+</div>
+<table>
+<thead>
+<tr>
+<th>Nome</th>
+<th>Data</th>
+<th>Responsável</th>
+<th>Status</th>
+<th>Ações</th>
+<th>Estimado Venda</th></tr>
+</thead>
+<tbody id="eventos-tbody">
+<tr id="loading-row">
+<td colspan="5">Carregando eventos...</td>
+</tr>
+</tbody>
+</table>
+</div>
 </body>
 </html>
