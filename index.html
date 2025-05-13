@@ -164,19 +164,14 @@
           })
           .sort((a, b) => new Date(b.data) - new Date(a.data))
           .forEach(({ id, nome, data, responsavel, status, itens }) => {
-            const estimadoTotal = (itens || []).reduce((total, item) => {
-              const qtd = parseFloat(item.quantidade_enviada) || 0;
-              const preco = parseFloat(item.valor_venda) || 0;
-              return total + qtd * preco;
-            }, 0);
-
+            const valorVenda = ev.analise?.valorVenda || 0;
             const tr = document.createElement("tr");
             tr.innerHTML = `
               <td>${nome || "–"}</td>
               <td>${data || "–"}</td>
               <td>${responsavel || "–"}</td>
               <td>${status || "aberto"}</td>
-              <td>R$ ${estimadoTotal.toFixed(2)}</td>
+              <td>R$ ${valorVenda.toFixed(2)}</td>
               <td>
                 <a href="form.html?id=${id}" class="botao">Ver Detalhes</a>
                 <a href="analise_evento.html?id=${id}" class="botao">📊</a>
