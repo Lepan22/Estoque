@@ -115,9 +115,9 @@
         th.textContent = `${dia}/${mes}`;
         cabecalhoTabela.appendChild(th);
       });
-      const thMedia = document.createElement('th');
-      thMedia.textContent = 'Média';
-      cabecalhoTabela.appendChild(thMedia);
+      const thTotal = document.createElement('th');
+      thTotal.textContent = 'Total';
+      cabecalhoTabela.appendChild(thTotal);
 
       // Corpo da tabela
       corpoTabela.innerHTML = '';
@@ -130,8 +130,7 @@
           soma += valor;
           tr.innerHTML += `<td>${valor}</td>`;
         });
-        const media = soma / datas.length;
-        tr.innerHTML += `<td>${media.toFixed(1)}</td>`;
+        tr.innerHTML += `<td>${soma}</td>`;
         corpoTabela.appendChild(tr);
       });
     }
