@@ -160,6 +160,9 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   document.getElementById("btnSalvar").addEventListener("click", async () => {
+    const estimativaTotal = parseFloatSafe(document.getElementById("estimativaTotal").value.replace(/[^\d,.-]/g, ""));
+
+
     const vendaPDV = parseFloat(document.getElementById("vendaPDV").value || 0);
     const valorVenda = parseFloatSafe(document.getElementById("valorVenda").value.replace(/[^\d,.-]/g, ""));
     const valorPerda = parseFloatSafe(document.getElementById("valorPerda").value.replace(/[^\d,.-]/g, ""));
@@ -178,7 +181,8 @@ document.addEventListener("DOMContentLoaded", () => {
     const custoLogistica = logistica.reduce((s, l) => s + l.valor, 0);
 
     await db.ref(`eventos/${id}/analise`).update({
-      vendaPDV,
+        estimativaTotal,
+vendaPDV,
       valorVenda,
       valorPerda,
       equipe,
