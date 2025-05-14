@@ -22,7 +22,7 @@ body {
 }
 
 .sidebar {
-  width: 220px;
+  width: 132px;
   background-color: var(--cor-primaria-menu);
   color: var(--cor-texto-menu);
   padding: 20px;
@@ -62,9 +62,9 @@ body {
 }
 
 .main-content {
-  margin-left: 220px; /* Mesma largura do sidebar */
+  margin-left: 132px; /* Mesma largura do sidebar */
   padding: 30px;
-  width: calc(100% - 220px);
+  width: calc(100% - 132px);
   background-color: var(--cor-fundo-conteudo);
   flex-grow: 1;
 }
@@ -283,12 +283,12 @@ button:hover, a.botao:hover {
 
 .kpi h2 {
   margin: 0 0 5px 0;
-  font-size: 2rem;
+  font-size: 1.7rem; /* Reduzido de 2rem */
   color: var(--cor-laranja-destaque);
 }
 
 .kpi span {
-  font-size: 0.9rem;
+  font-size: 0.8rem; /* Reduzido de 0.9rem */
   color: #6c757d;
 }
 
