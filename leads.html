@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <title>Leads</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      padding: 20px;
+      background: #f9f9f9;
+      color: #333;
+    }
+
+    h1 {
+      margin-bottom: 20px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 40px;
+    }
+
+    th, td {
+      border: 1px solid #ccc;
+      padding: 8px;
+      font-size: 14px;
+    }
+
+    th {
+      background: #eee;
+    }
+
+    input, select, textarea {
+      width: 100%;
+      padding: 6px;
+      font-size: 13px;
+      border-radius: 4px;
+      border: 1px solid #ccc;
+    }
+
+    button {
+      padding: 6px 12px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+
+    .save-btn {
+      background: #007bff;
+      color: white;
+    }
+
+    .edit-btn {
+      background: #f0ad4e;
+      color: white;
+      margin-left: 4px;
+    }
+
+    .container {
+      overflow-x: auto;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Leads Abertos</h1>
+  <div class="container">
+    <table id="leadsTable">
+      <thead>
+        <tr>
+          <th>Nome Evento</th>
+          <th>Nome Condomínio</th>
+          <th>Tipo</th>
+          <th>Contatos</th>
+          <th>Dt. Últ. Contato</th>
+          <th>Comentário</th>
+          <th>Qtd Apto</th>
+          <th>Tipo Apto</th>
+          <th>Perfil Econômico</th>
+          <th>Endereço</th>
+          <th>Região</th>
+          <th>Status Lead</th>
+          <th>Ações</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
+
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+  <script>
+    const firebaseConfig = {
+      databaseURL: "https://controleestoquelepan-default-rtdb.firebaseio.com"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    function createInput(value = "") {
+      const input = document.createElement("input");
+      input.value = value || "";
+      return input;
+    }
+
+    function createTextarea(value = "") {
+      const textarea = document.createElement("textarea");
+      textarea.value = value || "";
+      return textarea;
+    }
+
+    function createSelect(value = "") {
+      const select = document.createElement("select");
+      ["", "Novo", "Aberto", "Em Contato", "Frio"].forEach(opt => {
+        const option = document.createElement("option");
+        option.value = opt;
+        option.textContent = opt;
+        if (opt === value) option.selected = true;
+        select.appendChild(option);
+      });
+      return select;
+    }
+
+    function renderLead(id, data) {
+      const tr = document.createElement("tr");
+
+      const nomeEvento      = createInput(data.nomeEvento);
+      const nomeCondominio  = createInput(data.nomeCondominio);
+      const tipo            = createInput(data.tipoCondominio);
+      const contatos        = createTextarea((data.contatos || []).map(c => `${c.nome} - ${c.telefone}`).join("\n"));
+      const dataUltContato  = createInput(data.dataUltimoContato);
+      const comentario      = createTextarea(data.comentario);
+      const qtdApto         = createInput(data.qtdApto);
+      const tipoApto        = createInput(data.tipoApto);
+      const perfilEcon      = createInput(data.perfilEconomico);
+      const endereco        = createInput(data.endereco);
+      const regiao          = createInput(data.regiao);
+      const statusLead      = createSelect(data.statusLead);
+
+      tr.appendChild(document.createElement("td")).appendChild(nomeEvento);
+      tr.appendChild(document.createElement("td")).appendChild(nomeCondominio);
+      tr.appendChild(document.createElement("td")).appendChild(tipo);
+      tr.appendChild(document.createElement("td")).appendChild(contatos);
+      tr.appendChild(document.createElement("td")).appendChild(dataUltContato);
+      tr.appendChild(document.createElement("td")).appendChild(comentario);
+      tr.appendChild(document.createElement("td")).appendChild(qtdApto);
+      tr.appendChild(document.createElement("td")).appendChild(tipoApto);
+      tr.appendChild(document.createElement("td")).appendChild(perfilEcon);
+      tr.appendChild(document.createElement("td")).appendChild(endereco);
+      tr.appendChild(document.createElement("td")).appendChild(regiao);
+      tr.appendChild(document.createElement("td")).appendChild(statusLead);
+
+      const tdAcoes = document.createElement("td");
+      const salvar = document.createElement("button");
+      salvar.className = "save-btn";
+      salvar.textContent = "Salvar";
+      salvar.onclick = () => {
+        const contatosArr = contatos.value
+          .split("\n")
+          .map(l => {
+            const [nome, tel] = l.split(" - ");
+            return { nome: nome?.trim(), telefone: tel?.trim() };
+          })
+          .filter(c => c.nome || c.telefone);
+
+        const obj = {
+          nomeEvento: nomeEvento.value,
+          nomeCondominio: nomeCondominio.value,
+          tipoCondominio: tipo.value,
+          dataUltimoContato: dataUltContato.value,
+          comentario: comentario.value,
+          qtdApto: qtdApto.value,
+          tipoApto: tipoApto.value,
+          perfilEconomico: perfilEcon.value,
+          endereco: endereco.value,
+          regiao: regiao.value,
+          statusLead: statusLead.value,
+          contatos: contatosArr
+        };
+
+        db.ref("clientes/" + id).update(obj).then(() => {
+          alert("Lead salvo com sucesso.");
+        });
+      };
+
+      const editar = document.createElement("button");
+      editar.className = "edit-btn";
+      editar.textContent = "Editar";
+      editar.onclick = () => {
+        window.location.href = `clientes.html?idCliente=${id}`;
+      };
+
+      tdAcoes.appendChild(salvar);
+      tdAcoes.appendChild(editar);
+      tr.appendChild(tdAcoes);
+
+      document.querySelector("#leadsTable tbody").appendChild(tr);
+    }
+
+    db.ref("clientes").get().then(snap => {
+      const clientes = snap.val() || {};
+      Object.entries(clientes).forEach(([id, c]) => {
+        if (c.statusLead !== "Fechado" && c.statusLead !== "Encerrado") {
+          renderLead(id, c);
+        }
+      });
+    });
+  </script>
+</body>
+</html>
