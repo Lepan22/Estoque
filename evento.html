@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Eventos</title>
+  <link rel="stylesheet" href="assets/style.css">
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #f9fafb;
+      color: #333;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 40px auto;
+      padding: 20px;
+      background-color: white;
+      border-radius: 10px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    }
+
+    h1 {
+      font-size: 20px;
+      margin-bottom: 20px;
+      text-align: center;
+    }
+
+    .resumo {
+      font-size: 16px;
+      margin-bottom: 20px;
+      text-align: center;
+      color: #4a5568;
+    }
+
+    .filtros {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 20px;
+      justify-content: center;
+      margin-bottom: 20px;
+    }
+
+    .filtros label {
+      font-size: 14px;
+      margin-bottom: 4px;
+      display: block;
+    }
+
+    .filtros input,
+    .filtros select {
+      font-size: 14px;
+      padding: 6px 10px;
+      border-radius: 4px;
+      border: 1px solid #ccc;
+      width: 180px;
+    }
+
+    select[multiple] {
+      height: 80px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14px;
+    }
+
+    table th,
+    table td {
+      border: 1px solid #e2e8f0;
+      padding: 6px 8px;
+      text-align: left;
+    }
+
+    table thead {
+      background-color: #edf2f7;
+    }
+
+    table tbody tr:nth-child(even) {
+      background-color: #f7fafc;
+    }
+  </style>
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js";
+    import {
+      getDatabase,
+      ref,
+      onValue
+    } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-database.js";
+
+    const app = initializeApp({
+      apiKey: "AIzaSyBN-bmzgrlzjmrKMmuClZ8LVll-vJyx-aE",
+      authDomain: "controleestoquelepan.firebaseapp.com",
+      databaseURL: "https://controleestoquelepan-default-rtdb.firebaseio.com",
+      projectId: "controleestoquelepan",
+      storageBucket: "controleestoquelepan.appspot.com",
+      messagingSenderId: "779860276544",
+      appId: "1:779860276544:web:f45844571a8c0bab1576a5",
+    });
+
+    const db = getDatabase(app);
+
+    const tabelaBody = document.getElementById("eventos-tbody");
+    const statusFiltro = document.getElementById("filtro-status");
+    const dataInicio = document.getElementById("data-inicio");
+    const dataFim = document.getElementById("data-fim");
+    const nomeFiltro = document.getElementById("filtro-nome");
+    const resumoTexto = document.getElementById("resumo-eventos");
+
+    function carregarEventos() {
+      onValue(ref(db, "eventos"), snapshot => {
+        tabelaBody.innerHTML = "";
+        if (!snapshot.exists()) {
+          tabelaBody.innerHTML = '<tr><td colspan="6">Nenhum evento encontrado.</td></tr>';
+          return;
+        }
+
+        const eventos = Object.entries(snapshot.val()).map(([id, ev]) => ({ id, ...ev }));
+
+        // popular filtro nome
+        const nomesUnicos = [...new Set(eventos.map(ev => ev.nome).filter(Boolean))];
+        nomeFiltro.innerHTML = nomesUnicos.map(nome => `<option value="${nome}">${nome}</option>`).join("");
+
+        const selecionados = Array.from(nomeFiltro.selectedOptions).map(opt => opt.value);
+        const inicio = new Date(dataInicio.value);
+        const fim = new Date(dataFim.value);
+        const filtroStatus = statusFiltro.value;
+
+        const filtrados = eventos.filter(ev => {
+          const evData = new Date(ev.data);
+          const nomeOk = !selecionados.length || selecionados.includes(ev.nome);
+          return (!filtroStatus || ev.status === filtroStatus) &&
+                 (!dataInicio.value || evData >= inicio) &&
+                 (!dataFim.value || evData <= fim) &&
+                 nomeOk;
+        });
+
+        let totalEventos = filtrados.length;
+        let totalValorVenda = 0;
+
+        filtrados.sort((a, b) => new Date(b.data) - new Date(a.data))
+          .forEach(({ id, nome, data, responsavel, status, analise }) => {
+            const valorVenda = parseFloat(analise?.valorVenda) || 0;
+            totalValorVenda += valorVenda;
+
+            const tr = document.createElement("tr");
+            tr.innerHTML = `
+              <td>${nome || "–"}</td>
+              <td>${data || "–"}</td>
+              <td>${responsavel || "–"}</td>
+              <td>${status || "aberto"}</td>
+              <td>R$ ${valorVenda.toFixed(2)}</td>
+              <td><a href="form.html?id=${id}" class="botao">Ver</a></td>
+            `;
+            tabelaBody.appendChild(tr);
+          });
+
+        resumoTexto.textContent = `Total de eventos: ${totalEventos} | Soma de Valor de Venda: R$ ${totalValorVenda.toFixed(2)}`;
+      });
+    }
+
+    document.addEventListener("DOMContentLoaded", carregarEventos);
+    document.addEventListener("change", carregarEventos);
+  </script>
+</head>
+<body>
+  <div class="container">
+    <h1>Painel de Eventos</h1>
+    <div class="resumo" id="resumo-eventos"></div>
+
+    <div class="filtros">
+      <div>
+        <label for="filtro-status">Status</label>
+        <select id="filtro-status">
+          <option value="">Todos</option>
+          <option value="aberto">Aberto</option>
+          <option value="finalizado">Finalizado</option>
+        </select>
+      </div>
+      <div>
+        <label for="filtro-nome">Nome do Evento</label>
+        <select id="filtro-nome" multiple></select>
+      </div>
+      <div>
+        <label for="data-inicio">Data Início</label>
+        <input type="date" id="data-inicio" />
+      </div>
+      <div>
+        <label for="data-fim">Data Fim</label>
+        <input type="date" id="data-fim" />
+      </div>
+    </div>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Nome</th>
+          <th>Data</th>
+          <th>Responsável</th>
+          <th>Status</th>
+          <th>Valor de Venda</th>
+          <th>Ações</th>
+        </tr>
+      </thead>
+      <tbody id="eventos-tbody">
+        <tr><td colspan="6">Carregando eventos...</td></tr>
+      </tbody>
+    </table>
+  </div>
+</body>
+</html>
