@@ -1,335 +1,311 @@
-/* Estilos gerais (mantidos de style_v2.css) */
-body {
-    font-family: Arial, sans-serif;
-    margin: 0;
-    padding: 0;
-    background-color: #f4f4f4;
-    color: #333;
-}
+/****** Novo Estilo Propósito - novo_style.css ******/
 
-.container {
-    width: 90%;
-    max-width: 1200px;
-    margin: 20px auto;
-    padding: 20px;
-    background-color: #fff;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-    border-radius: 8px;
-}
-
-h1, h2, h3 {
-    color: #333;
-}
-
-/* Cor Laranja */
 :root {
-    --cor-laranja: #FFA500; 
-    --cor-laranja-hover: #E69500;
+  --cor-primaria-menu: #007bff; /* Azul da referência para o menu */
+  --cor-texto-menu: #ffffff;
+  --cor-fundo-conteudo: #f8f9fa; /* Fundo claro para o conteúdo */
+  --cor-fundo-pagina: #e9ecef;
+  --cor-texto-padrao: #343a40;
+  --cor-laranja-destaque: #FFA500; /* Laranja solicitado pelo usuário */
+  --cor-laranja-destaque-hover: #E69500;
+  --sombra-padrao: 0 0 15px rgba(0, 0, 0, 0.1);
+  --borda-radius-padrao: 8px;
+}
+
+body {
+  margin: 0;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background-color: var(--cor-fundo-pagina);
+  color: var(--cor-texto-padrao);
+  display: flex;
+  min-height: 100vh;
+}
+
+.sidebar {
+  width: 250px;
+  background-color: var(--cor-primaria-menu);
+  color: var(--cor-texto-menu);
+  padding: 20px;
+  height: 100vh;
+  position: fixed;
+  left: 0;
+  top: 0;
+  box-shadow: 2px 0 5px rgba(0,0,0,0.1);
+  overflow-y: auto;
+}
+
+.sidebar h2 {
+  text-align: center;
+  margin-bottom: 30px;
+  font-size: 1.8rem;
+}
+
+.sidebar ul {
+  list-style-type: none;
+  padding: 0;
+  margin: 0;
+}
+
+.sidebar ul li a {
+  display: block;
+  padding: 12px 15px;
+  text-decoration: none;
+  color: var(--cor-texto-menu);
+  border-radius: var(--borda-radius-padrao);
+  margin-bottom: 8px;
+  transition: background-color 0.3s ease;
+}
+
+.sidebar ul li a:hover,
+.sidebar ul li a.active {
+  background-color: rgba(255, 255, 255, 0.2);
+}
+
+.main-content {
+  margin-left: 250px; /* Mesma largura do sidebar */
+  padding: 30px;
+  width: calc(100% - 250px);
+  background-color: var(--cor-fundo-conteudo);
+  flex-grow: 1;
+}
+
+.container-principal {
+    background-color: #ffffff;
+    padding: 25px;
+    border-radius: var(--borda-radius-padrao);
+    box-shadow: var(--sombra-padrao);
+}
+
+h1, h2, h3, h4, h5, h6 {
+  color: var(--cor-texto-padrao);
+  margin-top: 0;
 }
 
 /* Botões */
 button, a.botao {
-    display: inline-block;
-    padding: 10px 20px;
-    background-color: var(--cor-laranja);
-    color: white;
-    border: none;
-    border-radius: 5px;
-    font-size: 16px;
-    cursor: pointer;
-    text-decoration: none;
-    text-align: center;
-    margin-right: 10px;
-    margin-bottom: 10px; 
-    transition: background-color 0.3s ease;
+  display: inline-block;
+  padding: 12px 25px;
+  background-color: var(--cor-laranja-destaque);
+  color: white;
+  border: none;
+  border-radius: var(--borda-radius-padrao);
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  text-decoration: none;
+  text-align: center;
+  margin-right: 10px;
+  margin-bottom: 10px;
+  transition: background-color 0.3s ease, box-shadow 0.3s ease;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
 button:hover, a.botao:hover {
-    background-color: var(--cor-laranja-hover);
-    color: white; 
+  background-color: var(--cor-laranja-destaque-hover);
+  box-shadow: 0 4px 8px rgba(0,0,0,0.15);
 }
 
-/* Estilos específicos para index.html - Tabela de Eventos */
-#eventos-tabela {
+/* Estilos para tabelas */
+.tabela-moderna {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 20px;
+  box-shadow: var(--sombra-padrao);
+  border-radius: var(--borda-radius-padrao);
+  overflow: hidden; /* Para o border-radius funcionar nas bordas da tabela */
+}
+
+.tabela-moderna th, .tabela-moderna td {
+  border: 1px solid #dee2e6;
+  padding: 12px 15px;
+  text-align: left;
+}
+
+.tabela-moderna th {
+  background-color: #f2f2f2; /* Um cinza um pouco mais escuro que o fundo do conteúdo */
+  color: var(--cor-texto-padrao);
+  font-weight: 600;
+}
+
+.tabela-moderna tbody tr:nth-child(even) {
+  background-color: #f9f9f9;
+}
+
+.tabela-moderna tbody tr:hover {
+  background-color: #f1f1f1;
+}
+
+/* Estilos para formulários */
+.form-grupo {
+  margin-bottom: 20px;
+}
+
+.form-grupo label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 500;
+}
+
+.form-grupo input[type="text"],
+.form-grupo input[type="password"],
+.form-grupo input[type="email"],
+.form-grupo input[type="number"],
+.form-grupo input[type="date"],
+.form-grupo select,
+.form-grupo textarea {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #ced4da;
+  border-radius: var(--borda-radius-padrao);
+  box-sizing: border-box;
+  font-size: 1rem;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.form-grupo input:focus, 
+.form-grupo select:focus, 
+.form-grupo textarea:focus {
+  border-color: var(--cor-laranja-destaque);
+  box-shadow: 0 0 0 0.2rem rgba(255, 165, 0, 0.25);
+  outline: none;
+}
+
+/* Responsividade */
+@media (max-width: 992px) {
+  .sidebar {
+    width: 200px;
+  }
+  .main-content {
+    margin-left: 200px;
+    width: calc(100% - 200px);
+  }
+}
+
+@media (max-width: 768px) {
+  .sidebar {
+    transform: translateX(-100%);
+    position: fixed;
+    z-index: 1000; /* Para ficar sobre o conteúdo */
+    transition: transform 0.3s ease-in-out;
+  }
+  .sidebar.active {
+    transform: translateX(0);
+  }
+  .main-content {
+    margin-left: 0;
     width: 100%;
-    border-collapse: collapse;
-    margin-top: 20px;
-}
-
-#eventos-tabela th, #eventos-tabela td {
-    border: 1px solid #ddd;
-    padding: 12px;
-    text-align: left;
-}
-
-#eventos-tabela th {
-    background-color: #f2f2f2;
-    font-weight: bold;
-}
-
-#eventos-tabela tr:nth-child(even) {
-    background-color: #f9f9f9;
-}
-
-#eventos-tabela tr:hover {
-    background-color: #f1f1f1;
-}
-
-/* --- NOVO: Estilos específicos para form.html - Tabela de Itens --- */
-#itens-tabela {
-    width: 100%;
-    border-collapse: collapse;
-    margin-top: 15px;
-}
-
-#itens-tabela th,
-#itens-tabela td {
-    border: 1px solid #ddd;
-    padding: 8px; /* Padding reduzido */
-    text-align: left;
-    vertical-align: middle; /* Alinha conteúdo verticalmente */
-}
-
-#itens-tabela th {
-    background-color: #f8f8f8; /* Cor de fundo do cabeçalho */
-    font-weight: bold;
-}
-
-/* Alinhamento e largura das colunas da tabela de itens */
-#itens-tabela th.col-nome, #itens-tabela td.col-nome {
-    width: 35%; /* Coluna Nome mais larga */
-}
-#itens-tabela th.col-enviado, #itens-tabela td.col-enviado {
-    width: 15%;
-    text-align: center;
-}
-#itens-tabela th.col-editavel, #itens-tabela td.col-editavel {
-    width: 15%; 
-    text-align: center;
-}
-
-#itens-tabela input[type="number"] {
-    width: 60px;
-    padding: 5px;
-    text-align: center;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    box-sizing: border-box;
-}
-
-/* Botão Finalizar no form.html */
-#finalizarEventoBtn {
-    background-color: #dc3545; 
-}
-#finalizarEventoBtn:hover {
-    background-color: #c82333;
-}
-#finalizarEventoBtn:disabled {
-    background-color: #6c757d; 
-    cursor: not-allowed;
-}
-
-/* Estilos específicos para resumo.html (mantidos) */
-#resumo-container {
-    margin-top: 20px;
-}
-.resumo-item {
-    margin-bottom: 15px;
-    padding: 15px;
-    border: 1px solid #ddd;
-    border-radius: 8px;
-    background-color: #f9f9f9;
-}
-.resumo-item div {
-    margin-bottom: 8px;
-}
-.resumo-item strong {
-    min-width: 150px;
-    display: inline-block;
-}
-#eventoInfoResumo p {
-    margin-bottom: 10px;
-    font-size: 1.1em;
-}
-
-/* Estilos específicos para criar-evento.html (mantidos) */
-#form-evento label {
-    display: block;
-    margin-bottom: 15px;
-    font-weight: bold;
-}
-#form-evento input[type="text"],
-#form-evento input[type="date"] {
-    width: calc(100% - 22px);
-    padding: 10px;
-    margin-top: 5px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    box-sizing: border-box;
-}
-#itens-container .item-line {
-    display: flex;
-    align-items: center;
-    margin-bottom: 10px;
-    padding: 10px;
-    border: 1px solid #eee;
-    border-radius: 4px;
-    background-color: #f9f9f9;
-}
-#itens-container .item-line input {
-    padding: 8px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    margin-right: 10px;
-}
-#itens-container .item-line input[name="item-nome"] {
-    flex-grow: 1;
-}
-#itens-container .item-line input[name="item-quantidade"] {
-    width: 80px;
-}
-#itens-container .item-line button {
-    padding: 8px 12px;
-    background-color: #dc3545;
+    padding: 20px;
+  }
+  .menu-toggle {
+    display: block; /* Será um botão para abrir/fechar o menu */
+    position: fixed;
+    top: 15px;
+    left: 15px;
+    z-index: 1001;
+    background: var(--cor-laranja-destaque);
     color: white;
     border: none;
-    border-radius: 4px;
+    padding: 10px 12px;
+    border-radius: var(--borda-radius-padrao);
     cursor: pointer;
-    font-size: 14px;
+  }
+
+  /* Ajustes para form.html em mobile (já tratado em form-responsive.css, mas podemos adicionar melhorias aqui) */
+  /* Exemplo: garantir que botões de ação em form.html fiquem bem visíveis e acessíveis */
+  body.form-mobile .button-container {
+    padding: 15px;
+    background-color: #fff; /* Fundo para destacar os botões */
+  }
+  body.form-mobile .button-container button {
+    width: 100%;
+    margin-bottom: 10px;
+  }
+  body.form-mobile .button-container button:last-child {
+    margin-bottom: 0;
+  }
 }
-#itens-container .item-line button:hover {
-    background-color: #c82333;
+
+/* Estilo para a página de login (index.html) */
+.login-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    padding: 20px;
+    background-color: var(--cor-fundo-pagina);
 }
-#add-item {
-    background-color: #17a2b8;
+
+.login-box {
+    background-color: #ffffff;
+    padding: 40px;
+    border-radius: var(--borda-radius-padrao);
+    box-shadow: var(--sombra-padrao);
+    text-align: center;
+    width: 100%;
+    max-width: 400px;
+}
+
+.login-box img {
+    max-width: 150px;
+    margin-bottom: 25px;
+}
+
+.login-box h1 {
+    font-size: 1.3rem;
+    font-weight: 400;
+    margin-bottom: 25px;
+    color: var(--cor-texto-padrao);
+}
+
+.login-box input[type="password"] {
     margin-bottom: 20px;
 }
-#add-item:hover {
-    background-color: #138496;
-}
-button[type="submit"] {
-    width: 100%;
-    padding: 12px;
-    font-size: 18px;
-}
 
-/* --- Responsividade --- */
-
-/* Tabela Index */
-@media screen and (max-width: 768px) {
-    #eventos-tabela thead {
-        display: none;
-    }
-    #eventos-tabela, #eventos-tabela tbody, #eventos-tabela tr, #eventos-tabela td {
-        display: block;
-        width: 100%;
-    }
-    #eventos-tabela tr {
-        margin-bottom: 15px;
-        border: 1px solid #ddd;
-        border-radius: 5px;
-    }
-    #eventos-tabela td {
-        text-align: right;
-        padding-left: 50%;
-        position: relative;
-        border: none;
-        border-bottom: 1px solid #eee;
-    }
-    #eventos-tabela td::before {
-        content: attr(data-label);
-        position: absolute;
-        left: 10px;
-        width: calc(50% - 20px);
-        padding-right: 10px;
-        white-space: nowrap;
-        text-align: left;
-        font-weight: bold;
-    }
-    #eventos-tabela td:last-child {
-        border-bottom: 0;
-    }
-    #eventos-tabela td a.botao {
-        display: block;
-        margin-top: 5px;
-    }
+/* Para o dashboard.html */
+.kpi-cards {
+  display: flex;
+  gap: 20px;
+  justify-content: space-around;
+  flex-wrap: wrap;
+  margin-bottom: 30px;
 }
 
-/* --- NOVO: Responsividade Tabela Itens Form --- */
-@media screen and (max-width: 768px) {
-    #itens-tabela thead {
-        display: none; /* Oculta cabeçalho */
-    }
-    #itens-tabela, #itens-tabela tbody, #itens-tabela tr, #itens-tabela td {
-        display: block;
-        width: 100%;
-    }
-    #itens-tabela tr {
-        margin-bottom: 15px;
-        border: 1px solid #ddd;
-        border-radius: 5px;
-        background-color: #f9f9f9; /* Fundo para cada bloco */
-    }
-    #itens-tabela td {
-        text-align: right;
-        padding-left: 50%; 
-        position: relative;
-        border: none;
-        border-bottom: 1px dashed #eee;
-    }
-    #itens-tabela td::before {
-        content: attr(data-label); /* Usa data-label como título */
-        position: absolute;
-        left: 10px;
-        width: calc(50% - 20px); 
-        padding-right: 10px;
-        white-space: nowrap;
-        text-align: left;
-        font-weight: bold;
-    }
-    #itens-tabela td:last-child {
-        border-bottom: 0;
-    }
-    #itens-tabela td.col-nome {
-        font-size: 1.1em; /* Destaca o nome */
-        background-color: #f0f0f0; /* Fundo levemente diferente para nome */
-        padding-top: 10px;
-        padding-bottom: 10px;
-    }
-     #itens-tabela td.col-nome::before {
-         display: none; /* Não precisa de label para o nome no modo bloco */
-     }
-     #itens-tabela td.col-nome {
-         text-align: left; /* Alinha nome à esquerda */
-         padding-left: 10px;
-     }
-     #itens-tabela td.col-enviado::before { content: "Enviado:"; }
-     #itens-tabela td.col-editavel[data-label="Assado"]::before { content: "Assado:"; }
-     #itens-tabela td.col-editavel[data-label="Congelado"]::before { content: "Congelado:"; }
-     #itens-tabela td.col-editavel[data-label="Perdido"]::before { content: "Perdido:"; }
-
-     #itens-tabela input[type="number"] {
-         display: inline-block; /* Input na mesma linha do label implícito */
-         width: 70px;
-         margin-left: 5px;
-     }
+.kpi {
+  background: white;
+  padding: 25px;
+  border-radius: var(--borda-radius-padrao);
+  box-shadow: var(--sombra-padrao);
+  flex: 1 1 220px; /* Permite que cresçam mas tenham uma base */
+  text-align: center;
 }
 
-/* Itens Criar Evento (mantido) */
-@media screen and (max-width: 600px) {
-    #itens-container .item-line {
-        flex-direction: column;
-        align-items: stretch;
-    }
-    #itens-container .item-line input,
-    #itens-container .item-line button {
-        width: 100%;
-        margin-bottom: 10px;
-        margin-right: 0;
-        box-sizing: border-box;
-    }
-    #itens-container .item-line button {
-        margin-bottom: 0;
-    }
+.kpi h2 {
+  margin: 0 0 5px 0;
+  font-size: 2rem;
+  color: var(--cor-laranja-destaque);
+}
+
+.kpi span {
+  font-size: 0.9rem;
+  color: #6c757d;
+}
+
+.charts-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 30px;
+}
+
+.chart-container {
+  background: white;
+  padding: 20px;
+  border-radius: var(--borda-radius-padrao);
+  box-shadow: var(--sombra-padrao);
+}
+
+.chart-container canvas {
+  max-height: 350px;
+  width: 100% !important; /* Forçar Chart.js a respeitar o container */
 }
 
