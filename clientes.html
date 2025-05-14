@@ -1,83 +1,77 @@
+
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Gestão de Clientes</title>
-  <link rel="stylesheet" href="assets/style.css" />
+  <title>Lista de Clientes</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link href="assets/style.css" rel="stylesheet" />
   <style>
-    body { font-family: Arial, sans-serif; padding: 20px; max-width: 1000px; margin: auto; }
-    .form-grid { display: flex; flex-wrap: wrap; gap: 15px; }
-    .form-group { flex: 1 1 300px; display: flex; flex-direction: column; }
-    label { font-weight: bold; margin-bottom: 4px; }
-    input, select, textarea { padding: 6px; border: 1px solid #ccc; border-radius: 4px; }
-    .hidden { display: none; }
-    .contato-container { border: 1px solid #ccc; padding: 10px; margin-bottom: 10px; border-radius: 4px; }
-    .contato-group { display: flex; gap: 10px; margin-bottom: 10px; }
-    .contato-group input { flex: 1; }
-    button { margin-top: 20px; padding: 10px 20px; cursor: pointer; }
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+      max-width: 1000px;
+      margin: auto;
+    }
+    h1 {
+      margin-bottom: 20px;
+    }
+    input[type="text"] {
+      padding: 6px;
+      width: 300px;
+      margin-bottom: 20px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 20px;
+    }
+    th, td {
+      padding: 8px;
+      border: 1px solid #ccc;
+      text-align: left;
+    }
+    th {
+      background-color: #f0f0f0;
+      cursor: pointer;
+    }
+    button {
+      margin-right: 10px;
+      padding: 6px 10px;
+      border: none;
+      background-color: #ccc;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    .edit-btn {
+      background-color: #a0d468;
+    }
   </style>
 </head>
 <body>
-  <h1>Gestão de Clientes</h1>
-  <form id="formCliente">
-    <div class="form-grid">
-      <div class="form-group"><label>Data Cadastro</label><input type="date" id="dataCadastro" readonly /></div>
-      <div class="form-group"><label>Nome do Evento</label><input type="text" id="nomeEvento" /></div>
-      <div class="form-group"><label>Nome Condomínio</label><input type="text" id="nomeCondominio" /></div>
-      <div class="form-group"><label>Tipo</label><input type="text" id="tipoCondominio" /></div>
-    </div>
+  <h1>Lista de Clientes Fechados</h1>
 
-    <h3>Contatos</h3>
-    <div id="contatoContainer" class="contato-container"></div>
-    <button type="button" onclick="adicionarContato()">➕ Adicionar Contato</button>
+  <input type="text" id="filtroNome" placeholder="Buscar por nome do evento..." />
 
-    <div class="form-grid">
-      <div class="form-group"><label>Origem</label><input type="text" id="origem" /></div>
-      <div class="form-group"><label>Dt. Último Contato</label><input type="date" id="dataUltimoContato" /></div>
-      <div class="form-group"><label>Comentário</label><textarea id="comentario"></textarea></div>
-      <div class="form-group"><label>Qtd Apto</label><input type="number" id="qtdApto" /></div>
-      <div class="form-group"><label>Tipo Apto</label><input type="text" id="tipoApto" /></div>
-      <div class="form-group"><label>Perfil Econômico</label>
-        <select id="perfilEconomico">
-          <option value="">Selecione</option><option>Baixo</option><option>Médio</option><option>Alto</option>
-        </select></div>
-      <div class="form-group"><label>Endereço</label><input type="text" id="endereco" /></div>
-      <div class="form-group"><label>Região</label><input type="text" id="regiao" /></div>
-      <div class="form-group"><label>Status Lead</label>
-        <select id="statusLead">
-          <option value="">Selecione</option>
-          <option>Novo</option>
-          <option>Aberto</option>
-          <option>Em Contato</option>
-          <option>Fechado</option>
-          <option>Frio</option>
-          <option>Encerrado</option>
-        </select></div>
-    </div>
+  <table id="tabelaClientes">
+    <thead>
+      <tr>
+        <th data-sort="nome">Nome</th>
+        <th data-sort="condominio">Condomínio</th>
+        <th data-sort="frequencia">Frequência</th>
+        <th data-sort="quantidade">Qtd. Eventos</th>
+        <th data-sort="media">Valor Médio Venda</th>
+        <th>Ações</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
 
-    <div id="fechadoFields" class="hidden">
-      <h3>Dados do Evento (Lead Fechado)</h3>
-      <div class="form-grid">
-        <div class="form-group"><label>Data do Primeiro Evento</label><input type="date" id="dataPrimeiroEvento" /></div>
-        <div class="form-group"><label>Valor do Primeiro Evento</label><input type="number" id="valorPrimeiroEvento" /></div>
-        <div class="form-group"><label>Quantidade de Eventos</label><input type="number" id="qtdEventos" readonly /></div>
-        <div class="form-group"><label>Valor Total Vendido</label><input type="number" id="valorTotalVendido" readonly /></div>
-        <div class="form-group"><label>Média de Vendas</label><input type="number" id="mediaVendas" readonly /></div>
-        <div class="form-group"><label>Frequência</label><input type="text" id="frequencia" /></div>
-        <div class="form-group"><label>Status</label>
-          <select id="statusCliente">
-            <option>Ativo</option>
-            <option>Inativo</option>
-            <option>Pausado</option>
-          </select></div>
-        <div class="form-group"><label>Data do Último Evento</label><input type="date" id="dataUltimoEvento" /></div>
-        <div class="form-group"><label>Observação</label><textarea id="observacao"></textarea></div>
-      </div>
-    </div>
-
-    <button type="submit">Salvar Cliente</button>
-  </form>
+  <div>
+    <button onclick="window.location.href='clientes.html'">Criar Novo Cliente</button>
+    <button onclick="window.location.href='leads.html'">Leads</button>
+    <button onclick="window.location.href='dashboard.html'">Voltar</button>
+  </div>
 
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
@@ -88,50 +82,94 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
-    document.addEventListener("DOMContentLoaded", () => {
-      document.getElementById("dataCadastro").valueAsDate = new Date();
-      document.getElementById("statusLead").addEventListener("change", e => {
-        const show = e.target.value === "Fechado";
-        document.getElementById("fechadoFields").classList.toggle("hidden", !show);
-      });
-      adicionarContato(); // adicionar contato inicial
-    });
+    let dadosClientes = [];
 
-    function adicionarContato() {
-      const container = document.getElementById("contatoContainer");
-      const div = document.createElement("div");
-      div.className = "contato-group";
-      div.innerHTML = `
-        <input type="text" name="contatoNome" placeholder="Nome do Contato" />
-        <input type="tel" name="contatoTel" placeholder="Telefone" />
-        <button type="button" onclick="this.parentElement.remove()">❌</button>
-      `;
-      container.appendChild(div);
+    function normalizar(texto) {
+      return (texto || "")
+        .toLowerCase()
+        .normalize("NFD").replace(/[̀-ͯ]/g, "")
+        .trim();
     }
 
-    document.getElementById("formCliente").addEventListener("submit", async (e) => {
-      e.preventDefault();
-      const data = {};
-      document.querySelectorAll("#formCliente input, #formCliente select, #formCliente textarea").forEach(el => {
-        if (el.name.startsWith("contato")) return;
-        data[el.id] = el.value;
+    function editarCliente(id) {
+      window.location.href = `cliente.html?idCliente=${id}`;
+    }
+
+    function renderTabela(lista) {
+      const tbody = document.querySelector("#tabelaClientes tbody");
+      tbody.innerHTML = "";
+
+      lista.forEach(d => {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td>${d.nome}</td>
+          <td>${d.condominio}</td>
+          <td>${d.frequencia}</td>
+          <td>${d.quantidade}</td>
+          <td>R$ ${d.media.toFixed(2).replace('.', ',')}</td>
+          <td><button class="edit-btn" onclick="editarCliente('${d.id}')">Editar</button></td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    async function carregarClientes() {
+      const [clientesSnap, eventosSnap] = await Promise.all([
+        db.ref("clientes").get(),
+        db.ref("eventos").get()
+      ]);
+
+      const clientes = clientesSnap.val() || {};
+      const eventos = eventosSnap.val() || {};
+
+      dadosClientes = Object.entries(clientes)
+        .map(([id, cliente]) => {
+          if (cliente.statusLead !== "Fechado") return null;
+
+          const nomeEvento = cliente.nomeEvento || "";
+          const eventosRelacionados = Object.values(eventos).filter(
+            e => normalizar(e.nome) === normalizar(nomeEvento) && e.status === "finalizado"
+          );
+
+          const quantidade = eventosRelacionados.length;
+          const somaVendas = eventosRelacionados.reduce((total, e) => total + parseFloat(e.analise?.vendaPDV || 0), 0);
+          const media = quantidade > 0 ? somaVendas / quantidade : 0;
+
+          return {
+            id,
+            nome: nomeEvento,
+            condominio: cliente.nomeCondominio || "",
+            frequencia: cliente.frequencia || "",
+            quantidade,
+            media
+          };
+        })
+        .filter(Boolean);
+
+      renderTabela(dadosClientes);
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+      carregarClientes();
+
+      document.getElementById("filtroNome").addEventListener("input", e => {
+        const termo = e.target.value.toLowerCase();
+        const filtrado = dadosClientes.filter(c => c.nome.toLowerCase().includes(termo));
+        renderTabela(filtrado);
       });
 
-      const contatos = [];
-      document.querySelectorAll(".contato-group").forEach(grupo => {
-        const nome = grupo.querySelector('[name="contatoNome"]').value;
-        const tel = grupo.querySelector('[name="contatoTel"]').value;
-        if (nome || tel) contatos.push({ nome, telefone: tel });
+      document.querySelectorAll("th[data-sort]").forEach(th => {
+        th.addEventListener("click", () => {
+          const campo = th.getAttribute("data-sort");
+          dadosClientes.sort((a, b) => {
+            if (typeof a[campo] === "string") {
+              return a[campo].localeCompare(b[campo]);
+            }
+            return b[campo] - a[campo];
+          });
+          renderTabela(dadosClientes);
+        });
       });
-      data.contatos = contatos;
-
-      const novaRef = db.ref("clientes").push();
-      await novaRef.set(data);
-      alert("Cliente salvo com sucesso!");
-      document.getElementById("formCliente").reset();
-      document.getElementById("contatoContainer").innerHTML = "";
-      adicionarContato();
-      document.getElementById("fechadoFields").classList.add("hidden");
     });
   </script>
 </body>
