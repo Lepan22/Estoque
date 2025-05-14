@@ -36,8 +36,7 @@
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js";
     import {
-      getDatabase, ref, push, update,
-      get, child
+      getDatabase, ref, push, update, get, child
     } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-database.js";
 
     const firebaseConfig = {
@@ -49,6 +48,7 @@
       messagingSenderId: "779860276544",
       appId: "1:779860276544:web:f45844571a8c0bab1576a5"
     };
+
     const app = initializeApp(firebaseConfig);
     const db  = getDatabase(app);
 
@@ -56,32 +56,37 @@
     const eventId  = params.get("id");
     const isEdit   = Boolean(eventId);
 
-    const titleH2   = document.getElementById("form-title");
-    const submitBtn = document.getElementById("submit-btn");
-    const addItem   = document.getElementById("add-item");
-    const itensCt   = document.getElementById("itens-container");
-    const form      = document.getElementById("form-evento");
-    const datalist  = document.getElementById("lista-produtos");
-    const nomeSelect = document.getElementById("nome-select");
+    const titleH2     = document.getElementById("form-title");
+    const submitBtn   = document.getElementById("submit-btn");
+    const addItem     = document.getElementById("add-item");
+    const itensCt     = document.getElementById("itens-container");
+    const form        = document.getElementById("form-evento");
+    const datalist    = document.getElementById("lista-produtos");
+    const nomeSelect  = document.getElementById("nome-select");
 
     let produtosValidos = new Set();
 
     // Carregar produtos no datalist
-    get(ref(db, "produtos"))
-      .then(snap => {
-        const prods = snap.val() || {};
-        Object.values(prods).forEach(p => {
-          const nomeLimpo = (p.nome || "").trim().toLowerCase();
-          produtosValidos.add(nomeLimpo);
-          const opt = document.createElement("option");
-          opt.value = p.nome;
-          datalist.appendChild(opt);
-        });
+    get(ref(db, "produtos")).then(snap => {
+      const prods = snap.val() || {};
+      Object.values(prods).forEach(p => {
+        const nomeLimpo = (p.nome || "").trim().toLowerCase();
+        produtosValidos.add(nomeLimpo);
+        const opt = document.createElement("option");
+        opt.value = p.nome;
+        datalist.appendChild(opt);
       });
+    });
 
     // Carregar nomes de evento do cliente
     get(ref(db, "/clientes/-OQEDrae5Rkcrrn0h29L/nomeEvento")).then(snap => {
-      const nomes = snap.val() || [];
+      let nomes = snap.val() || [];
+
+      // Caso venha como objeto, converte em lista
+      if (typeof nomes === 'object' && !Array.isArray(nomes)) {
+        nomes = Object.values(nomes);
+      }
+
       nomes.forEach(nome => {
         const opt = document.createElement("option");
         opt.value = nome;
@@ -133,16 +138,15 @@
     if (isEdit) {
       titleH2.textContent   = "Editar Evento";
       submitBtn.textContent = "Salvar Alterações";
-      get(child(ref(db), `eventos/${eventId}`))
-        .then(snap => {
-          if (!snap.exists()) return;
-          const ev = snap.val();
-          form.dataset.nomeAntigo = ev.nome;
-          nomeSelect.value         = ev.nome; // tentativa direta
-          form.data.value          = ev.data;
-          form.responsavel.value   = ev.responsavel;
-          (ev.itens || []).forEach(it => novaLinha(it));
-        });
+      get(child(ref(db), `eventos/${eventId}`)).then(snap => {
+        if (!snap.exists()) return;
+        const ev = snap.val();
+        form.dataset.nomeAntigo = ev.nome;
+        nomeSelect.value         = ev.nome;
+        form.data.value          = ev.data;
+        form.responsavel.value   = ev.responsavel;
+        (ev.itens || []).forEach(it => novaLinha(it));
+      });
     }
 
     form.addEventListener("submit", e => {
