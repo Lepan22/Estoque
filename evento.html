@@ -161,7 +161,8 @@
         const fim = new Date(dataFim.value);
 
         const nomesUnicos = [...new Set(Object.values(evs).map(ev => ev.nome).filter(Boolean))];
-        nomeFiltro.innerHTML = nomesUnicos.map(nome => `<option value="${nome}">${nome}</option>`).join("");
+        const nomesSelecionadosAntes = Array.from(nomeFiltro.selectedOptions).map(opt => opt.value);
+        nomeFiltro.innerHTML = nomesUnicos.map(nome => `<option value="${nome}" ${nomesSelecionadosAntes.includes(nome) ? 'selected' : ''}>${nome}</option>`).join("");
         const selecionados = Array.from(nomeFiltro.selectedOptions).map(opt => opt.value);
 
         let totalEventos = 0;
@@ -277,7 +278,6 @@ nomeFiltro.addEventListener("change", carregarEventos);
 </head>
 <body>
   <div class="container">
-    $1
     <div style="text-align: center; margin-bottom: 20px;">
       <a href="https://lepan22.github.io/Estoque/assets/criar-evento.html" class="botao">➕ Criar Evento</a>
       <a href="https://lepan22.github.io/Estoque/dashboard.html" class="botao">📊 Dashboard</a>
