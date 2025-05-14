@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Gestão de Clientes</title>
+  <link rel="stylesheet" href="assets/style.css" />
+  <style>
+    body { font-family: Arial, sans-serif; padding: 20px; max-width: 1000px; margin: auto; }
+    .form-grid { display: flex; flex-wrap: wrap; gap: 15px; }
+    .form-group { flex: 1 1 300px; display: flex; flex-direction: column; }
+    label { font-weight: bold; margin-bottom: 4px; }
+    input, select, textarea { padding: 6px; border: 1px solid #ccc; border-radius: 4px; }
+    .hidden { display: none; }
+    button { margin-top: 20px; padding: 10px 20px; cursor: pointer; }
+  </style>
+</head>
+<body>
+  <h1>Gestão de Clientes</h1>
+  <form id="formCliente">
+    <div class="form-grid">
+      <div class="form-group"><label>Data Cadastro</label><input type="date" id="dataCadastro" readonly /></div>
+      <div class="form-group"><label>Nome do Evento</label><select id="nomeEvento"></select></div>
+      <div class="form-group"><label>Nome Condomínio</label><input type="text" id="nomeCondominio" /></div>
+      <div class="form-group"><label>Tipo</label><input type="text" id="tipoCondominio" /></div>
+      <div class="form-group"><label>Contato Nome</label><input type="text" id="contatoNome" /></div>
+      <div class="form-group"><label>Contato Tel</label><input type="tel" id="contatoTel" /></div>
+      <div class="form-group"><label>Contato Indicação</label><input type="text" id="contatoIndicacao" /></div>
+      <div class="form-group"><label>Origem</label><select id="origem">
+        <option value="">Selecione</option><option>Indicação</option><option>Instagram</option><option>Google</option><option>Outros</option>
+      </select></div>
+      <div class="form-group"><label>Dt. Último Contato</label><input type="date" id="dataUltimoContato" /></div>
+      <div class="form-group"><label>Comentário</label><textarea id="comentario"></textarea></div>
+      <div class="form-group"><label>Qtd Apto</label><input type="number" id="qtdApto" /></div>
+      <div class="form-group"><label>Tipo Apto</label><input type="text" id="tipoApto" /></div>
+      <div class="form-group"><label>Perfil Econômico</label><select id="perfilEconomico">
+        <option value="">Selecione</option><option>Baixo</option><option>Médio</option><option>Alto</option>
+      </select></div>
+      <div class="form-group"><label>Endereço</label><input type="text" id="endereco" /></div>
+      <div class="form-group"><label>Região</label><input type="text" id="regiao" /></div>
+      <div class="form-group"><label>Status Lead</label><select id="statusLead">
+        <option value="">Selecione</option><option>Aberto</option><option>Em contato</option><option>Fechado</option>
+      </select></div>
+      <div id="fechadoFields" class="hidden">
+        <div class="form-group"><label>Data do Primeiro Evento</label><input type="date" id="dataPrimeiroEvento" /></div>
+        <div class="form-group"><label>Valor do Primeiro Evento</label><input type="number" id="valorPrimeiroEvento" /></div>
+        <div class="form-group"><label>Quantidade de Eventos</label><input type="number" id="qtdEventos" readonly /></div>
+        <div class="form-group"><label>Valor Total Vendido</label><input type="number" id="valorTotalVendido" readonly /></div>
+        <div class="form-group"><label>Média de Vendas</label><input type="number" id="mediaVendas" readonly /></div>
+        <div class="form-group"><label>Frequência</label><input type="text" id="frequencia" /></div>
+        <div class="form-group"><label>Status</label><select id="statusCliente">
+          <option>Ativo</option><option>Inativo</option>
+        </select></div>
+        <div class="form-group"><label>Data do Último Evento</label><input type="date" id="dataUltimoEvento" /></div>
+        <div class="form-group"><label>Observação</label><textarea id="observacao"></textarea></div>
+      </div>
+    </div>
+    <button type="submit">Salvar Cliente</button>
+  </form>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+  <script>
+    const firebaseConfig = {
+      databaseURL: "https://controleestoquelepan-default-rtdb.firebaseio.com"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    document.addEventListener("DOMContentLoaded", async () => {
+      document.getElementById("dataCadastro").valueAsDate = new Date();
+
+      const statusLead = document.getElementById("statusLead");
+      const fechadoFields = document.getElementById("fechadoFields");
+      statusLead.addEventListener("change", () => {
+        fechadoFields.classList.toggle("hidden", statusLead.value !== "Fechado");
+      });
+
+      const selectEvento = document.getElementById("nomeEvento");
+      const eventosSnap = await db.ref("eventos").get();
+      eventosSnap.forEach(child => {
+        const opt = document.createElement("option");
+        opt.value = child.key;
+        opt.textContent = child.val().nome;
+        selectEvento.appendChild(opt);
+      });
+
+      document.getElementById("formCliente").addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const data = {};
+        document.querySelectorAll("#formCliente input, #formCliente select, #formCliente textarea").forEach(el => {
+          data[el.id] = el.value;
+        });
+
+        if (data.statusLead === "Fechado") {
+          const nomeEventoSelecionado = selectEvento.options[selectEvento.selectedIndex].text;
+          let qtd = 0, total = 0;
+          eventosSnap.forEach(child => {
+            if (child.val().nome === nomeEventoSelecionado) {
+              qtd++;
+              if (child.val().analise?.valorVenda) {
+                total += parseFloat(String(child.val().analise.valorVenda).replace(",", ".").replace(/[^\d.-]/g, "")) || 0;
+              }
+            }
+          });
+          data.qtdEventos = qtd;
+          data.valorTotalVendido = total.toFixed(2);
+          data.mediaVendas = qtd > 0 ? (total / qtd).toFixed(2) : 0;
+          document.getElementById("qtdEventos").value = data.qtdEventos;
+          document.getElementById("valorTotalVendido").value = data.valorTotalVendido;
+          document.getElementById("mediaVendas").value = data.mediaVendas;
+        }
+
+        const novaRef = db.ref("clientes").push();
+        await novaRef.set(data);
+        alert("Cliente salvo com sucesso!");
+        document.getElementById("formCliente").reset();
+        fechadoFields.classList.add("hidden");
+      });
+    });
+  </script>
+</body>
+</html>
