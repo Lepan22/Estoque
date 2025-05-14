@@ -3,128 +3,67 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Dashboard</title>
+  <title>Dashboard - Novo Layout</title>
+  <link rel="stylesheet" href="novo_style.css">
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
-  <style>
-    body {
-      margin: 0;
-      font-family: 'Segoe UI', sans-serif;
-      background-color: #f4f4f4;
-      color: #333;
-    }
-
-    .sidebar {
-      position: fixed;
-      top: 10px;
-      left: 10px;
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-      z-index: 10;
-    }
-
-    .dashboard-button {
-      padding: 10px 14px;
-      font-size: 14px;
-      border: none;
-      border-radius: 6px;
-      background-color: #007bff;
-      color: white;
-      text-decoration: none;
-      text-align: center;
-    }
-
-    .container {
-      margin-left: 160px;
-      padding: 40px 20px;
-      max-width: 1200px;
-    }
-
-    h1 {
-      text-align: center;
-      margin-bottom: 20px;
-    }
-
-    .kpi-cards {
-      display: flex;
-      gap: 20px;
-      justify-content: space-around;
-      flex-wrap: wrap;
-      margin-bottom: 30px;
-    }
-
-    .kpi {
-      background: white;
-      padding: 20px;
-      border-radius: 10px;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-      flex: 1 1 200px;
-      text-align: center;
-    }
-
-    .kpi h2 {
-      margin: 0;
-      font-size: 24px;
-    }
-
-    .kpi span {
-      font-size: 14px;
-      color: #666;
-    }
-
-    .charts {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 30px;
-    }
-
-    canvas {
-      background: white;
-      padding: 20px;
-      border-radius: 10px;
-      max-height: 300px; /* Reduzido para ~75% */
-    }
-
-    @media (max-width: 768px) {
-      .charts {
-        grid-template-columns: 1fr;
-      }
-      .container {
-        margin-left: 20px;
-      }
-    }
-  </style>
 </head>
 <body>
 
-  <div class="sidebar">
-    <a class="dashboard-button" href="assets/relatorio.html">📊 Relatórios</a>
-    <a class="dashboard-button" href="assets/produtos.html">📦 Produtos</a>
-    <a class="dashboard-button" href="lista_clientes.html">👥 Clientes</a>
-    <a class="dashboard-button" href="evento.html">📅 Eventos</a>
+  <button class="menu-toggle" id="menuToggleBtn">☰</button>
+
+  <div class="sidebar" id="sidebarMenu">
+    <h2>LePan</h2> <!-- Adicionado um título para o menu -->
+    <ul>
+      <li><a href="#" class="active">Dashboard</a></li> <!-- Link para o próprio dashboard -->
+      <li><a href="assets/relatorio.html">📊 Relatórios</a></li>
+      <li><a href="assets/produtos.html">📦 Produtos</a></li>
+      <li><a href="lista_clientes.html">👥 Clientes</a></li>
+      <li><a href="evento.html">📅 Eventos</a></li>
+      <!-- Adicionar outros links relevantes do sistema aqui -->
+    </ul>
   </div>
 
-  <div class="container">
-    <h1>Dashboard</h1>
+  <div class="main-content">
+    <div class="container-principal">
+      <h1>Dashboard</h1>
 
-    <div class="kpi-cards">
-      <div class="kpi"><h2 id="clientesAtivos">0</h2><span>Clientes Ativos</span></div>
-      <div class="kpi"><h2 id="receitaMes">R$ 0,00</h2><span>Receita do Mês</span></div>
-      <div class="kpi"><h2 id="lucroMes">R$ 0,00</h2><span>Lucro do Mês</span></div>
-      <div class="kpi"><h2 id="eventosMes">0</h2><span>Eventos no Mês</span></div>
-    </div>
+      <div class="kpi-cards">
+        <div class="kpi"><h2 id="clientesAtivos">0</h2><span>Clientes Ativos</span></div>
+        <div class="kpi"><h2 id="receitaMes">R$ 0,00</h2><span>Receita do Mês</span></div>
+        <div class="kpi"><h2 id="lucroMes">R$ 0,00</h2><span>Lucro do Mês</span></div>
+        <div class="kpi"><h2 id="eventosMes">0</h2><span>Eventos no Mês</span></div>
+      </div>
 
-    <div class="charts">
-      <canvas id="chartVendas"></canvas>
-      <canvas id="chartLucro"></canvas>
-      <canvas id="chartPerda"></canvas>
-      <canvas id="chartEventos"></canvas>
+      <div class="charts-grid">
+        <div class="chart-container">
+          <canvas id="chartVendas"></canvas>
+        </div>
+        <div class="chart-container">
+          <canvas id="chartLucro"></canvas>
+        </div>
+        <div class="chart-container">
+          <canvas id="chartPerda"></canvas>
+        </div>
+        <div class="chart-container">
+          <canvas id="chartEventos"></canvas>
+        </div>
+      </div>
     </div>
   </div>
 
   <script>
+    // Script do menu toggle
+    const menuToggleBtn = document.getElementById('menuToggleBtn');
+    const sidebarMenu = document.getElementById('sidebarMenu');
+    if (menuToggleBtn && sidebarMenu) {
+        menuToggleBtn.addEventListener('click', () => {
+            sidebarMenu.classList.toggle('active');
+        });
+    }
+
+    // Script original do dashboard (Firebase, Charts, etc.)
     const firebaseConfig = {
       databaseURL: "https://controleestoquelepan-default-rtdb.firebaseio.com"
     };
@@ -200,6 +139,7 @@
         data: { labels, datasets: dataset },
         options: {
           responsive: true,
+          maintainAspectRatio: false, // Adicionado para melhor controle com CSS
           plugins: {
             legend: { position: 'top' },
             title: { display: true, text: label }
@@ -225,6 +165,7 @@
         },
         options: {
           responsive: true,
+          maintainAspectRatio: false, // Adicionado para melhor controle com CSS
           plugins: {
             legend: { position: 'top' },
             title: { display: true, text: label }
