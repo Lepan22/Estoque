@@ -22,7 +22,7 @@ body {
 }
 
 .sidebar {
-  width: 250px;
+  width: 220px;
   background-color: var(--cor-primaria-menu);
   color: var(--cor-texto-menu);
   padding: 20px;
@@ -62,9 +62,9 @@ body {
 }
 
 .main-content {
-  margin-left: 250px; /* Mesma largura do sidebar */
+  margin-left: 220px; /* Mesma largura do sidebar */
   padding: 30px;
-  width: calc(100% - 250px);
+  width: calc(100% - 220px);
   background-color: var(--cor-fundo-conteudo);
   flex-grow: 1;
 }
@@ -266,18 +266,19 @@ button:hover, a.botao:hover {
 .kpi-cards {
   display: flex;
   gap: 20px;
-  justify-content: space-around;
-  flex-wrap: wrap;
+  justify-content: space-between; /* Alterado para space-between para melhor distribuição */
+  /* flex-wrap: wrap; */ /* Removido para tentar manter em uma linha */
   margin-bottom: 30px;
 }
 
 .kpi {
   background: white;
-  padding: 25px;
+  padding: 20px; /* Reduzido o padding para economizar espaço */
   border-radius: var(--borda-radius-padrao);
   box-shadow: var(--sombra-padrao);
-  flex: 1 1 220px; /* Permite que cresçam mas tenham uma base */
+  flex: 1 1 0; /* Alterado para flex-basis 0 para distribuir igualmente */
   text-align: center;
+  min-width: 180px; /* Adicionado um min-width para evitar que fiquem muito pequenos */
 }
 
 .kpi h2 {
@@ -293,19 +294,19 @@ button:hover, a.botao:hover {
 
 .charts-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 30px;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); /* Reduzido minmax para caber mais fácil */
+  gap: 20px; /* Reduzido o gap */
 }
 
 .chart-container {
   background: white;
-  padding: 20px;
+  padding: 15px; /* Reduzido o padding */
   border-radius: var(--borda-radius-padrao);
   box-shadow: var(--sombra-padrao);
 }
 
 .chart-container canvas {
-  max-height: 350px;
+  max-height: 280px; /* Reduzida altura máxima dos gráficos */
   width: 100% !important; /* Forçar Chart.js a respeitar o container */
 }
 
