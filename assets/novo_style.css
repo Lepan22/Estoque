@@ -117,8 +117,17 @@ button:hover, a.botao:hover {
 
 .tabela-moderna th, .tabela-moderna td {
   border: 1px solid #dee2e6;
-  padding: 12px 15px;
+  padding: 8px 10px; /* Reduzido padding */
   text-align: left;
+  font-size: 0.85rem; /* Reduzido tamanho da fonte */
+  word-break: keep-all; /* Tentar evitar quebra de palavras, mas pode não ser ideal para nomes longos */
+  white-space: nowrap; /* Evitar quebra de linha, pode precisar de overflow-x: auto na tabela ou container */
+}
+
+/* Adicionar um estilo para permitir quebra de linha controlada na coluna do nome do produto se necessário */
+.tabela-moderna td.coluna-nome-produto {
+  white-space: normal; /* Permite quebra de linha apenas nesta coluna */
+  min-width: 150px; /* Dar um espaço mínimo para o nome do produto */
 }
 
 .tabela-moderna th {
