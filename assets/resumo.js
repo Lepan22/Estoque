@@ -86,11 +86,6 @@ async function carregarDados() {
   document.getElementById("responsavelEvento").value = evento.responsavel || "";
   document.getElementById("vendaPDV").value = analise.vendaPDV || "";
 
-  let totalVenda = 0;
-  let totalPerda = 0;
-  let totalCMV = 0;
-  let totalEstimativa = 0;
-
   const tabela = document.querySelector("#tabelaProdutos tbody");
   tabela.innerHTML = "";
 
@@ -115,10 +110,10 @@ async function carregarDados() {
       <td><input type="number" class="input-congelado" data-index="${index}" value="${congelado}" /></td>
       <td><input type="number" class="input-assado" data-index="${index}" value="${assado}" /></td>
       <td><input type="number" class="input-perda" data-index="${index}" value="${perdido}" /></td>
-      <td class="venda-cell" data-index="${index}">${formatar(0)}</td>
-      <td class="perda-cell" data-index="${index}">${formatar(0)}</td>
-      <td class="vendido-cell" data-index="${index}">0</td>
-      <td class="cmv-cell" data-index="${index}">${formatar(0)}</td>
+      <td class="venda-cell" data-index="${index}">-</td>
+      <td class="perda-cell" data-index="${index}">-</td>
+      <td class="vendido-cell" data-index="${index}">-</td>
+      <td class="cmv-cell" data-index="${index}">-</td>
       <td class="estimativa-cell" data-index="${index}">${formatar(valorVendaUnit * enviado)}</td>
     `;
 
@@ -126,11 +121,12 @@ async function carregarDados() {
   });
 
   function atualizarResumoProdutos() {
-    const linhas = tabela.querySelectorAll("tr");
-    totalVenda = 0;
-    totalPerda = 0;
-    totalCMV = 0;
+    let totalVenda = 0;
+    let totalPerda = 0;
+    let totalCMV = 0;
+    let totalEstimativa = 0;
 
+    const linhas = tabela.querySelectorAll("tr");
     linhas.forEach((linha, index) => {
       const enviado = parseInt(linha.querySelector('.input-enviado')?.value || 0);
       const congelado = parseInt(linha.querySelector('.input-congelado')?.value || 0);
@@ -144,6 +140,7 @@ async function carregarDados() {
       const valorVendaUnit = parseFloat(produto?.valorVenda || 0);
       const custoUnit = parseFloat(produto?.custo || 0);
 
+      const estimativa = enviado * valorVendaUnit;
       const valorVendaTotal = vendidos * valorVendaUnit;
       const custoPerda = perdido * custoUnit;
       const cmv = vendidos * custoUnit;
@@ -152,17 +149,21 @@ async function carregarDados() {
       linha.querySelector('.venda-cell').textContent = formatar(valorVendaTotal);
       linha.querySelector('.perda-cell').textContent = formatar(custoPerda);
       linha.querySelector('.cmv-cell').textContent = formatar(cmv);
+      linha.querySelector('.estimativa-cell').textContent = formatar(estimativa);
 
       totalVenda += valorVendaTotal;
       totalPerda += custoPerda;
       totalCMV += cmv;
       totalEstimativa += estimativa;
-      linha.querySelector('.estimativa-cell').textContent = formatar(estimativa);
     });
 
     document.getElementById("valorVenda").value = formatar(totalVenda);
     document.getElementById("valorPerda").value = formatar(totalPerda);
-    document.getElementById("estimativaTotal").value = formatar(totalEstimativa);
+    const estimativaField = document.getElementById("estimativaTotal");
+    if (estimativaField) {
+      estimativaField.value = formatar(totalEstimativa);
+    }
+
     window.totalCMVCalculado = totalCMV;
   }
 
