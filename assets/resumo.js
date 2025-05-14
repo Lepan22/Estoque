@@ -5,7 +5,7 @@ const db = firebase.database();
 function normalizar(texto) {
   return (texto || "")
     .toLowerCase()
-    .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+    .normalize("NFD").replace(/[̀-ͯ]/g, "")
     .replace(/\s+/g, " ")
     .trim();
 }
@@ -88,12 +88,11 @@ async function carregarDados() {
   let totalVenda = 0;
   let totalPerda = 0;
   let totalCMV = 0;
-  let totalEstimativaVenda = 0;
 
   const tabela = document.querySelector("#tabelaProdutos tbody");
   tabela.innerHTML = "";
 
-  itens.forEach(item => {
+  itens.forEach((item, index) => {
     const nomeItem = item.nomeItem || item.nome || "";
     const nomeNorm = normalizar(nomeItem);
     const produto = Object.values(produtos).find(p => normalizar(p.nome) === nomeNorm);
@@ -102,50 +101,71 @@ async function carregarDados() {
     const assado = parseInt(item.assado || 0);
     const congelado = parseInt(item.congelado || 0);
     const perdido = parseInt(item.perdido || 0);
-    const vendidos = enviado - (congelado + assado + perdido);
 
-    const valorVendaUnit = parseFloat(produto?.valorVenda);
-    const custoUnit = parseFloat(produto?.custo);
-
-    const estimativaVenda = enviado * valorVendaUnit;
-    const valorVendaTotal = vendidos * valorVendaUnit;
-    const custoPerda = perdido * custoUnit;
-    const cmv = vendidos * custoUnit;
-
-    totalEstimativaVenda += estimativaVenda;
-    totalVenda += valorVendaTotal;
-    totalPerda += custoPerda;
-    totalCMV += cmv;
+    const valorVendaUnit = parseFloat(produto?.valorVenda || 0);
+    const custoUnit = parseFloat(produto?.custo || 0);
 
     const linha = document.createElement("tr");
+
     linha.innerHTML = `
       <td>${nomeItem}</td>
-      <td>${enviado}</td>
-      <td>${congelado}</td>
-      <td>${assado}</td>
-      <td>${perdido}</td>
-      <td>${formatar(valorVendaTotal)}</td>
-      <td>${formatar(custoPerda)}</td>
-      <td>${vendidos}</td>
-      <td>${formatar(cmv)}</td>
-      <td>${formatar(estimativaVenda)}</td>
+      <td><input type="number" class="input-enviado" data-index="${index}" value="${enviado}" /></td>
+      <td><input type="number" class="input-congelado" data-index="${index}" value="${congelado}" /></td>
+      <td><input type="number" class="input-assado" data-index="${index}" value="${assado}" /></td>
+      <td><input type="number" class="input-perda" data-index="${index}" value="${perdido}" /></td>
+      <td class="venda-cell" data-index="${index}">${formatar(0)}</td>
+      <td class="perda-cell" data-index="${index}">${formatar(0)}</td>
+      <td class="vendido-cell" data-index="${index}">0</td>
+      <td class="cmv-cell" data-index="${index}">${formatar(0)}</td>
     `;
 
     tabela.appendChild(linha);
   });
 
-  document.getElementById("valorVenda").value = formatar(totalVenda);
-  document.getElementById("valorPerda").value = formatar(totalPerda);
-  const estimativaField = document.getElementById("estimativaTotal");
-  if (estimativaField) {
-    estimativaField.value = formatar(totalEstimativaVenda);
+  function atualizarResumoProdutos() {
+    const linhas = tabela.querySelectorAll("tr");
+    totalVenda = 0;
+    totalPerda = 0;
+    totalCMV = 0;
+
+    linhas.forEach((linha, index) => {
+      const enviado = parseInt(linha.querySelector('.input-enviado')?.value || 0);
+      const congelado = parseInt(linha.querySelector('.input-congelado')?.value || 0);
+      const assado = parseInt(linha.querySelector('.input-assado')?.value || 0);
+      const perdido = parseInt(linha.querySelector('.input-perda')?.value || 0);
+
+      const vendidos = enviado - (congelado + assado + perdido);
+      const nomeItem = linha.children[0].textContent;
+      const produto = Object.values(produtos).find(p => normalizar(p.nome) === normalizar(nomeItem));
+
+      const valorVendaUnit = parseFloat(produto?.valorVenda || 0);
+      const custoUnit = parseFloat(produto?.custo || 0);
+
+      const valorVendaTotal = vendidos * valorVendaUnit;
+      const custoPerda = perdido * custoUnit;
+      const cmv = vendidos * custoUnit;
+
+      linha.querySelector('.vendido-cell').textContent = vendidos;
+      linha.querySelector('.venda-cell').textContent = formatar(valorVendaTotal);
+      linha.querySelector('.perda-cell').textContent = formatar(custoPerda);
+      linha.querySelector('.cmv-cell').textContent = formatar(cmv);
+
+      totalVenda += valorVendaTotal;
+      totalPerda += custoPerda;
+      totalCMV += cmv;
+    });
+
+    document.getElementById("valorVenda").value = formatar(totalVenda);
+    document.getElementById("valorPerda").value = formatar(totalPerda);
+    window.totalCMVCalculado = totalCMV;
   }
+
+  tabela.addEventListener("input", atualizarResumoProdutos);
+  atualizarResumoProdutos();
 
   (analise.equipe || []).forEach(eq => criarLinha("equipe-container", "equipe", eq));
   (analise.logistica || []).forEach(lg => criarLinha("logistica-container", "logistica", lg));
   atualizarTotaisEquipeLogistica();
-
-  window.totalCMVCalculado = totalCMV;
 }
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -176,6 +196,22 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const custoEquipe = equipe.reduce((s, e) => s + e.valor, 0);
     const custoLogistica = logistica.reduce((s, l) => s + l.valor, 0);
+
+    const linhasTabela = document.querySelectorAll("#tabelaProdutos tbody tr");
+    const itensAtualizados = Array.from(linhasTabela).map(linha => {
+      const nomeItem = linha.children[0].textContent;
+      return {
+        nomeItem,
+        quantidade: parseInt(linha.querySelector(".input-enviado").value || 0),
+        congelado: parseInt(linha.querySelector(".input-congelado").value || 0),
+        assado: parseInt(linha.querySelector(".input-assado").value || 0),
+        perdido: parseInt(linha.querySelector(".input-perda").value || 0)
+      };
+    });
+
+    await db.ref(`eventos/${id}`).update({
+      itens: itensAtualizados
+    });
 
     await db.ref(`eventos/${id}/analise`).update({
       vendaPDV,
