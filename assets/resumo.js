@@ -1,3 +1,4 @@
+
 const urlParams = new URLSearchParams(window.location.search);
 const id = urlParams.get("id");
 const db = firebase.database();
@@ -88,6 +89,7 @@ async function carregarDados() {
   let totalVenda = 0;
   let totalPerda = 0;
   let totalCMV = 0;
+  let totalEstimativa = 0;
 
   const tabela = document.querySelector("#tabelaProdutos tbody");
   tabela.innerHTML = "";
@@ -117,6 +119,7 @@ async function carregarDados() {
       <td class="perda-cell" data-index="${index}">${formatar(0)}</td>
       <td class="vendido-cell" data-index="${index}">0</td>
       <td class="cmv-cell" data-index="${index}">${formatar(0)}</td>
+      <td class="estimativa-cell" data-index="${index}">${formatar(valorVendaUnit * enviado)}</td>
     `;
 
     tabela.appendChild(linha);
@@ -153,10 +156,13 @@ async function carregarDados() {
       totalVenda += valorVendaTotal;
       totalPerda += custoPerda;
       totalCMV += cmv;
+      totalEstimativa += estimativa;
+      linha.querySelector('.estimativa-cell').textContent = formatar(estimativa);
     });
 
     document.getElementById("valorVenda").value = formatar(totalVenda);
     document.getElementById("valorPerda").value = formatar(totalPerda);
+    document.getElementById("estimativaTotal").value = formatar(totalEstimativa);
     window.totalCMVCalculado = totalCMV;
   }
 
