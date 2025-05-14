@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Dashboard</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background-color: #f4f4f4;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      padding: 20px;
+    }
+
+    h1 {
+      margin-bottom: 30px;
+      color: #333;
+    }
+
+    .button-container {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 20px;
+      width: 100%;
+      max-width: 600px;
+    }
+
+    .dashboard-button {
+      padding: 15px 20px;
+      font-size: 16px;
+      border: none;
+      border-radius: 10px;
+      background-color: #007bff;
+      color: white;
+      cursor: pointer;
+      text-align: center;
+      text-decoration: none;
+      transition: background-color 0.2s ease;
+    }
+
+    .dashboard-button:hover {
+      background-color: #0056b3;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Dashboard</h1>
+
+  <div class="button-container">
+    <a class="dashboard-button" href="https://lepan22.github.io/Estoque/assets/relatorio.html" target="_blank">📊 Relatórios</a>
+    <a class="dashboard-button" href="https://lepan22.github.io/Estoque/assets/produtos.html" target="_blank">📦 Produtos</a>
+    <a class="dashboard-button" href="https://lepan22.github.io/Estoque/lista_clientes.html" target="_blank">👥 Clientes</a>
+    <a class="dashboard-button" href="https://lepan22.github.io/Estoque/evento.html" target="_blank">📅 Eventos</a>
+  </div>
+
+</body>
+</html>
