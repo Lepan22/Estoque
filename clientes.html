@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Gestão de Clientes - Novo Layout</title>
+  <title>Gestão de Clientes - Correção Funcional</title>
   <link href="assets/novo_style.css" rel="stylesheet"/>
   <!-- Estilos inline originais foram removidos, serão cobertos pelo novo_style.css -->
 </head>
@@ -17,85 +17,78 @@
       <li><a href="dashboard.html">Dashboard</a></li>
       <li><a href="assets/relatorio.html">📊 Relatórios</a></li>
       <li><a href="assets/produtos.html">📦 Produtos</a></li>
-      <li><a href="lista_clientes.html" class="active">👥 Clientes</a></li> <!-- Marcando Clientes como ativo -->
+      <li><a href="lista_clientes.html" class="active">👥 Clientes</a></li>
       <li><a href="evento.html">📅 Eventos</a></li>
-      <!-- Adicionar outros links de navegação conforme necessário -->
     </ul>
   </div>
 
   <div class="main-content">
     <div class="container-principal">
-      <!-- O <form id="formCliente"> original agora está dentro do container-principal -->
       <form id="formCliente">
         <h1>Cadastro de Cliente</h1>
 
-        <!-- Os .section e .grid originais serão adaptados para .form-grupo -->
-        <div class="form-grupo">
-          <div class="grid">
-            <div class="form-group"> <!-- Mantendo form-group para consistência se houver JS dependente -->
-              <label for="dataCadastro">Data Cadastro</label> <!-- Adicionado for -->
-              <input type="date" id="dataCadastro" readonly />
-            </div>
-            <div class="form-group">
-              <label for="nomeEvento">Nome do Evento</label> <!-- Adicionado for -->
-              <input type="text" id="nomeEvento" />
-            </div>
-            <div class="form-group">
-              <label for="nomeCondominio">Nome Condomínio</label> <!-- Adicionado for -->
-              <input type="text" id="nomeCondominio" />
-            </div>
-            <div class="form-group">
-              <label for="tipoCondominio">Tipo</label> <!-- Adicionado for -->
-              <input type="text" id="tipoCondominio" />
-            </div>
-            <div class="form-group">
-              <label for="indicadoPor">Indicado por</label> <!-- Adicionado for -->
-              <input type="text" id="indicadoPor" />
-            </div>
+        <!-- Estrutura do formulário mantida o mais próximo possível do original -->
+        <div class="section grid">
+          <div class="form-group">
+            <label for="dataCadastro">Data Cadastro</label>
+            <input type="date" id="dataCadastro" readonly />
+          </div>
+          <div class="form-group">
+            <label for="nomeEvento">Nome do Evento</label>
+            <input type="text" id="nomeEvento" />
+          </div>
+          <div class="form-group">
+            <label for="nomeCondominio">Nome Condomínio</label>
+            <input type="text" id="nomeCondominio" />
+          </div>
+          <div class="form-group">
+            <label for="tipoCondominio">Tipo</label>
+            <input type="text" id="tipoCondominio" />
+          </div>
+          <div class="form-group">
+            <label for="indicadoPor">Indicado por</label>
+            <input type="text" id="indicadoPor" />
           </div>
         </div>
 
-        <div class="form-grupo">
+        <div class="section">
           <h3>Contatos</h3>
           <div id="contatoContainer"></div>
-          <!-- Botão estilizado com a classe .botao do novo_style.css -->
           <button type="button" class="botao botao-secundario" onclick="adicionarContato()">➕ Adicionar Contato</button>
         </div>
 
-        <div class="divider" style="margin: 20px 0;"></div>
+        <div class="divider"></div>
 
-        <div class="form-grupo">
-            <div class="grid">
-                <div class="form-group"><label for="origem">Origem</label><input type="text" id="origem" /></div>
-                <div class="form-group"><label for="dataUltimoContato">Dt. Último Contato</label><input type="date" id="dataUltimoContato" /></div>
-                <div class="form-group"><label for="comentario">Comentário</label><textarea id="comentario"></textarea></div>
-                <div class="form-group"><label for="qtdApto">Qtd Apto</label><input type="number" id="qtdApto" /></div>
-                <div class="form-group"><label for="tipoApto">Tipo Apto</label><input type="text" id="tipoApto" /></div>
-                <div class="form-group"><label for="perfilEconomico">Perfil Econômico</label>
-                    <select id="perfilEconomico">
-                    <option value="">Selecione</option>
-                    <option>Baixo</option>
-                    <option>Médio</option>
-                    <option>Alto</option>
-                    </select>
-                </div>
-                <div class="form-group"><label for="endereco">Endereço</label><input type="text" id="endereco" /></div>
-                <div class="form-group"><label for="regiao">Região</label><input type="text" id="regiao" /></div>
-                <div class="form-group"><label for="statusLead">Status Lead</label>
-                    <select id="statusLead">
-                    <option value="">Selecione</option>
-                    <option>Novo</option>
-                    <option>Aberto</option>
-                    <option>Em Contato</option>
-                    <option>Fechado</option>
-                    <option>Frio</option>
-                    <option>Encerrado</option>
-                    </select>
-                </div>
-            </div>
+        <div class="section grid">
+          <div class="form-group"><label for="origem">Origem</label><input type="text" id="origem" /></div>
+          <div class="form-group"><label for="dataUltimoContato">Dt. Último Contato</label><input type="date" id="dataUltimoContato" /></div>
+          <div class="form-group"><label for="comentario">Comentário</label><textarea id="comentario"></textarea></div>
+          <div class="form-group"><label for="qtdApto">Qtd Apto</label><input type="number" id="qtdApto" /></div>
+          <div class="form-group"><label for="tipoApto">Tipo Apto</label><input type="text" id="tipoApto" /></div>
+          <div class="form-group"><label for="perfilEconomico">Perfil Econômico</label>
+            <select id="perfilEconomico">
+              <option value="">Selecione</option>
+              <option>Baixo</option>
+              <option>Médio</option>
+              <option>Alto</option>
+            </select>
+          </div>
+          <div class="form-group"><label for="endereco">Endereço</label><input type="text" id="endereco" /></div>
+          <div class="form-group"><label for="regiao">Região</label><input type="text" id="regiao" /></div>
+          <div class="form-group"><label for="statusLead">Status Lead</label>
+            <select id="statusLead">
+              <option value="">Selecione</option>
+              <option>Novo</option>
+              <option>Aberto</option>
+              <option>Em Contato</option>
+              <option>Fechado</option>
+              <option>Frio</option>
+              <option>Encerrado</option>
+            </select>
+          </div>
         </div>
 
-        <div id="fechadoFields" class="hidden form-grupo">
+        <div id="fechadoFields" class="hidden">
           <h3>Dados do Evento (Lead Fechado)</h3>
           <div class="grid">
             <div class="form-group"><label for="dataPrimeiroEvento">Data do Primeiro Evento</label><input type="date" id="dataPrimeiroEvento" /></div>
@@ -122,7 +115,7 @@
   </div>
 
 <script>
-  // Script do menu toggle
+  // Script do menu toggle (mantido)
   const menuToggleBtn = document.getElementById("menuToggleBtn");
   const sidebarMenu = document.getElementById("sidebarMenu");
   if (menuToggleBtn && sidebarMenu) {
@@ -131,7 +124,7 @@
       });
   }
 
-  // Script original da página clientes.html (Firebase, manipulação de DOM, etc.)
+  // Script original da página clientes.html (Firebase, manipulação de DOM, etc.) - RESTAURADO AO ORIGINAL
   const firebaseConfig = {
     databaseURL: "https://controleestoquelepan-default-rtdb.firebaseio.com"
   };
@@ -162,25 +155,36 @@
 
         document.getElementById("contatoContainer").innerHTML = ""; // Limpa o container antes de adicionar
         (cliente.contatos || []).forEach(c => {
-          adicionarContato(c.nome, c.telefone); // Passa os valores para a função
+          // Recriando a lógica original de adicionar contatos ao carregar
+          const div = document.createElement("div");
+          div.className = "contato-group"; // Usando a classe original
+          div.innerHTML = `
+            <input type="text" name="contatoNome" placeholder="Nome" value="${c.nome || ''}" />
+            <input type="tel" name="contatoTel" placeholder="Telefone" value="${c.telefone || ''}" />
+            <button type="button" class="botao botao-remove" onclick="this.parentElement.remove()">❌</button>
+          `; // Aplicando classes de botão do novo_style.css
+          document.getElementById("contatoContainer").appendChild(div);
         });
 
-        if (cliente.statusLead === "Fechado") {
+        // Garantindo que a lógica de exibição dos campos de lead fechado seja chamada após carregar os dados
+        if (document.getElementById("statusLead").value === "Fechado") {
           document.getElementById("fechadoFields").classList.remove("hidden");
+        } else {
+          document.getElementById("fechadoFields").classList.add("hidden");
         }
       });
     }
   });
 
-  function adicionarContato(nome = "", telefone = "") { // Modificado para aceitar valores iniciais
+  function adicionarContato() {
     const container = document.getElementById("contatoContainer");
     const div = document.createElement("div");
-    div.className = "contato-group form-grupo"; // Adicionado form-grupo para consistência de espaçamento
+    div.className = "contato-group"; // Usando a classe original
     div.innerHTML = `
-      <input type="text" name="contatoNome" placeholder="Nome do Contato" value="${nome}" />
-      <input type="tel" name="contatoTel" placeholder="Telefone" value="${telefone}" />
-      <button type="button" class="botao botao-remove" onclick="this.parentElement.remove()">❌ Remover</button>
-    `;
+      <input type="text" name="contatoNome" placeholder="Nome do Contato" />
+      <input type="tel" name="contatoTel" placeholder="Telefone" />
+      <button type="button" class="botao botao-remove" onclick="this.parentElement.remove()">❌</button>
+    `; // Aplicando classes de botão do novo_style.css
     container.appendChild(div);
   }
 
@@ -189,14 +193,14 @@
 
     const data = {};
     document.querySelectorAll("#formCliente input, #formCliente select, #formCliente textarea").forEach(el => {
-      if (el.name && el.name.startsWith("contato")) return; // Verificando se el.name existe
-      if (el.id) data[el.id] = el.value; // Verificando se el.id existe
+      if (el.name && el.name.startsWith("contato")) return;
+      if (el.id) data[el.id] = el.value;
     });
 
     const contatos = [];
     document.querySelectorAll(".contato-group").forEach(grupo => {
-      const nomeInput = grupo.querySelector('[name="contatoNome"]');
-      const telInput = grupo.querySelector('[name="contatoTel"]');
+      const nomeInput = grupo.querySelector("[name='contatoNome']");
+      const telInput = grupo.querySelector("[name='contatoTel']");
       const nome = nomeInput ? nomeInput.value : "";
       const tel = telInput ? telInput.value : "";
       if (nome || tel) contatos.push({ nome, telefone: tel });
