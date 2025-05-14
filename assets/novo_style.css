@@ -1,0 +1,311 @@
+/****** Novo Estilo Propósito - novo_style.css ******/
+
+:root {
+  --cor-primaria-menu: #007bff; /* Azul da referência para o menu */
+  --cor-texto-menu: #ffffff;
+  --cor-fundo-conteudo: #f8f9fa; /* Fundo claro para o conteúdo */
+  --cor-fundo-pagina: #e9ecef;
+  --cor-texto-padrao: #343a40;
+  --cor-laranja-destaque: #FFA500; /* Laranja solicitado pelo usuário */
+  --cor-laranja-destaque-hover: #E69500;
+  --sombra-padrao: 0 0 15px rgba(0, 0, 0, 0.1);
+  --borda-radius-padrao: 8px;
+}
+
+body {
+  margin: 0;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background-color: var(--cor-fundo-pagina);
+  color: var(--cor-texto-padrao);
+  display: flex;
+  min-height: 100vh;
+}
+
+.sidebar {
+  width: 250px;
+  background-color: var(--cor-primaria-menu);
+  color: var(--cor-texto-menu);
+  padding: 20px;
+  height: 100vh;
+  position: fixed;
+  left: 0;
+  top: 0;
+  box-shadow: 2px 0 5px rgba(0,0,0,0.1);
+  overflow-y: auto;
+}
+
+.sidebar h2 {
+  text-align: center;
+  margin-bottom: 30px;
+  font-size: 1.8rem;
+}
+
+.sidebar ul {
+  list-style-type: none;
+  padding: 0;
+  margin: 0;
+}
+
+.sidebar ul li a {
+  display: block;
+  padding: 12px 15px;
+  text-decoration: none;
+  color: var(--cor-texto-menu);
+  border-radius: var(--borda-radius-padrao);
+  margin-bottom: 8px;
+  transition: background-color 0.3s ease;
+}
+
+.sidebar ul li a:hover,
+.sidebar ul li a.active {
+  background-color: rgba(255, 255, 255, 0.2);
+}
+
+.main-content {
+  margin-left: 250px; /* Mesma largura do sidebar */
+  padding: 30px;
+  width: calc(100% - 250px);
+  background-color: var(--cor-fundo-conteudo);
+  flex-grow: 1;
+}
+
+.container-principal {
+    background-color: #ffffff;
+    padding: 25px;
+    border-radius: var(--borda-radius-padrao);
+    box-shadow: var(--sombra-padrao);
+}
+
+h1, h2, h3, h4, h5, h6 {
+  color: var(--cor-texto-padrao);
+  margin-top: 0;
+}
+
+/* Botões */
+button, a.botao {
+  display: inline-block;
+  padding: 12px 25px;
+  background-color: var(--cor-laranja-destaque);
+  color: white;
+  border: none;
+  border-radius: var(--borda-radius-padrao);
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  text-decoration: none;
+  text-align: center;
+  margin-right: 10px;
+  margin-bottom: 10px;
+  transition: background-color 0.3s ease, box-shadow 0.3s ease;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+button:hover, a.botao:hover {
+  background-color: var(--cor-laranja-destaque-hover);
+  box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+}
+
+/* Estilos para tabelas */
+.tabela-moderna {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 20px;
+  box-shadow: var(--sombra-padrao);
+  border-radius: var(--borda-radius-padrao);
+  overflow: hidden; /* Para o border-radius funcionar nas bordas da tabela */
+}
+
+.tabela-moderna th, .tabela-moderna td {
+  border: 1px solid #dee2e6;
+  padding: 12px 15px;
+  text-align: left;
+}
+
+.tabela-moderna th {
+  background-color: #f2f2f2; /* Um cinza um pouco mais escuro que o fundo do conteúdo */
+  color: var(--cor-texto-padrao);
+  font-weight: 600;
+}
+
+.tabela-moderna tbody tr:nth-child(even) {
+  background-color: #f9f9f9;
+}
+
+.tabela-moderna tbody tr:hover {
+  background-color: #f1f1f1;
+}
+
+/* Estilos para formulários */
+.form-grupo {
+  margin-bottom: 20px;
+}
+
+.form-grupo label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 500;
+}
+
+.form-grupo input[type="text"],
+.form-grupo input[type="password"],
+.form-grupo input[type="email"],
+.form-grupo input[type="number"],
+.form-grupo input[type="date"],
+.form-grupo select,
+.form-grupo textarea {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #ced4da;
+  border-radius: var(--borda-radius-padrao);
+  box-sizing: border-box;
+  font-size: 1rem;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.form-grupo input:focus, 
+.form-grupo select:focus, 
+.form-grupo textarea:focus {
+  border-color: var(--cor-laranja-destaque);
+  box-shadow: 0 0 0 0.2rem rgba(255, 165, 0, 0.25);
+  outline: none;
+}
+
+/* Responsividade */
+@media (max-width: 992px) {
+  .sidebar {
+    width: 200px;
+  }
+  .main-content {
+    margin-left: 200px;
+    width: calc(100% - 200px);
+  }
+}
+
+@media (max-width: 768px) {
+  .sidebar {
+    transform: translateX(-100%);
+    position: fixed;
+    z-index: 1000; /* Para ficar sobre o conteúdo */
+    transition: transform 0.3s ease-in-out;
+  }
+  .sidebar.active {
+    transform: translateX(0);
+  }
+  .main-content {
+    margin-left: 0;
+    width: 100%;
+    padding: 20px;
+  }
+  .menu-toggle {
+    display: block; /* Será um botão para abrir/fechar o menu */
+    position: fixed;
+    top: 15px;
+    left: 15px;
+    z-index: 1001;
+    background: var(--cor-laranja-destaque);
+    color: white;
+    border: none;
+    padding: 10px 12px;
+    border-radius: var(--borda-radius-padrao);
+    cursor: pointer;
+  }
+
+  /* Ajustes para form.html em mobile (já tratado em form-responsive.css, mas podemos adicionar melhorias aqui) */
+  /* Exemplo: garantir que botões de ação em form.html fiquem bem visíveis e acessíveis */
+  body.form-mobile .button-container {
+    padding: 15px;
+    background-color: #fff; /* Fundo para destacar os botões */
+  }
+  body.form-mobile .button-container button {
+    width: 100%;
+    margin-bottom: 10px;
+  }
+  body.form-mobile .button-container button:last-child {
+    margin-bottom: 0;
+  }
+}
+
+/* Estilo para a página de login (index.html) */
+.login-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    padding: 20px;
+    background-color: var(--cor-fundo-pagina);
+}
+
+.login-box {
+    background-color: #ffffff;
+    padding: 40px;
+    border-radius: var(--borda-radius-padrao);
+    box-shadow: var(--sombra-padrao);
+    text-align: center;
+    width: 100%;
+    max-width: 400px;
+}
+
+.login-box img {
+    max-width: 150px;
+    margin-bottom: 25px;
+}
+
+.login-box h1 {
+    font-size: 1.3rem;
+    font-weight: 400;
+    margin-bottom: 25px;
+    color: var(--cor-texto-padrao);
+}
+
+.login-box input[type="password"] {
+    margin-bottom: 20px;
+}
+
+/* Para o dashboard.html */
+.kpi-cards {
+  display: flex;
+  gap: 20px;
+  justify-content: space-around;
+  flex-wrap: wrap;
+  margin-bottom: 30px;
+}
+
+.kpi {
+  background: white;
+  padding: 25px;
+  border-radius: var(--borda-radius-padrao);
+  box-shadow: var(--sombra-padrao);
+  flex: 1 1 220px; /* Permite que cresçam mas tenham uma base */
+  text-align: center;
+}
+
+.kpi h2 {
+  margin: 0 0 5px 0;
+  font-size: 2rem;
+  color: var(--cor-laranja-destaque);
+}
+
+.kpi span {
+  font-size: 0.9rem;
+  color: #6c757d;
+}
+
+.charts-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 30px;
+}
+
+.chart-container {
+  background: white;
+  padding: 20px;
+  border-radius: var(--borda-radius-padrao);
+  box-shadow: var(--sombra-padrao);
+}
+
+.chart-container canvas {
+  max-height: 350px;
+  width: 100% !important; /* Forçar Chart.js a respeitar o container */
+}
+
