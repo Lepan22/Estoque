@@ -320,3 +320,34 @@ button:hover, a.botao:hover {
   width: 100% !important; /* Forçar Chart.js a respeitar o container */
 }
 
+
+
+
+/* Botão Secundário (e.g., Adicionar Contato) */
+.botao-secundario {
+  background-color: #6c757d; /* Cinza Bootstrap secundário */
+  color: white;
+  padding: 8px 15px;
+  font-size: 0.9rem;
+  margin-top: 10px;
+  margin-bottom: 10px;
+  /* Herda display, border, border-radius, cursor, text-decoration, text-align, transition, box-shadow de 'button, a.botao' */
+}
+.botao-secundario:hover {
+  background-color: #5a6268;
+}
+
+/* Botão Remover (e.g., Remover Contato) */
+.botao-remove {
+  background-color: #dc3545; /* Vermelho Bootstrap danger */
+  color: white;
+  padding: 8px 12px;
+  font-size: 0.8rem;
+  margin-left: 5px; /* Mantido do estilo inline original */
+  margin-bottom: 10px; /* Adicionado para consistência */
+  /* Herda display, border, border-radius, cursor, text-decoration, text-align, transition, box-shadow de 'button, a.botao' */
+}
+.botao-remove:hover {
+  background-color: #c82333;
+}
+
