@@ -3,305 +3,88 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Painel do Gerente</title>
-  <link rel="stylesheet" href="assets/style.css">
+  <title>Bem-vindo</title>
   <style>
     body {
       margin: 0;
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background-color: #f9fafb;
+      font-family: 'Segoe UI', sans-serif;
+      background: #f7f3ee;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      text-align: center;
       color: #333;
     }
 
-    .container {
-      max-width: 1200px;
-      margin: 40px auto;
-      padding: 20px;
-      background-color: white;
-      border-radius: 10px;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    img {
+      max-width: 200px;
+      margin-bottom: 20px;
     }
 
     h1 {
-      font-size: 24px;
-      margin-bottom: 24px;
-      text-align: center;
+      font-size: 1.5rem;
+      font-weight: 400;
+      margin-bottom: 30px;
+      color: #5e3c1c;
     }
 
-    .button-container {
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: center;
-      gap: 10px;
-      margin-bottom: 20px;
-    }
-
-    .botao {
-      padding: 10px 16px;
-      font-size: 14px;
-      border: none;
-      border-radius: 6px;
-      background-color: #e2e8f0;
-      color: #1a202c;
-      text-decoration: none;
-      cursor: pointer;
-      transition: background-color 0.3s;
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-    }
-
-    .botao:hover {
-      background-color: #cbd5e0;
-    }
-
-    .filtros {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 20px;
-      justify-content: center;
-      margin-bottom: 20px;
-    }
-
-    .filtros label {
-      font-size: 14px;
-      margin-bottom: 4px;
-      display: block;
-    }
-
-    .filtros input,
-    .filtros select {
-      font-size: 14px;
-      padding: 6px 10px;
-      border-radius: 4px;
-      border: 1px solid #ccc;
-      width: 180px;
-    }
-
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      font-size: 14px;
-    }
-
-    table thead {
-      background-color: #edf2f7;
-    }
-
-    table th,
-    table td {
-      border: 1px solid #e2e8f0;
+    input[type="password"] {
       padding: 10px;
-      text-align: left;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      font-size: 16px;
+      width: 200px;
+      text-align: center;
+      margin-bottom: 15px;
     }
 
-    table tbody tr:nth-child(even) {
-      background-color: #f7fafc;
+    button {
+      padding: 10px 20px;
+      font-size: 16px;
+      background-color: #5e3c1c;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background-color 0.2s ease;
     }
 
-    @media (max-width: 768px) {
-      .filtros {
-        flex-direction: column;
-        align-items: center;
-      }
+    button:hover {
+      background-color: #3e2a13;
+    }
+
+    .error {
+      color: red;
+      margin-top: 10px;
+      font-size: 14px;
     }
   </style>
-
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js";
-    import {
-      getDatabase,
-      ref,
-      onValue,
-      get,
-      push,
-      set,
-      remove
-    } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-database.js";
-
-    const firebaseConfig = {
-      apiKey: "AIzaSyBN-bmzgrlzjmrKMmuClZ8LVll-vJyx-aE",
-      authDomain: "controleestoquelepan.firebaseapp.com",
-      databaseURL: "https://controleestoquelepan-default-rtdb.firebaseio.com",
-      projectId: "controleestoquelepan",
-      storageBucket: "controleestoquelepan.appspot.com",
-      messagingSenderId: "779860276544",
-      appId: "1:779860276544:web:f45844571a8c0bab1576a5",
-    };
-
-    const app = initializeApp(firebaseConfig);
-    const db = getDatabase(app);
-
-    const tabelaBody = document.getElementById("eventos-tbody");
-    const loadingRow = document.getElementById("loading-row");
-    const statusFiltro = document.getElementById("filtro-status");
-    const dataInicio = document.getElementById("data-inicio");
-    const dataFim = document.getElementById("data-fim");
-
-    function carregarEventos() {
-      const eventosRef = ref(db, "eventos");
-      onValue(eventosRef, snapshot => {
-        tabelaBody.innerHTML = "";
-        loadingRow.style.display = "none";
-
-        if (!snapshot.exists()) {
-          tabelaBody.innerHTML = '<tr><td colspan="6">Nenhum evento encontrado.</td></tr>';
-          return;
-        }
-
-        const evs = snapshot.val();
-        const filtroStatus = statusFiltro.value;
-        const inicio = new Date(dataInicio.value);
-        const fim = new Date(dataFim.value);
-
-        Object.entries(evs)
-          .map(([id, ev]) => ({ id, ...ev }))
-          .filter(ev => {
-            const evData = new Date(ev.data);
-            return (!filtroStatus || ev.status === filtroStatus) &&
-                   (!dataInicio.value || evData >= inicio) &&
-                   (!dataFim.value || evData <= fim);
-          })
-          .sort((a, b) => new Date(b.data) - new Date(a.data))
-          .forEach(({ id, nome, data, responsavel, status, analise }) => {
-            const valorVenda = parseFloat(analise?.valorVenda) || 0;
-
-            const tr = document.createElement("tr");
-            tr.innerHTML = `
-              <td>${nome || "–"}</td>
-              <td>${data || "–"}</td>
-              <td>${responsavel || "–"}</td>
-              <td>${status || "aberto"}</td>
-              <td>R$ ${valorVenda.toFixed(2)}</td>
-              <td>
-                <a href="form.html?id=${id}" class="botao">Ver Detalhes</a>
-                <a href="analise_evento.html?id=${id}" class="botao">📊</a>
-                <a href="assets/criar-evento.html?id=${id}" class="botao">✏️</a>
-                <button class="botao duplicar" data-id="${id}">📄</button>
-                <button class="botao copiar-link" data-id="${id}">📋 Link</button>
-                <button class="botao excluir-evento" data-id="${id}">🗑️ Excluir</button>
-              </td>
-            `;
-            tabelaBody.appendChild(tr);
-          });
-
-        document.querySelectorAll(".duplicar").forEach(botao => {
-          botao.addEventListener("click", async e => {
-            const id = e.target.dataset.id;
-            if (!id) return;
-
-            try {
-              const snapshot = await get(ref(db, `eventos/${id}`));
-              if (!snapshot.exists()) {
-                alert("Evento não encontrado.");
-                return;
-              }
-
-              const dados = snapshot.val();
-              const novoRef = push(ref(db, "eventos"));
-              await set(novoRef, {
-                nome: `${dados.nome} (cópia)`,
-                responsavel: dados.responsavel || "",
-                status: "aberto",
-                itens: dados.itens || []
-              });
-
-              alert("Evento duplicado com sucesso!");
-            } catch (error) {
-              console.error("Erro ao duplicar:", error);
-              alert("Erro ao duplicar o evento.");
-            }
-          });
-        });
-
-        document.querySelectorAll(".copiar-link").forEach(botao => {
-          botao.addEventListener("click", e => {
-            const id = e.target.dataset.id;
-            const link = `${window.location.origin}/Estoque/form.html?id=${id}`;
-            navigator.clipboard.writeText(link).then(() => {
-              alert("Link copiado para a área de transferência!");
-            }).catch(err => {
-              console.error("Erro ao copiar link:", err);
-              alert("Erro ao copiar link.");
-            });
-          });
-        });
-
-        document.querySelectorAll(".excluir-evento").forEach(botao => {
-          botao.addEventListener("click", async e => {
-            const id = e.target.dataset.id;
-            if (!id) return;
-
-            const confirmacao = confirm("⚠️ Tem certeza que deseja excluir este evento? Essa ação não pode ser desfeita.");
-            if (!confirmacao) return;
-
-            try {
-              await remove(ref(db, `eventos/${id}`));
-              alert("Evento excluído com sucesso.");
-              carregarEventos(); // Atualiza a lista
-            } catch (error) {
-              console.error("Erro ao excluir evento:", error);
-              alert("Erro ao excluir o evento.");
-            }
-          });
-        });
-      }, err => {
-        console.error("Erro ao carregar eventos:", err);
-        loadingRow.style.display = "none";
-        tabelaBody.innerHTML = '<tr><td colspan="6">Erro ao carregar eventos.</td></tr>';
-      });
-    }
-
-    document.addEventListener("DOMContentLoaded", carregarEventos);
-    document.addEventListener("change", carregarEventos);
-  </script>
 </head>
 <body>
-  <div class="container">
-    <h1>Painel do Gerente</h1>
 
-    <div class="button-container">
-      <a href="assets/criar-evento.html" class="botao">➕ Novo Evento</a>
-      <a href="https://lepan22.github.io/Estoque/assets/relatorio.html" class="botao">📑 Relatórios</a>
-      <a href="assets/produtos.html" class="botao">📦 Produtos</a>
-    </div>
+  <!-- Substitua "logo.png" pelo caminho correto do seu logo -->
+  <img src="logo.png" alt="Logo LePan" />
 
-    <div class="filtros">
-      <div>
-        <label for="filtro-status">Status</label>
-        <select id="filtro-status">
-          <option value="">Todos</option>
-          <option value="aberto">Aberto</option>
-          <option value="finalizado">Finalizado</option>
-        </select>
-      </div>
-      <div>
-        <label for="data-inicio">Data Início</label>
-        <input type="date" id="data-inicio" />
-      </div>
-      <div>
-        <label for="data-fim">Data Fim</label>
-        <input type="date" id="data-fim" />
-      </div>
-    </div>
+  <h1>Pão! O prazer das coisas simples da vida.</h1>
 
-    <table>
-      <thead>
-        <tr>
-          <th>Nome</th>
-          <th>Data</th>
-          <th>Responsável</th>
-          <th>Status</th>
-          <th>Valor de Venda</th>
-          <th>Ações</th>
-        </tr>
-      </thead>
-      <tbody id="eventos-tbody">
-        <tr id="loading-row">
-          <td colspan="6">Carregando eventos...</td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
+  <input type="password" id="senha" placeholder="Digite a senha" />
+  <br>
+  <button onclick="verificarSenha()">Entrar</button>
+
+  <div id="erro" class="error"></div>
+
+  <script>
+    function verificarSenha() {
+      const senha = document.getElementById("senha").value;
+      const erro = document.getElementById("erro");
+      if (senha === "6431") {
+        window.location.href = "https://lepan22.github.io/Estoque/dashboard.html";
+      } else {
+        erro.textContent = "Senha incorreta. Tente novamente.";
+      }
+    }
+  </script>
 </body>
 </html>
