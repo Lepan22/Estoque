@@ -1,90 +1,13 @@
-<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Bem-vindo</title>
-  <style>
-    body {
-      margin: 0;
-      font-family: 'Segoe UI', sans-serif;
-      background: #f7f3ee;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      height: 100vh;
-      text-align: center;
-      color: #333;
-    }
-
-    img {
-      max-width: 200px;
-      margin-bottom: 20px;
-    }
-
-    h1 {
-      font-size: 1.5rem;
-      font-weight: 400;
-      margin-bottom: 30px;
-      color: #5e3c1c;
-    }
-
-    input[type="password"] {
-      padding: 10px;
-      border: 1px solid #ccc;
-      border-radius: 8px;
-      font-size: 16px;
-      width: 200px;
-      text-align: center;
-      margin-bottom: 15px;
-    }
-
-    button {
-      padding: 10px 20px;
-      font-size: 16px;
-      background-color: #5e3c1c;
-      color: white;
-      border: none;
-      border-radius: 8px;
-      cursor: pointer;
-      transition: background-color 0.2s ease;
-    }
-
-    button:hover {
-      background-color: #3e2a13;
-    }
-
-    .error {
-      color: red;
-      margin-top: 10px;
-      font-size: 14px;
-    }
-  </style>
-</head>
-<body>
-
-  <!-- Substitua "logo.png" pelo caminho correto do seu logo -->
-  <img src="logo.png" alt="Logo LePan" />
-
-  <h1>Pão! O prazer das coisas simples da vida.</h1>
-
-  <input type="password" id="senha" placeholder="Digite a senha" />
-  <br>
-  <button onclick="verificarSenha()">Entrar</button>
-
-  <div id="erro" class="error"></div>
-
-  <script>
-    function verificarSenha() {
-      const senha = document.getElementById("senha").value;
-      const erro = document.getElementById("erro");
-      if (senha === "6431") {
-        window.location.href = "https://lepan22.github.io/Estoque/dashboard.html";
-      } else {
-        erro.textContent = "Senha incorreta. Tente novamente.";
-      }
-    }
-  </script>
-</body>
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>dashboard_lepan</title>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
 </html>
