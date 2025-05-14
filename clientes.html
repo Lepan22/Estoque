@@ -4,35 +4,147 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Gestão de Clientes</title>
-  <link rel="stylesheet" href="assets/style.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet" />
   <style>
-    body { font-family: Arial, sans-serif; padding: 20px; max-width: 1000px; margin: auto; }
-    .form-grid { display: flex; flex-wrap: wrap; gap: 15px; }
-    .form-group { flex: 1 1 300px; display: flex; flex-direction: column; }
-    label { font-weight: bold; margin-bottom: 4px; }
-    input, select, textarea { padding: 6px; border: 1px solid #ccc; border-radius: 4px; }
-    .hidden { display: none; }
-    .contato-container { border: 1px solid #ccc; padding: 10px; margin-bottom: 10px; border-radius: 4px; }
-    .contato-group { display: flex; gap: 10px; margin-bottom: 10px; }
-    .contato-group input { flex: 1; }
-    button { margin-top: 20px; padding: 10px 20px; cursor: pointer; }
+    body {
+      font-family: 'Inter', sans-serif;
+      margin: 0;
+      background: #f7f7f7;
+      padding: 30px;
+      color: #333;
+    }
+
+    h1, h2, h3 {
+      color: #444;
+      margin-bottom: 16px;
+    }
+
+    form {
+      background: white;
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+      max-width: 1000px;
+      margin: auto;
+    }
+
+    .section {
+      margin-bottom: 30px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 20px;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+    }
+
+    label {
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+
+    input, select, textarea {
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      font-size: 14px;
+    }
+
+    textarea {
+      resize: vertical;
+      min-height: 80px;
+    }
+
+    button {
+      background-color: #007bff;
+      color: white;
+      padding: 12px 24px;
+      border: none;
+      border-radius: 8px;
+      font-size: 16px;
+      cursor: pointer;
+      margin-top: 20px;
+    }
+
+    button:hover {
+      background-color: #0056b3;
+    }
+
+    .contato-group {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+
+    .contato-group input {
+      flex: 1;
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    .remove-btn {
+      background: red;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      padding: 6px 10px;
+      cursor: pointer;
+    }
+
+    .remove-btn:hover {
+      background: darkred;
+    }
+
+    .divider {
+      border-top: 1px solid #ddd;
+      margin: 30px 0;
+    }
   </style>
 </head>
 <body>
-  <h1>Gestão de Clientes</h1>
+
   <form id="formCliente">
-    <div class="form-grid">
-      <div class="form-group"><label>Data Cadastro</label><input type="date" id="dataCadastro" readonly /></div>
-      <div class="form-group"><label>Nome do Evento</label><input type="text" id="nomeEvento" /></div>
-      <div class="form-group"><label>Nome Condomínio</label><input type="text" id="nomeCondominio" /></div>
-      <div class="form-group"><label>Tipo</label><input type="text" id="tipoCondominio" /></div>
+    <h1>Cadastro de Cliente</h1>
+
+    <div class="section grid">
+      <div class="form-group">
+        <label>Data Cadastro</label>
+        <input type="date" id="dataCadastro" readonly />
+      </div>
+      <div class="form-group">
+        <label>Nome do Evento</label>
+        <input type="text" id="nomeEvento" />
+      </div>
+      <div class="form-group">
+        <label>Nome Condomínio</label>
+        <input type="text" id="nomeCondominio" />
+      </div>
+      <div class="form-group">
+        <label>Tipo</label>
+        <input type="text" id="tipoCondominio" />
+      </div>
+      <div class="form-group">
+        <label>Indicado por</label>
+        <input type="text" id="indicadoPor" />
+      </div>
     </div>
 
-    <h3>Contatos</h3>
-    <div id="contatoContainer" class="contato-container"></div>
-    <button type="button" onclick="adicionarContato()">➕ Adicionar Contato</button>
+    <div class="section">
+      <h3>Contatos</h3>
+      <div id="contatoContainer"></div>
+      <button type="button" onclick="adicionarContato()">➕ Adicionar Contato</button>
+    </div>
 
-    <div class="form-grid">
+    <div class="divider"></div>
+
+    <div class="section grid">
       <div class="form-group"><label>Origem</label><input type="text" id="origem" /></div>
       <div class="form-group"><label>Dt. Último Contato</label><input type="date" id="dataUltimoContato" /></div>
       <div class="form-group"><label>Comentário</label><textarea id="comentario"></textarea></div>
@@ -40,8 +152,12 @@
       <div class="form-group"><label>Tipo Apto</label><input type="text" id="tipoApto" /></div>
       <div class="form-group"><label>Perfil Econômico</label>
         <select id="perfilEconomico">
-          <option value="">Selecione</option><option>Baixo</option><option>Médio</option><option>Alto</option>
-        </select></div>
+          <option value="">Selecione</option>
+          <option>Baixo</option>
+          <option>Médio</option>
+          <option>Alto</option>
+        </select>
+      </div>
       <div class="form-group"><label>Endereço</label><input type="text" id="endereco" /></div>
       <div class="form-group"><label>Região</label><input type="text" id="regiao" /></div>
       <div class="form-group"><label>Status Lead</label>
@@ -53,24 +169,26 @@
           <option>Fechado</option>
           <option>Frio</option>
           <option>Encerrado</option>
-        </select></div>
+        </select>
+      </div>
     </div>
 
     <div id="fechadoFields" class="hidden">
       <h3>Dados do Evento (Lead Fechado)</h3>
-      <div class="form-grid">
+      <div class="grid">
         <div class="form-group"><label>Data do Primeiro Evento</label><input type="date" id="dataPrimeiroEvento" /></div>
         <div class="form-group"><label>Valor do Primeiro Evento</label><input type="number" id="valorPrimeiroEvento" /></div>
         <div class="form-group"><label>Quantidade de Eventos</label><input type="number" id="qtdEventos" readonly /></div>
         <div class="form-group"><label>Valor Total Vendido</label><input type="number" id="valorTotalVendido" readonly /></div>
         <div class="form-group"><label>Média de Vendas</label><input type="number" id="mediaVendas" readonly /></div>
         <div class="form-group"><label>Frequência</label><input type="text" id="frequencia" /></div>
-        <div class="form-group"><label>Status</label>
+        <div class="form-group"><label>Status Cliente</label>
           <select id="statusCliente">
             <option>Ativo</option>
             <option>Inativo</option>
             <option>Pausado</option>
-          </select></div>
+          </select>
+        </div>
         <div class="form-group"><label>Data do Último Evento</label><input type="date" id="dataUltimoEvento" /></div>
         <div class="form-group"><label>Observação</label><textarea id="observacao"></textarea></div>
       </div>
@@ -97,7 +215,6 @@
 
       adicionarContato();
 
-      // Verifica se está editando
       const params = new URLSearchParams(window.location.search);
       const idCliente = params.get("idCliente");
 
@@ -116,9 +233,9 @@
             const div = document.createElement("div");
             div.className = "contato-group";
             div.innerHTML = `
-              <input type="text" name="contatoNome" placeholder="Nome do Contato" value="${c.nome || ''}" />
+              <input type="text" name="contatoNome" placeholder="Nome" value="${c.nome || ''}" />
               <input type="tel" name="contatoTel" placeholder="Telefone" value="${c.telefone || ''}" />
-              <button type="button" onclick="this.parentElement.remove()">❌</button>
+              <button type="button" class="remove-btn" onclick="this.parentElement.remove()">❌</button>
             `;
             document.getElementById("contatoContainer").appendChild(div);
           });
@@ -137,7 +254,7 @@
       div.innerHTML = `
         <input type="text" name="contatoNome" placeholder="Nome do Contato" />
         <input type="tel" name="contatoTel" placeholder="Telefone" />
-        <button type="button" onclick="this.parentElement.remove()">❌</button>
+        <button type="button" class="remove-btn" onclick="this.parentElement.remove()">❌</button>
       `;
       container.appendChild(div);
     }
@@ -162,8 +279,8 @@
       const params = new URLSearchParams(window.location.search);
       const idCliente = params.get("idCliente");
 
-      const refCliente = idCliente ? db.ref("clientes/" + idCliente) : db.ref("clientes").push();
-      await refCliente.set(data);
+      const ref = idCliente ? db.ref("clientes/" + idCliente) : db.ref("clientes").push();
+      await ref.set(data);
 
       alert("Cliente salvo com sucesso!");
       window.location.href = "lista_clientes.html";
