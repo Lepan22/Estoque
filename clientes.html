@@ -88,58 +88,63 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
-    const urlParams = new URLSearchParams(window.location.search);
-    const idCliente = urlParams.get("idCliente");
-
-    function adicionarContato(nome = "", telefone = "") {
-      const container = document.getElementById("contatoContainer");
-      const div = document.createElement("div");
-      div.className = "contato-group";
-      div.innerHTML = \`
-        <input type="text" name="contatoNome" placeholder="Nome do Contato" value="\${nome}" />
-        <input type="tel" name="contatoTel" placeholder="Telefone" value="\${telefone}" />
-        <button type="button" onclick="this.parentElement.remove()">❌</button>
-      \`;
-      container.appendChild(div);
-    }
-
-    function preencherCampos(cliente) {
-      for (const key in cliente) {
-        const el = document.getElementById(key);
-        if (el && key !== "contatos") {
-          el.value = cliente[key];
-        }
-      }
-      if (cliente.contatos) {
-        document.getElementById("contatoContainer").innerHTML = "";
-        cliente.contatos.forEach(c => adicionarContato(c.nome, c.telefone));
-      }
-      if (cliente.statusLead === "Fechado") {
-        document.getElementById("fechadoFields").classList.remove("hidden");
-      }
-    }
-
-    document.addEventListener("DOMContentLoaded", async () => {
-      if (!idCliente) {
-        document.getElementById("dataCadastro").valueAsDate = new Date();
-        adicionarContato();
-      } else {
-        const snap = await db.ref("clientes/" + idCliente).get();
-        if (snap.exists()) {
-          preencherCampos(snap.val());
-        } else {
-          alert("Cliente não encontrado.");
-        }
-      }
-
+    document.addEventListener("DOMContentLoaded", () => {
+      document.getElementById("dataCadastro").valueAsDate = new Date();
       document.getElementById("statusLead").addEventListener("change", e => {
         const show = e.target.value === "Fechado";
         document.getElementById("fechadoFields").classList.toggle("hidden", !show);
       });
+
+      adicionarContato();
+
+      // Verifica se está editando
+      const params = new URLSearchParams(window.location.search);
+      const idCliente = params.get("idCliente");
+
+      if (idCliente) {
+        db.ref("clientes/" + idCliente).get().then(snap => {
+          const cliente = snap.val();
+          if (!cliente) return;
+
+          Object.keys(cliente).forEach(chave => {
+            const el = document.getElementById(chave);
+            if (el) el.value = cliente[chave];
+          });
+
+          document.getElementById("contatoContainer").innerHTML = "";
+          (cliente.contatos || []).forEach(c => {
+            const div = document.createElement("div");
+            div.className = "contato-group";
+            div.innerHTML = `
+              <input type="text" name="contatoNome" placeholder="Nome do Contato" value="${c.nome || ''}" />
+              <input type="tel" name="contatoTel" placeholder="Telefone" value="${c.telefone || ''}" />
+              <button type="button" onclick="this.parentElement.remove()">❌</button>
+            `;
+            document.getElementById("contatoContainer").appendChild(div);
+          });
+
+          if (cliente.statusLead === "Fechado") {
+            document.getElementById("fechadoFields").classList.remove("hidden");
+          }
+        });
+      }
     });
+
+    function adicionarContato() {
+      const container = document.getElementById("contatoContainer");
+      const div = document.createElement("div");
+      div.className = "contato-group";
+      div.innerHTML = `
+        <input type="text" name="contatoNome" placeholder="Nome do Contato" />
+        <input type="tel" name="contatoTel" placeholder="Telefone" />
+        <button type="button" onclick="this.parentElement.remove()">❌</button>
+      `;
+      container.appendChild(div);
+    }
 
     document.getElementById("formCliente").addEventListener("submit", async (e) => {
       e.preventDefault();
+
       const data = {};
       document.querySelectorAll("#formCliente input, #formCliente select, #formCliente textarea").forEach(el => {
         if (el.name.startsWith("contato")) return;
@@ -154,18 +159,14 @@
       });
       data.contatos = contatos;
 
-      if (idCliente) {
-        await db.ref("clientes/" + idCliente).set(data);
-        alert("Cliente atualizado com sucesso!");
-      } else {
-        const novaRef = db.ref("clientes").push();
-        await novaRef.set(data);
-        alert("Cliente salvo com sucesso!");
-        document.getElementById("formCliente").reset();
-        document.getElementById("contatoContainer").innerHTML = "";
-        adicionarContato();
-        document.getElementById("fechadoFields").classList.add("hidden");
-      }
+      const params = new URLSearchParams(window.location.search);
+      const idCliente = params.get("idCliente");
+
+      const refCliente = idCliente ? db.ref("clientes/" + idCliente) : db.ref("clientes").push();
+      await refCliente.set(data);
+
+      alert("Cliente salvo com sucesso!");
+      window.location.href = "lista_clientes.html";
     });
   </script>
 </body>
