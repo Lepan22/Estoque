@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <title>Lista de Clientes</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link href="assets/style.css" rel="stylesheet" />
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+      max-width: 1000px;
+      margin: auto;
+    }
+    h1 {
+      margin-bottom: 20px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 20px;
+    }
+    th, td {
+      padding: 8px;
+      border: 1px solid #ccc;
+      text-align: left;
+    }
+    th {
+      background-color: #f0f0f0;
+    }
+    button {
+      margin-right: 10px;
+      padding: 8px 12px;
+      border: none;
+      background-color: #e0e0e0;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <h1>Lista de Clientes Fechados</h1>
+
+  <table id="tabelaClientes">
+    <thead>
+      <tr>
+        <th>Nome</th>
+        <th>Condomínio</th>
+        <th>Frequência</th>
+        <th>Qtd. Eventos</th>
+        <th>Valor Médio Venda</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+
+  <div>
+    <button onclick="window.location.href='clientes.html'">Criar Novo Cliente</button>
+    <button onclick="window.location.href='leads.html'">Leads</button>
+    <button onclick="window.location.href='dashboar.html'">Voltar</button>
+  </div>
+
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+  <script>
+    const firebaseConfig = {
+      databaseURL: "https://controleestoquelepan-default-rtdb.firebaseio.com"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    async function carregarClientes() {
+      const [clientesSnap, eventosSnap] = await Promise.all([
+        db.ref("clientes").get(),
+        db.ref("eventos").get()
+      ]);
+
+      const clientes = clientesSnap.val() || {};
+      const eventos = eventosSnap.val() || {};
+
+      const tabela = document.querySelector("#tabelaClientes tbody");
+      tabela.innerHTML = "";
+
+      Object.values(clientes).forEach(cliente => {
+        if (cliente.status !== "Fechado") return;
+
+        const nomeEvento = cliente.nomeEvento || "";
+        const eventosDoCliente = Object.values(eventos).filter(e => e.nome === nomeEvento);
+        const quantidadeEventos = eventosDoCliente.length;
+        const somaVendas = eventosDoCliente.reduce((soma, ev) => soma + (parseFloat(ev.analise?.vendaPDV || 0)), 0);
+        const mediaVenda = quantidadeEventos > 0 ? somaVendas / quantidadeEventos : 0;
+
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td>${nomeEvento}</td>
+          <td>${cliente.nomeCondominio || ""}</td>
+          <td>${cliente.frequencia || ""}</td>
+          <td>${quantidadeEventos}</td>
+          <td>R$ ${mediaVenda.toFixed(2).replace('.', ',')}</td>
+        `;
+        tabela.appendChild(tr);
+      });
+    }
+
+    document.addEventListener("DOMContentLoaded", carregarClientes);
+  </script>
+</body>
+</html>
