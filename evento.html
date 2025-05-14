@@ -23,16 +23,26 @@
     }
 
     h1 {
-      font-size: 20px;
+      font-size: 24px;
       margin-bottom: 20px;
       text-align: center;
     }
 
-    .resumo {
-      font-size: 16px;
+    .resumo-container {
+      display: flex;
+      justify-content: center;
+      gap: 30px;
       margin-bottom: 20px;
-      text-align: center;
-      color: #4a5568;
+    }
+
+    .resumo-box {
+      background-color: #edf2f7;
+      padding: 15px 25px;
+      border-radius: 8px;
+      font-size: 16px;
+      font-weight: bold;
+      color: #2d3748;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
     }
 
     .filtros {
@@ -65,13 +75,13 @@
     table {
       width: 100%;
       border-collapse: collapse;
-      font-size: 14px;
+      font-size: 13px;
     }
 
     table th,
     table td {
       border: 1px solid #e2e8f0;
-      padding: 6px 8px;
+      padding: 4px 6px;
       text-align: left;
     }
 
@@ -81,6 +91,21 @@
 
     table tbody tr:nth-child(even) {
       background-color: #f7fafc;
+    }
+
+    .botoes-acoes a {
+      display: inline-block;
+      margin-right: 5px;
+      padding: 4px 8px;
+      background-color: #3182ce;
+      color: white;
+      text-decoration: none;
+      border-radius: 4px;
+      font-size: 12px;
+    }
+
+    .botoes-acoes a:hover {
+      background-color: #2b6cb0;
     }
   </style>
   <script type="module">
@@ -108,7 +133,8 @@
     const dataInicio = document.getElementById("data-inicio");
     const dataFim = document.getElementById("data-fim");
     const nomeFiltro = document.getElementById("filtro-nome");
-    const resumoTexto = document.getElementById("resumo-eventos");
+    const totalEventosEl = document.getElementById("total-eventos");
+    const totalValorEl = document.getElementById("total-valor");
 
     function carregarEventos() {
       onValue(ref(db, "eventos"), snapshot => {
@@ -120,7 +146,6 @@
 
         const eventos = Object.entries(snapshot.val()).map(([id, ev]) => ({ id, ...ev }));
 
-        // popular filtro nome
         const nomesUnicos = [...new Set(eventos.map(ev => ev.nome).filter(Boolean))];
         nomeFiltro.innerHTML = nomesUnicos.map(nome => `<option value="${nome}">${nome}</option>`).join("");
 
@@ -153,12 +178,17 @@
               <td>${responsavel || "–"}</td>
               <td>${status || "aberto"}</td>
               <td>R$ ${valorVenda.toFixed(2)}</td>
-              <td><a href="form.html?id=${id}" class="botao">Ver</a></td>
+              <td class="botoes-acoes">
+                <a href="form.html?id=${id}">Ver</a>
+                <a href="estoque.html?id=${id}">Estoque</a>
+                <a href="analise.html?id=${id}">Análise</a>
+              </td>
             `;
             tabelaBody.appendChild(tr);
           });
 
-        resumoTexto.textContent = `Total de eventos: ${totalEventos} | Soma de Valor de Venda: R$ ${totalValorVenda.toFixed(2)}`;
+        totalEventosEl.textContent = totalEventos;
+        totalValorEl.textContent = `R$ ${totalValorVenda.toFixed(2)}`;
       });
     }
 
@@ -169,7 +199,11 @@
 <body>
   <div class="container">
     <h1>Painel de Eventos</h1>
-    <div class="resumo" id="resumo-eventos"></div>
+
+    <div class="resumo-container">
+      <div class="resumo-box">Total de Eventos: <span id="total-eventos">0</span></div>
+      <div class="resumo-box">Soma de Valor de Venda: <span id="total-valor">R$ 0,00</span></div>
+    </div>
 
     <div class="filtros">
       <div>
