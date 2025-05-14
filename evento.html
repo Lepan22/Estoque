@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Eventos</title>
+  <title>Painel de Eventos</title>
   <link rel="stylesheet" href="assets/style.css">
   <style>
     body {
@@ -24,20 +24,20 @@
 
     h1 {
       font-size: 24px;
-      margin-bottom: 20px;
+      margin-bottom: 16px;
       text-align: center;
     }
 
     .resumo-container {
       display: flex;
       justify-content: center;
-      gap: 30px;
+      gap: 20px;
       margin-bottom: 20px;
     }
 
     .resumo-box {
       background-color: #edf2f7;
-      padding: 15px 25px;
+      padding: 12px 20px;
       border-radius: 8px;
       font-size: 16px;
       font-weight: bold;
@@ -75,37 +75,42 @@
     table {
       width: 100%;
       border-collapse: collapse;
-      font-size: 13px;
-    }
-
-    table th,
-    table td {
-      border: 1px solid #e2e8f0;
-      padding: 4px 6px;
-      text-align: left;
+      font-size: 14px;
     }
 
     table thead {
       background-color: #edf2f7;
     }
 
+    table th,
+    table td {
+      border: 1px solid #e2e8f0;
+      padding: 6px 10px;
+      text-align: left;
+    }
+
     table tbody tr:nth-child(even) {
       background-color: #f7fafc;
     }
 
-    .botoes-acoes a {
-      display: inline-block;
-      margin-right: 5px;
-      padding: 4px 8px;
-      background-color: #3182ce;
-      color: white;
+    .botao {
+      padding: 6px 10px;
+      font-size: 13px;
+      border: none;
+      border-radius: 6px;
+      background-color: #e2e8f0;
+      color: #1a202c;
       text-decoration: none;
-      border-radius: 4px;
-      font-size: 12px;
+      cursor: pointer;
+      transition: background-color 0.3s;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      margin: 2px;
     }
 
-    .botoes-acoes a:hover {
-      background-color: #2b6cb0;
+    .botao:hover {
+      background-color: #cbd5e0;
     }
   </style>
   <script type="module">
@@ -113,7 +118,11 @@
     import {
       getDatabase,
       ref,
-      onValue
+      onValue,
+      get,
+      push,
+      set,
+      remove
     } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-database.js";
 
     const app = initializeApp({
@@ -137,39 +146,42 @@
     const totalValorEl = document.getElementById("total-valor");
 
     function carregarEventos() {
-      onValue(ref(db, "eventos"), snapshot => {
+      const eventosRef = ref(db, "eventos");
+      onValue(eventosRef, snapshot => {
         tabelaBody.innerHTML = "";
+
         if (!snapshot.exists()) {
           tabelaBody.innerHTML = '<tr><td colspan="6">Nenhum evento encontrado.</td></tr>';
           return;
         }
 
-        const eventos = Object.entries(snapshot.val()).map(([id, ev]) => ({ id, ...ev }));
-
-        const nomesUnicos = [...new Set(eventos.map(ev => ev.nome).filter(Boolean))];
-        nomeFiltro.innerHTML = nomesUnicos.map(nome => `<option value="${nome}">${nome}</option>`).join("");
-
-        const selecionados = Array.from(nomeFiltro.selectedOptions).map(opt => opt.value);
+        const evs = snapshot.val();
+        const filtroStatus = statusFiltro.value;
         const inicio = new Date(dataInicio.value);
         const fim = new Date(dataFim.value);
-        const filtroStatus = statusFiltro.value;
 
-        const filtrados = eventos.filter(ev => {
-          const evData = new Date(ev.data);
-          const nomeOk = !selecionados.length || selecionados.includes(ev.nome);
-          return (!filtroStatus || ev.status === filtroStatus) &&
-                 (!dataInicio.value || evData >= inicio) &&
-                 (!dataFim.value || evData <= fim) &&
-                 nomeOk;
-        });
+        const nomesUnicos = [...new Set(Object.values(evs).map(ev => ev.nome).filter(Boolean))];
+        nomeFiltro.innerHTML = nomesUnicos.map(nome => `<option value="${nome}">${nome}</option>`).join("");
+        const selecionados = Array.from(nomeFiltro.selectedOptions).map(opt => opt.value);
 
-        let totalEventos = filtrados.length;
-        let totalValorVenda = 0;
+        let totalEventos = 0;
+        let totalValor = 0;
 
-        filtrados.sort((a, b) => new Date(b.data) - new Date(a.data))
+        Object.entries(evs)
+          .map(([id, ev]) => ({ id, ...ev }))
+          .filter(ev => {
+            const evData = new Date(ev.data);
+            const nomeOk = !selecionados.length || selecionados.includes(ev.nome);
+            return (!filtroStatus || ev.status === filtroStatus) &&
+                   (!dataInicio.value || evData >= inicio) &&
+                   (!dataFim.value || evData <= fim) &&
+                   nomeOk;
+          })
+          .sort((a, b) => new Date(b.data) - new Date(a.data))
           .forEach(({ id, nome, data, responsavel, status, analise }) => {
             const valorVenda = parseFloat(analise?.valorVenda) || 0;
-            totalValorVenda += valorVenda;
+            totalEventos++;
+            totalValor += valorVenda;
 
             const tr = document.createElement("tr");
             tr.innerHTML = `
@@ -178,17 +190,81 @@
               <td>${responsavel || "–"}</td>
               <td>${status || "aberto"}</td>
               <td>R$ ${valorVenda.toFixed(2)}</td>
-              <td class="botoes-acoes">
-                <a href="form.html?id=${id}">Ver</a>
-                <a href="estoque.html?id=${id}">Estoque</a>
-                <a href="analise.html?id=${id}">Análise</a>
+              <td>
+                <a href="form.html?id=${id}" class="botao">Ver Detalhes</a>
+                <a href="analise_evento.html?id=${id}" class="botao">📊</a>
+                <a href="assets/criar-evento.html?id=${id}" class="botao">✏️</a>
+                <button class="botao duplicar" data-id="${id}">📄</button>
+                <button class="botao copiar-link" data-id="${id}">📋 Link</button>
+                <button class="botao excluir-evento" data-id="${id}">🗑️ Excluir</button>
               </td>
             `;
             tabelaBody.appendChild(tr);
           });
 
         totalEventosEl.textContent = totalEventos;
-        totalValorEl.textContent = `R$ ${totalValorVenda.toFixed(2)}`;
+        totalValorEl.textContent = `R$ ${totalValor.toFixed(2)}`;
+
+        document.querySelectorAll(".duplicar").forEach(botao => {
+          botao.addEventListener("click", async e => {
+            const id = e.target.dataset.id;
+            if (!id) return;
+
+            try {
+              const snapshot = await get(ref(db, `eventos/${id}`));
+              if (!snapshot.exists()) {
+                alert("Evento não encontrado.");
+                return;
+              }
+
+              const dados = snapshot.val();
+              const novoRef = push(ref(db, "eventos"));
+              await set(novoRef, {
+                nome: `${dados.nome} (cópia)`,
+                responsavel: dados.responsavel || "",
+                status: "aberto",
+                itens: dados.itens || []
+              });
+
+              alert("Evento duplicado com sucesso!");
+            } catch (error) {
+              console.error("Erro ao duplicar:", error);
+              alert("Erro ao duplicar o evento.");
+            }
+          });
+        });
+
+        document.querySelectorAll(".copiar-link").forEach(botao => {
+          botao.addEventListener("click", e => {
+            const id = e.target.dataset.id;
+            const link = `${window.location.origin}/Estoque/form.html?id=${id}`;
+            navigator.clipboard.writeText(link).then(() => {
+              alert("Link copiado para a área de transferência!");
+            }).catch(err => {
+              console.error("Erro ao copiar link:", err);
+              alert("Erro ao copiar link.");
+            });
+          });
+        });
+
+        document.querySelectorAll(".excluir-evento").forEach(botao => {
+          botao.addEventListener("click", async e => {
+            const id = e.target.dataset.id;
+            if (!id) return;
+
+            const confirmacao = confirm("⚠️ Tem certeza que deseja excluir este evento? Essa ação não pode ser desfeita.");
+            if (!confirmacao) return;
+
+            try {
+              await remove(ref(db, `eventos/${id}`));
+              alert("Evento excluído com sucesso.");
+              carregarEventos();
+            } catch (error) {
+              console.error("Erro ao excluir evento:", error);
+              alert("Erro ao excluir o evento.");
+            }
+          });
+        });
       });
     }
 
@@ -201,8 +277,8 @@
     <h1>Painel de Eventos</h1>
 
     <div class="resumo-container">
-      <div class="resumo-box">Total de Eventos: <span id="total-eventos">0</span></div>
-      <div class="resumo-box">Soma de Valor de Venda: <span id="total-valor">R$ 0,00</span></div>
+      <div class="resumo-box">Eventos: <span id="total-eventos">0</span></div>
+      <div class="resumo-box">Total R$: <span id="total-valor">0,00</span></div>
     </div>
 
     <div class="filtros">
