@@ -88,26 +88,55 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
-    document.addEventListener("DOMContentLoaded", () => {
-      document.getElementById("dataCadastro").valueAsDate = new Date();
+    const urlParams = new URLSearchParams(window.location.search);
+    const idCliente = urlParams.get("idCliente");
+
+    function adicionarContato(nome = "", telefone = "") {
+      const container = document.getElementById("contatoContainer");
+      const div = document.createElement("div");
+      div.className = "contato-group";
+      div.innerHTML = \`
+        <input type="text" name="contatoNome" placeholder="Nome do Contato" value="\${nome}" />
+        <input type="tel" name="contatoTel" placeholder="Telefone" value="\${telefone}" />
+        <button type="button" onclick="this.parentElement.remove()">❌</button>
+      \`;
+      container.appendChild(div);
+    }
+
+    function preencherCampos(cliente) {
+      for (const key in cliente) {
+        const el = document.getElementById(key);
+        if (el && key !== "contatos") {
+          el.value = cliente[key];
+        }
+      }
+      if (cliente.contatos) {
+        document.getElementById("contatoContainer").innerHTML = "";
+        cliente.contatos.forEach(c => adicionarContato(c.nome, c.telefone));
+      }
+      if (cliente.statusLead === "Fechado") {
+        document.getElementById("fechadoFields").classList.remove("hidden");
+      }
+    }
+
+    document.addEventListener("DOMContentLoaded", async () => {
+      if (!idCliente) {
+        document.getElementById("dataCadastro").valueAsDate = new Date();
+        adicionarContato();
+      } else {
+        const snap = await db.ref("clientes/" + idCliente).get();
+        if (snap.exists()) {
+          preencherCampos(snap.val());
+        } else {
+          alert("Cliente não encontrado.");
+        }
+      }
+
       document.getElementById("statusLead").addEventListener("change", e => {
         const show = e.target.value === "Fechado";
         document.getElementById("fechadoFields").classList.toggle("hidden", !show);
       });
-      adicionarContato(); // adicionar contato inicial
     });
-
-    function adicionarContato() {
-      const container = document.getElementById("contatoContainer");
-      const div = document.createElement("div");
-      div.className = "contato-group";
-      div.innerHTML = `
-        <input type="text" name="contatoNome" placeholder="Nome do Contato" />
-        <input type="tel" name="contatoTel" placeholder="Telefone" />
-        <button type="button" onclick="this.parentElement.remove()">❌</button>
-      `;
-      container.appendChild(div);
-    }
 
     document.getElementById("formCliente").addEventListener("submit", async (e) => {
       e.preventDefault();
@@ -125,13 +154,18 @@
       });
       data.contatos = contatos;
 
-      const novaRef = db.ref("clientes").push();
-      await novaRef.set(data);
-      alert("Cliente salvo com sucesso!");
-      document.getElementById("formCliente").reset();
-      document.getElementById("contatoContainer").innerHTML = "";
-      adicionarContato();
-      document.getElementById("fechadoFields").classList.add("hidden");
+      if (idCliente) {
+        await db.ref("clientes/" + idCliente).set(data);
+        alert("Cliente atualizado com sucesso!");
+      } else {
+        const novaRef = db.ref("clientes").push();
+        await novaRef.set(data);
+        alert("Cliente salvo com sucesso!");
+        document.getElementById("formCliente").reset();
+        document.getElementById("contatoContainer").innerHTML = "";
+        adicionarContato();
+        document.getElementById("fechadoFields").classList.add("hidden");
+      }
     });
   </script>
 </body>
