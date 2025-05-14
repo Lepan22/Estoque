@@ -16,12 +16,13 @@
     }
 
     .sidebar {
-      position: absolute;
+      position: fixed;
       top: 10px;
       left: 10px;
       display: flex;
       flex-direction: column;
       gap: 10px;
+      z-index: 10;
     }
 
     .dashboard-button {
@@ -36,9 +37,9 @@
     }
 
     .container {
+      margin-left: 160px;
+      padding: 40px 20px;
       max-width: 1200px;
-      margin: 80px auto 40px;
-      padding: 20px;
     }
 
     h1 {
@@ -77,18 +78,21 @@
       display: grid;
       grid-template-columns: 1fr 1fr;
       gap: 30px;
-      flex-wrap: wrap;
     }
 
     canvas {
       background: white;
       padding: 20px;
       border-radius: 10px;
+      max-height: 300px; /* Reduzido para ~75% */
     }
 
     @media (max-width: 768px) {
       .charts {
         grid-template-columns: 1fr;
+      }
+      .container {
+        margin-left: 20px;
       }
     }
   </style>
@@ -109,6 +113,7 @@
       <div class="kpi"><h2 id="clientesAtivos">0</h2><span>Clientes Ativos</span></div>
       <div class="kpi"><h2 id="receitaMes">R$ 0,00</h2><span>Receita do Mês</span></div>
       <div class="kpi"><h2 id="lucroMes">R$ 0,00</h2><span>Lucro do Mês</span></div>
+      <div class="kpi"><h2 id="eventosMes">0</h2><span>Eventos no Mês</span></div>
     </div>
 
     <div class="charts">
@@ -168,7 +173,7 @@
       const hoje = new Date();
       const mesAtual = hoje.toISOString().slice(0, 7);
 
-      let receita = 0, lucro = 0;
+      let receita = 0, lucro = 0, eventosMes = 0;
 
       eventos.forEach(ev => {
         if (ev.status !== "finalizado") return;
@@ -178,22 +183,21 @@
           const cmv = parseFloat(a.cmvTotal) || 0;
           const equipe = parseFloat(a.custoEquipe) || 0;
           const log = parseFloat(a.custoLogistica) || 0;
-          lucro += receita - cmv - equipe - log;
+          lucro += (parseFloat(a.valorVenda) || 0) - cmv - equipe - log;
+          eventosMes += 1;
         }
       });
 
       document.getElementById("receitaMes").textContent = formatar(receita);
       document.getElementById("lucroMes").textContent = formatar(lucro);
+      document.getElementById("eventosMes").textContent = eventosMes;
     }
 
-    function criarGrafico(id, label, labels, dataset, cor = 'blue') {
+    function criarGrafico(id, label, labels, dataset) {
       const ctx = document.getElementById(id).getContext('2d');
       new Chart(ctx, {
         type: 'bar',
-        data: {
-          labels,
-          datasets: dataset
-        },
+        data: { labels, datasets: dataset },
         options: {
           responsive: true,
           plugins: {
@@ -214,7 +218,7 @@
             label,
             data: dados,
             borderColor: cor,
-            backgroundColor: cor + '55',
+            backgroundColor: cor + '33',
             tension: 0.3,
             fill: true
           }]
