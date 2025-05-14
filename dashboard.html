@@ -4,60 +4,263 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Dashboard</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
   <style>
     body {
       margin: 0;
       font-family: 'Segoe UI', sans-serif;
       background-color: #f4f4f4;
+      color: #333;
+    }
+
+    .sidebar {
+      position: absolute;
+      top: 10px;
+      left: 10px;
       display: flex;
       flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      height: 100vh;
+      gap: 10px;
+    }
+
+    .dashboard-button {
+      padding: 10px 14px;
+      font-size: 14px;
+      border: none;
+      border-radius: 6px;
+      background-color: #007bff;
+      color: white;
+      text-decoration: none;
+      text-align: center;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 80px auto 40px;
       padding: 20px;
     }
 
     h1 {
-      margin-bottom: 30px;
-      color: #333;
-    }
-
-    .button-container {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-      gap: 20px;
-      width: 100%;
-      max-width: 600px;
-    }
-
-    .dashboard-button {
-      padding: 15px 20px;
-      font-size: 16px;
-      border: none;
-      border-radius: 10px;
-      background-color: #007bff;
-      color: white;
-      cursor: pointer;
       text-align: center;
-      text-decoration: none;
-      transition: background-color 0.2s ease;
+      margin-bottom: 20px;
     }
 
-    .dashboard-button:hover {
-      background-color: #0056b3;
+    .kpi-cards {
+      display: flex;
+      gap: 20px;
+      justify-content: space-around;
+      flex-wrap: wrap;
+      margin-bottom: 30px;
+    }
+
+    .kpi {
+      background: white;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      flex: 1 1 200px;
+      text-align: center;
+    }
+
+    .kpi h2 {
+      margin: 0;
+      font-size: 24px;
+    }
+
+    .kpi span {
+      font-size: 14px;
+      color: #666;
+    }
+
+    .charts {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 30px;
+      flex-wrap: wrap;
+    }
+
+    canvas {
+      background: white;
+      padding: 20px;
+      border-radius: 10px;
+    }
+
+    @media (max-width: 768px) {
+      .charts {
+        grid-template-columns: 1fr;
+      }
     }
   </style>
 </head>
 <body>
 
-  <h1>Dashboard</h1>
-
-  <div class="button-container">
-    <a class="dashboard-button" href="https://lepan22.github.io/Estoque/assets/relatorio.html">📊 Relatórios</a>
-    <a class="dashboard-button" href="https://lepan22.github.io/Estoque/assets/produtos.html">📦 Produtos</a>
-    <a class="dashboard-button" href="https://lepan22.github.io/Estoque/lista_clientes.html">👥 Clientes</a>
-    <a class="dashboard-button" href="https://lepan22.github.io/Estoque/evento.html">📅 Eventos</a>
+  <div class="sidebar">
+    <a class="dashboard-button" href="assets/relatorio.html">📊 Relatórios</a>
+    <a class="dashboard-button" href="assets/produtos.html">📦 Produtos</a>
+    <a class="dashboard-button" href="lista_clientes.html">👥 Clientes</a>
+    <a class="dashboard-button" href="evento.html">📅 Eventos</a>
   </div>
 
+  <div class="container">
+    <h1>Dashboard</h1>
+
+    <div class="kpi-cards">
+      <div class="kpi"><h2 id="clientesAtivos">0</h2><span>Clientes Ativos</span></div>
+      <div class="kpi"><h2 id="receitaMes">R$ 0,00</h2><span>Receita do Mês</span></div>
+      <div class="kpi"><h2 id="lucroMes">R$ 0,00</h2><span>Lucro do Mês</span></div>
+    </div>
+
+    <div class="charts">
+      <canvas id="chartVendas"></canvas>
+      <canvas id="chartLucro"></canvas>
+      <canvas id="chartPerda"></canvas>
+      <canvas id="chartEventos"></canvas>
+    </div>
+  </div>
+
+  <script>
+    const firebaseConfig = {
+      databaseURL: "https://controleestoquelepan-default-rtdb.firebaseio.com"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    function formatar(valor) {
+      return "R$ " + (valor || 0).toFixed(2).replace('.', ',');
+    }
+
+    function agruparPorMes(eventos) {
+      const mapa = {};
+      eventos.forEach(ev => {
+        if (ev.status !== "finalizado") return;
+        const mes = ev.data?.slice(0, 7); // formato YYYY-MM
+        if (!mapa[mes]) {
+          mapa[mes] = { receita: 0, estimativa: 0, perda: 0, lucro: 0, eventos: 0 };
+        }
+        const a = ev.analise || {};
+        const receita = parseFloat(a.valorVenda) || 0;
+        const estimativa = parseFloat(a.estimativaTotal) || 0;
+        const perda = parseFloat(a.valorPerda) || 0;
+        const cmv = parseFloat(a.cmvTotal) || 0;
+        const equipe = parseFloat(a.custoEquipe) || 0;
+        const logistica = parseFloat(a.custoLogistica) || 0;
+        const lucro = receita - cmv - equipe - logistica;
+
+        mapa[mes].receita += receita;
+        mapa[mes].estimativa += estimativa;
+        mapa[mes].perda += perda;
+        mapa[mes].lucro += lucro;
+        mapa[mes].eventos += 1;
+      });
+
+      const ordenado = Object.keys(mapa).sort().map(mes => ({
+        mes,
+        ...mapa[mes]
+      }));
+      return ordenado;
+    }
+
+    function atualizarKPIs(eventos, clientes) {
+      const ativos = Object.values(clientes || {}).filter(c => c.statusCliente === "Ativo").length;
+      document.getElementById("clientesAtivos").textContent = ativos;
+
+      const hoje = new Date();
+      const mesAtual = hoje.toISOString().slice(0, 7);
+
+      let receita = 0, lucro = 0;
+
+      eventos.forEach(ev => {
+        if (ev.status !== "finalizado") return;
+        if ((ev.data || "").startsWith(mesAtual)) {
+          const a = ev.analise || {};
+          receita += parseFloat(a.valorVenda) || 0;
+          const cmv = parseFloat(a.cmvTotal) || 0;
+          const equipe = parseFloat(a.custoEquipe) || 0;
+          const log = parseFloat(a.custoLogistica) || 0;
+          lucro += receita - cmv - equipe - log;
+        }
+      });
+
+      document.getElementById("receitaMes").textContent = formatar(receita);
+      document.getElementById("lucroMes").textContent = formatar(lucro);
+    }
+
+    function criarGrafico(id, label, labels, dataset, cor = 'blue') {
+      const ctx = document.getElementById(id).getContext('2d');
+      new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels,
+          datasets: dataset
+        },
+        options: {
+          responsive: true,
+          plugins: {
+            legend: { position: 'top' },
+            title: { display: true, text: label }
+          }
+        }
+      });
+    }
+
+    function criarLinha(id, label, labels, dados, cor = 'green') {
+      const ctx = document.getElementById(id).getContext('2d');
+      new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels,
+          datasets: [{
+            label,
+            data: dados,
+            borderColor: cor,
+            backgroundColor: cor + '55',
+            tension: 0.3,
+            fill: true
+          }]
+        },
+        options: {
+          responsive: true,
+          plugins: {
+            legend: { position: 'top' },
+            title: { display: true, text: label }
+          }
+        }
+      });
+    }
+
+    async function carregarDashboard() {
+      const [eventosSnap, clientesSnap] = await Promise.all([
+        db.ref("eventos").once("value"),
+        db.ref("clientes").once("value")
+      ]);
+
+      const eventos = Object.values(eventosSnap.val() || {});
+      const clientes = clientesSnap.val() || {};
+      const meses = agruparPorMes(eventos);
+      const labels = meses.map(m => m.mes);
+
+      atualizarKPIs(eventos, clientes);
+
+      criarGrafico("chartVendas", "Estimativa vs Venda", labels, [
+        {
+          label: "Estimativa",
+          data: meses.map(m => m.estimativa),
+          backgroundColor: "#ccc"
+        },
+        {
+          label: "Venda Real",
+          data: meses.map(m => m.receita),
+          backgroundColor: "#007bff"
+        }
+      ]);
+
+      criarLinha("chartLucro", "Lucro por Mês", labels, meses.map(m => m.lucro), "#28a745");
+      criarLinha("chartPerda", "Perda por Mês", labels, meses.map(m => m.perda), "#dc3545");
+      criarLinha("chartEventos", "Eventos por Mês", labels, meses.map(m => m.eventos), "#17a2b8");
+    }
+
+    carregarDashboard();
+  </script>
 </body>
 </html>
