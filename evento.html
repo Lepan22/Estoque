@@ -269,12 +269,19 @@
     }
 
     document.addEventListener("DOMContentLoaded", carregarEventos);
-    document.addEventListener("change", carregarEventos);
+    statusFiltro.addEventListener("change", carregarEventos);
+dataInicio.addEventListener("change", carregarEventos);
+dataFim.addEventListener("change", carregarEventos);
+nomeFiltro.addEventListener("change", carregarEventos);
   </script>
 </head>
 <body>
   <div class="container">
-    <h1>Painel de Eventos</h1>
+    $1
+    <div style="text-align: center; margin-bottom: 20px;">
+      <a href="https://lepan22.github.io/Estoque/assets/criar-evento.html" class="botao">➕ Criar Evento</a>
+      <a href="https://lepan22.github.io/Estoque/dashboard.html" class="botao">📊 Dashboard</a>
+    </div>
 
     <div class="resumo-container">
       <div class="resumo-box">Eventos: <span id="total-eventos">0</span></div>
