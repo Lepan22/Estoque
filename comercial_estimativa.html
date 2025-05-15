@@ -19,7 +19,7 @@
     <div class="container-principal">
       <h1>Nova Estimativa Comercial</h1>
 
-      <form id="estimativa-form" onsubmit="salvarEstimativa(event)">
+      <form id="estimativa-form">
         <div class="form-row three-cols">
           <div class="form-grupo">
             <label for="data">Data (Mês/Ano)</label>
@@ -40,107 +40,22 @@
         <button type="submit">Salvar Estimativa</button>
       </form>
 
-      <div id="mensagem" style="margin-top: 10px; display:none;"></div>
-
       <h3>Estimativas Registradas</h3>
       <table id="tabela-estimativas" style="width:100%; border-collapse: collapse; margin-top: 15px;">
         <thead>
           <tr style="background-color: #ddd;">
             <th style="padding: 8px;">Data</th>
             <th>Categoria</th>
-            <th>Valor Estimado</th>
+            <th>Valor</th>
             <th>Ações</th>
           </tr>
         </thead>
-        <tbody id="corpo-tabela">
-          <!-- Dados renderizados -->
-        </tbody>
+        <tbody id="corpo-tabela"></tbody>
       </table>
     </div>
   </main>
 
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-    import { getDatabase, ref, push, onValue, remove, update } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
-
-    const firebaseConfig = {
-      apiKey: "AIzaSyBN-bmzgrlzjmrKMmuClZ8LVll-vJyx-aE",
-      authDomain: "controleestoquelepan.firebaseapp.com",
-      databaseURL: "https://controleestoquelepan-default-rtdb.firebaseio.com",
-      projectId: "controleestoquelepan",
-      storageBucket: "controleestoquelepan.appspot.com",
-      messagingSenderId: "779860276544",
-      appId: "1:779860276544:web:f45844571a8c0bab1576a5"
-    };
-
-    const app = initializeApp(firebaseConfig);
-    const db = getDatabase(app);
-
-    const form = document.getElementById('estimativa-form');
-    const tabela = document.getElementById('corpo-tabela');
-    let idEditando = null;
-
-    function limparFormulario() {
-      form.reset();
-      idEditando = null;
-    }
-
-    window.salvarEstimativa = function (e) {
-      e.preventDefault();
-      const data = document.getElementById('data').value;
-      const categoria = document.getElementById('categoria').value;
-      const valor = parseFloat(document.getElementById('valor').value);
-
-      if (idEditando) {
-        update(ref(db, 'comercial_estimativa/' + idEditando), { data, categoria, valor });
-      } else {
-        push(ref(db, 'comercial_estimativa'), { data, categoria, valor });
-      }
-
-      limparFormulario();
-    }
-
-    function carregarEstimativas() {
-      const estimativaRef = ref(db, 'comercial_estimativa');
-      onValue(estimativaRef, (snapshot) => {
-        tabela.innerHTML = '';
-        let alternar = false;
-
-        snapshot.forEach(child => {
-          const item = child.val();
-          const id = child.key;
-          const row = document.createElement('tr');
-          row.style.backgroundColor = alternar ? '#f9f9f9' : '#ffffff';
-          alternar = !alternar;
-
-          row.innerHTML = `
-            <td style="padding: 8px;">${item.data}</td>
-            <td>${item.categoria}</td>
-            <td>R$ ${item.valor.toFixed(2)}</td>
-            <td>
-              <button onclick="editarEstimativa('${id}', '${item.data}', '${item.categoria}', ${item.valor})">Editar</button>
-              <button onclick="excluirEstimativa('${id}')">Excluir</button>
-            </td>
-          `;
-          tabela.appendChild(row);
-        });
-      });
-    }
-
-    window.editarEstimativa = function(id, data, categoria, valor) {
-      document.getElementById('data').value = data;
-      document.getElementById('categoria').value = categoria;
-      document.getElementById('valor').value = valor;
-      idEditando = id;
-    }
-
-    window.excluirEstimativa = function(id) {
-      if (confirm("Deseja excluir esta estimativa?")) {
-        remove(ref(db, 'comercial_estimativa/' + id));
-      }
-    }
-
-    carregarEstimativas();
-  </script>
+  <!-- JS na pasta assets -->
+  <script type="module" src="assets/comercial_estimativa.js"></script>
 </body>
 </html>
