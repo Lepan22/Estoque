@@ -16,12 +16,11 @@
   <div class="sidebar" id="sidebarMenu">
     <h2>LePan</h2>
     <ul>
-      <li><a href="#" class="active">Dashboard</a></li> <!-- Link para o próprio dashboard -->
+      <li><a href="#" class="active">Dashboard</a></li>
       <li><a href="assets/relatorio.html">📊 Relatórios</a></li>
       <li><a href="assets/produtos.html">📦 Produtos</a></li>
       <li><a href="lista_clientes.html">👥 Clientes</a></li>
       <li><a href="evento.html">📅 Eventos</a></li>
-      <!-- Adicionar outros links relevantes do sistema aqui -->
     </ul>
   </div>
 
@@ -29,13 +28,27 @@
     <div class="container-principal">
       <h1>Dashboard</h1>
 
-      <div class="kpi-cards">
-        <div class="kpi"><h2 id="clientesAtivos">0</h2><span>Clientes Ativos</span></div>
-        <div class="kpi"><h2 id="receitaMes">R$ 0,00</h2><span>Receita do Mês</span></div>
-        <div class="kpi"><h2 id="lucroMes">R$ 0,00</h2><span>Lucro do Mês</span></div>
-        <div class="kpi"><h2 id="eventosMes">0</h2><span>Eventos no Mês</span></div>
+      <!-- KPIs alinhados -->
+      <div class="container-kpis-dashboard">
+        <div class="card-kpi-dashboard">
+          <p class="kpi-title">Clientes Ativos</p>
+          <p class="kpi-value" id="clientesAtivos">0</p>
+        </div>
+        <div class="card-kpi-dashboard">
+          <p class="kpi-title">Receita do Mês</p>
+          <p class="kpi-value" id="receitaMes">R$ 0,00</p>
+        </div>
+        <div class="card-kpi-dashboard">
+          <p class="kpi-title">Lucro do Mês</p>
+          <p class="kpi-value" id="lucroMes">R$ 0,00</p>
+        </div>
+        <div class="card-kpi-dashboard">
+          <p class="kpi-title">Eventos no Mês</p>
+          <p class="kpi-value" id="eventosMes">0</p>
+        </div>
       </div>
 
+      <!-- Gráficos ainda não ajustados -->
       <div class="charts-grid">
         <div class="chart-container">
           <canvas id="chartVendas"></canvas>
@@ -54,7 +67,6 @@
   </div>
 
   <script>
-    // Script do menu toggle
     const menuToggleBtn = document.getElementById('menuToggleBtn');
     const sidebarMenu = document.getElementById('sidebarMenu');
     if (menuToggleBtn && sidebarMenu) {
@@ -63,7 +75,6 @@
         });
     }
 
-    // Script original do dashboard (Firebase, Charts, etc.)
     const firebaseConfig = {
       databaseURL: "https://controleestoquelepan-default-rtdb.firebaseio.com"
     };
@@ -78,7 +89,7 @@
       const mapa = {};
       eventos.forEach(ev => {
         if (ev.status !== "finalizado") return;
-        const mes = ev.data?.slice(0, 7); // formato YYYY-MM
+        const mes = ev.data?.slice(0, 7);
         if (!mapa[mes]) {
           mapa[mes] = { receita: 0, estimativa: 0, perda: 0, lucro: 0, eventos: 0 };
         }
@@ -98,11 +109,7 @@
         mapa[mes].eventos += 1;
       });
 
-      const ordenado = Object.keys(mapa).sort().map(mes => ({
-        mes,
-        ...mapa[mes]
-      }));
-      return ordenado;
+      return Object.keys(mapa).sort().map(mes => ({ mes, ...mapa[mes] }));
     }
 
     function atualizarKPIs(eventos, clientes) {
@@ -139,7 +146,7 @@
         data: { labels, datasets: dataset },
         options: {
           responsive: true,
-          maintainAspectRatio: false, // Adicionado para melhor controle com CSS
+          maintainAspectRatio: false,
           plugins: {
             legend: { position: 'top' },
             title: { display: true, text: label }
@@ -165,7 +172,7 @@
         },
         options: {
           responsive: true,
-          maintainAspectRatio: false, // Adicionado para melhor controle com CSS
+          maintainAspectRatio: false,
           plugins: {
             legend: { position: 'top' },
             title: { display: true, text: label }
