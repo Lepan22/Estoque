@@ -5,6 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Dashboard - LePan</title>
   <link rel="stylesheet" href="dash_style.css" />
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 </head>
 <body>
 
@@ -28,14 +30,21 @@
       <div class="kpi-grid">
         <div class="kpi-card">
           <p class="kpi-title">Clientes Ativos</p>
-          <p class="kpi-value" id="clientesAtivos">42</p>
+          <p class="kpi-value" id="clientesAtivos">0</p>
         </div>
         <div class="kpi-card">
           <p class="kpi-title">Eventos no Mês</p>
-          <p class="kpi-value" id="eventosMes">7</p>
+          <p class="kpi-value" id="eventosMes">0</p>
+        </div>
+        <div class="kpi-card">
+          <p class="kpi-title">Receita do Mês</p>
+          <p class="kpi-value" id="receitaMes">R$ 0,00</p>
+        </div>
+        <div class="kpi-card">
+          <p class="kpi-title">Lucro do Mês</p>
+          <p class="kpi-value" id="lucroMes">R$ 0,00</p>
         </div>
       </div>
-
     </div>
   </div>
 
@@ -43,6 +52,58 @@
     document.getElementById("menuToggleBtn").addEventListener("click", () => {
       document.getElementById("sidebarMenu").classList.toggle("active");
     });
+
+    const firebaseConfig = {
+      databaseURL: "https://controleestoquelepan-default-rtdb.firebaseio.com"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    function formatar(valor) {
+      return "R$ " + (valor || 0).toFixed(2).replace('.', ',');
+    }
+
+    function atualizarKPIs(eventos, clientes) {
+      const ativos = Object.values(clientes || {}).filter(c => c.statusCliente === "Ativo").length;
+      document.getElementById("clientesAtivos").textContent = ativos;
+
+      const hoje = new Date();
+      const mesAtual = hoje.toISOString().slice(0, 7);
+
+      let receita = 0, lucro = 0, eventosMes = 0;
+
+      eventos.forEach(ev => {
+        if (ev.status !== "finalizado") return;
+        if ((ev.data || "").startsWith(mesAtual)) {
+          const a = ev.analise || {};
+          receita += parseFloat(a.vendaPDV) || 0;
+
+          const cmv = parseFloat(a.cmvTotal) || 0;
+          const equipe = parseFloat(a.custoEquipe) || 0;
+          const log = parseFloat(a.custoLogistica) || 0;
+          lucro += (parseFloat(a.valorVenda) || 0) - cmv - equipe - log;
+
+          eventosMes += 1;
+        }
+      });
+
+      document.getElementById("receitaMes").textContent = formatar(receita);
+      document.getElementById("lucroMes").textContent = formatar(lucro);
+      document.getElementById("eventosMes").textContent = eventosMes;
+    }
+
+    async function carregarDashboard() {
+      const [eventosSnap, clientesSnap] = await Promise.all([
+        db.ref("eventos").once("value"),
+        db.ref("clientes").once("value")
+      ]);
+
+      const eventos = Object.values(eventosSnap.val() || {});
+      const clientes = clientesSnap.val() || {};
+      atualizarKPIs(eventos, clientes);
+    }
+
+    carregarDashboard();
   </script>
 </body>
 </html>
