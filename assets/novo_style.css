@@ -33,8 +33,9 @@ body {
     text-align: center;
 }
 
-.sidebar nav ul {
-    list-style: none;
+/* Modificado para maior especificidade e remover bullets */
+.sidebar nav > ul {
+    list-style: none !important; /* Adicionado !important para garantir a remoção dos bullets */
     padding: 0;
     margin: 0;
     width: 100%;
@@ -196,39 +197,43 @@ header h1 {
     border: none;
     cursor: pointer;
     color: white; /* Cor do texto/ícone padrão para branco */
+    /* Garantir que o fundo não seja transparente por padrão se nenhuma classe específica for aplicada */
+    background-color: #6c757d; /* Cinza como fallback, se nenhuma classe específica for aplicada */
 }
 
 /* Cores específicas para botões de ação para melhor contraste */
-.table-container td .actions a.view-btn {
-    background-color: #007bff; /* Azul */
-    color: white;
+/* Assegure que estas classes estão no seu HTML */
+.table-container td .actions a.view-btn,
+.table-container td .actions button.view-btn {
+    background-color: #007bff !important; /* Azul */
+    color: white !important;
 }
 
 .table-container td .actions a.report-btn,
 .table-container td .actions button.report-btn {
-    background-color: #17a2b8; /* Info (azul claro) */
-    color: white;
+    background-color: #17a2b8 !important; /* Info (azul claro) */
+    color: white !important;
 }
 
 .table-container td .actions a.edit-btn,
 .table-container td .actions button.edit-btn {
-    background-color: #ffc107; /* Amarelo */
-    color: #333; /* Texto escuro para fundo claro */
+    background-color: #ffc107 !important; /* Amarelo */
+    color: #333 !important; /* Texto escuro para fundo claro */
 }
 
 .table-container td .actions button.pdf-btn {
-    background-color: #dc3545; /* Vermelho */
-    color: white;
+    background-color: #dc3545 !important; /* Vermelho */
+    color: white !important;
 }
 
 .table-container td .actions button.list-btn {
-    background-color: #28a745; /* Verde */
-    color: white;
+    background-color: #28a745 !important; /* Verde */
+    color: white !important;
 }
 
 .table-container td .actions button.delete-btn {
-    background-color: #6c757d; /* Cinza */
-    color: white;
+    background-color: #6c757d !important; /* Cinza */
+    color: white !important;
 }
 
 
