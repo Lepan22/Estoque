@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Dashboard - Novo Layout</title>
-  <link rel="stylesheet" href="assets/novo_style.css">
+  <title>Dashboard - LePan</title>
+  <link rel="stylesheet" href="dash_style.css" />
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
@@ -28,40 +28,30 @@
     <div class="container-principal">
       <h1>Dashboard</h1>
 
-      <!-- KPIs com tamanhos proporcionais -->
-      <div class="container-kpis-dashboard">
-        <div class="card-kpi-dashboard" style="flex: 1 1 20%;">
+      <div class="kpi-container">
+        <div class="kpi-card">
           <p class="kpi-title">Clientes Ativos</p>
           <p class="kpi-value" id="clientesAtivos">0</p>
         </div>
-        <div class="card-kpi-dashboard" style="flex: 1 1 30%;">
+        <div class="kpi-card">
           <p class="kpi-title">Receita do Mês</p>
           <p class="kpi-value" id="receitaMes">R$ 0,00</p>
         </div>
-        <div class="card-kpi-dashboard" style="flex: 1 1 30%;">
+        <div class="kpi-card">
           <p class="kpi-title">Lucro do Mês</p>
           <p class="kpi-value" id="lucroMes">R$ 0,00</p>
         </div>
-        <div class="card-kpi-dashboard" style="flex: 1 1 20%;">
+        <div class="kpi-card">
           <p class="kpi-title">Eventos no Mês</p>
           <p class="kpi-value" id="eventosMes">0</p>
         </div>
       </div>
 
-      <!-- Gráficos (próxima etapa de alinhamento) -->
-      <div class="charts-grid">
-        <div class="chart-container">
-          <canvas id="chartVendas"></canvas>
-        </div>
-        <div class="chart-container">
-          <canvas id="chartLucro"></canvas>
-        </div>
-        <div class="chart-container">
-          <canvas id="chartPerda"></canvas>
-        </div>
-        <div class="chart-container">
-          <canvas id="chartEventos"></canvas>
-        </div>
+      <div class="chart-container-grid">
+        <div class="chart-box"><canvas id="chartVendas"></canvas></div>
+        <div class="chart-box"><canvas id="chartLucro"></canvas></div>
+        <div class="chart-box"><canvas id="chartPerda"></canvas></div>
+        <div class="chart-box"><canvas id="chartEventos"></canvas></div>
       </div>
     </div>
   </div>
@@ -69,11 +59,9 @@
   <script>
     const menuToggleBtn = document.getElementById('menuToggleBtn');
     const sidebarMenu = document.getElementById('sidebarMenu');
-    if (menuToggleBtn && sidebarMenu) {
-      menuToggleBtn.addEventListener('click', () => {
-        sidebarMenu.classList.toggle('active');
-      });
-    }
+    menuToggleBtn.addEventListener('click', () => {
+      sidebarMenu.classList.toggle('active');
+    });
 
     const firebaseConfig = {
       databaseURL: "https://controleestoquelepan-default-rtdb.firebaseio.com"
@@ -195,16 +183,8 @@
       atualizarKPIs(eventos, clientes);
 
       criarGrafico("chartVendas", "Estimativa vs Venda", labels, [
-        {
-          label: "Estimativa",
-          data: meses.map(m => m.estimativa),
-          backgroundColor: "#ccc"
-        },
-        {
-          label: "Venda Real",
-          data: meses.map(m => m.receita),
-          backgroundColor: "#007bff"
-        }
+        { label: "Estimativa", data: meses.map(m => m.estimativa), backgroundColor: "#ccc" },
+        { label: "Venda Real", data: meses.map(m => m.receita), backgroundColor: "#007bff" }
       ]);
 
       criarLinha("chartLucro", "Lucro por Mês", labels, meses.map(m => m.lucro), "#28a745");
