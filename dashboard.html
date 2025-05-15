@@ -3,12 +3,9 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Dashboard - Novo Layout</title>
-  <link rel="stylesheet" href="assets/novo_style.css"> <!-- Certifique-se que o caminho para o CSS está correto -->
+  <title>Dashboard - Layout Ajustado e Dados Reais</title>
+  <link rel="stylesheet" href="assets/novo_style.css">
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <style>
-    /* Estilos adicionais podem ser colocados aqui ou no novo_style.css */
-  </style>
 </head>
 <body>
   <div class="sidebar" id="sidebarMenu">
@@ -28,43 +25,41 @@
     <div class="container-principal">
       <h1>Dashboard</h1>
 
-      <!-- Container para os KPIs -->
       <div class="container-kpis-dashboard">
         <div class="card-kpi-dashboard">
           <h3 class="kpi-title">Clientes Ativos</h3>
-          <p class="kpi-value">10</p>
+          <p class="kpi-value" id="kpiClientesAtivos">10</p> <!-- ID para possível atualização dinâmica -->
         </div>
         <div class="card-kpi-dashboard">
           <h3 class="kpi-title">Receita do Mês</h3>
-          <p class="kpi-value">R$ 13291,00</p>
+          <p class="kpi-value" id="kpiReceitaMes">R$ 13291,00</p> <!-- ID para possível atualização dinâmica -->
         </div>
         <div class="card-kpi-dashboard">
           <h3 class="kpi-title">Lucro do Mês</h3>
-          <p class="kpi-value">R$ 6067,22</p>
+          <p class="kpi-value" id="kpiLucroMes">R$ 6067,22</p> <!-- ID para possível atualização dinâmica -->
         </div>
         <div class="card-kpi-dashboard">
           <h3 class="kpi-title">Eventos no Mês</h3>
-          <p class="kpi-value">6</p>
+          <p class="kpi-value" id="kpiEventosMes">6</p> <!-- ID para possível atualização dinâmica -->
         </div>
       </div>
 
-      <!-- Container para os Gráficos -->
       <div class="container-charts-dashboard">
         <div class="chart-item-dashboard">
           <h3>Estimativa vs Venda Real (Mês a Mês)</h3>
           <canvas id="vendasChart"></canvas>
         </div>
         <div class="chart-item-dashboard">
-          <h3>Lucro por Mês (Últimos 6 meses)</h3>
+          <h3>Lucro por Mês</h3>
           <canvas id="lucroChart"></canvas>
         </div>
         <div class="chart-item-dashboard">
-          <h3>Perda por Mês (Últimos 6 meses)</h3>
+          <h3>Perda por Mês</h3>
           <canvas id="perdaChart"></canvas>
         </div>
         <div class="chart-item-dashboard">
           <h3>Eventos por Mês (Evolução)</h3>
-          <canvas id="eventosEvolucaoChart"></canvas> <!-- ID alterado -->
+          <canvas id="eventosEvolucaoChart"></canvas>
         </div>
       </div>
 
@@ -76,104 +71,104 @@
       document.getElementById("sidebarMenu").classList.toggle("active");
     }
 
-    // Função para buscar e processar dados de estimativa do Firebase
-    async function carregarDadosEstimativa() {
+    async function carregarDadosEstimativaFirebase() {
       try {
-        // Para testar localmente, você pode servir o arquivo firebase_estimativa_data.json
-        // ou substituir pela URL real se o CORS estiver configurado no Firebase.
-        // Por enquanto, vamos simular o fetch com os dados já obtidos.
+        // Simulação dos dados do Firebase como recebidos anteriormente
         const dadosEstimativaFirebase = {"-OQK50IP7P24i4aDxVYd":{"categoria":"Venda Evento","data":"2025-05","valor":35000},"-OQK5K4tf-Z_X1cZgqwF":{"categoria":"Venda Evento","data":"2025-06","valor":30000},"-OQK5NRFH4z5Qb19qHLz":{"categoria":"Venda Evento","data":"2025-07","valor":15000},"-OQK5Q3NzUG1gQKePObM":{"categoria":"Venda Evento","data":"2025-08","valor":35000},"-OQK5TQsj1sPZ_w2r2Cy":{"categoria":"Venda Evento","data":"2025-09","valor":35000},"-OQK5W2V_7y3rgkeP4QB":{"categoria":"Venda Evento","data":"2025-10","valor":25000},"-OQK5YSc97UgZkMRDrQL":{"categoria":"Venda Evento","data":"2025-11","valor":35000},"-OQK5a9-CyhGKxGyE5ld":{"categoria":"Venda Evento","data":"2025-12","valor":30000}};
         
         const entradas = Object.values(dadosEstimativaFirebase);
-        entradas.sort((a, b) => new Date(a.data) - new Date(b.data)); // Ordena por data
+        entradas.sort((a, b) => new Date(a.data + '-01') - new Date(b.data + '-01')); // Ordena por data (YYYY-MM)
 
-        const labels = entradas.map(e => e.data); // Formato YYYY-MM
+        const labels = entradas.map(e => e.data); 
         const valoresEstimativa = entradas.map(e => e.valor);
-        
         return { labels, valoresEstimativa };
       } catch (error) {
-        console.error("Erro ao carregar dados de estimativa:", error);
+        console.error("Erro ao carregar dados de estimativa do Firebase (simulado):", error);
         return { labels: [], valoresEstimativa: [] };
       }
     }
 
-    // Dados de exemplo para Venda Real Mensal (substitua pelos seus dados reais)
-    // Certifique-se que a ordem e quantidade de meses correspondem aos dados de estimativa
-    const dadosVendaRealMensalExemplo = {
-        "2025-05": 13291, // Exemplo do KPI atual
-        "2025-06": 28000,
-        "2025-07": 16000,
-        "2025-08": 33000,
-        "2025-09": 36000,
-        "2025-10": 23000,
-        "2025-11": 37000,
-        "2025-12": 29000
-    };
+    // Função para buscar dados reais - SUBSTITUA ESTA LÓGICA PELA SUA FONTE DE DADOS
+    function obterDadosReaisVendaMensal(labelsEstimativa) {
+      // Exemplo: Se você tiver um objeto com vendas reais por mês (YYYY-MM)
+      // const vendasReais = { "2025-05": 13291, "2025-06": 28000, ... };
+      // return labelsEstimativa.map(label => vendasReais[label] || 0);
+      console.warn(" obterDadosReaisVendaMensal(): Usando array de zeros. Substitua pela sua lógica de dados reais.");
+      return new Array(labelsEstimativa.length).fill(0); // Retorna zeros se não houver dados reais
+    }
 
-    // Dados de exemplo para Evolução de Eventos por Mês (substitua pelos seus dados reais)
-    const dadosEventosEvolucaoExemplo = {
-        labels: ["2025-01", "2025-02", "2025-03", "2025-04", "2025-05", "2025-06"],
-        quantidades: [3, 5, 4, 7, 6, 8] // Quantidade de eventos por mês
-    };
+    function obterDadosReaisEventosMensal() {
+      // Exemplo: { labels: ["2025-01", ...], quantidades: [3, ...] }
+      console.warn("obterDadosReaisEventosMensal(): Usando dados vazios. Substitua pela sua lógica de dados reais.");
+      return { labels: [], quantidades: [] };
+    }
+
+    function obterDadosReaisLucroMensal() {
+      console.warn("obterDadosReaisLucroMensal(): Usando dados vazios. Substitua pela sua lógica de dados reais.");
+      return { labels: [], valores: [] };
+    }
+
+    function obterDadosReaisPerdaMensal() {
+      console.warn("obterDadosReaisPerdaMensal(): Usando dados vazios. Substitua pela sua lógica de dados reais.");
+      return { labels: [], valores: [] };
+    }
 
     async function inicializarGraficos() {
-      const { labels: labelsEstimativa, valoresEstimativa } = await carregarDadosEstimativa();
-      
-      // Mapear os valores de Venda Real para corresponder aos labels da Estimativa
-      const valoresVendaReal = labelsEstimativa.map(label => dadosVendaRealMensalExemplo[label] || 0);
+      const { labels: labelsEstimativa, valoresEstimativa } = await carregarDadosEstimativaFirebase();
+      const valoresVendaReal = obterDadosReaisVendaMensal(labelsEstimativa);
+      const dadosEventosReais = obterDadosReaisEventosMensal();
+      const dadosLucroReais = obterDadosReaisLucroMensal();
+      const dadosPerdaReais = obterDadosReaisPerdaMensal();
 
       // Gráfico de Vendas (Estimativa vs Venda Real Mês a Mês)
       const vendasCtx = document.getElementById("vendasChart").getContext("2d");
       new Chart(vendasCtx, {
         type: "bar",
         data: {
-          labels: labelsEstimativa, // Labels dos meses da estimativa
+          labels: labelsEstimativa,
           datasets: [
-            { label: "Estimativa", data: valoresEstimativa, backgroundColor: "rgba(200, 200, 200, 0.7)", borderColor: "rgba(200, 200, 200, 1)", borderWidth: 1 },
+            { label: "Estimativa (Firebase)", data: valoresEstimativa, backgroundColor: "rgba(200, 200, 200, 0.7)", borderColor: "rgba(200, 200, 200, 1)", borderWidth: 1 },
             { label: "Venda Real (PDV)", data: valoresVendaReal, backgroundColor: "rgba(0, 123, 255, 0.7)", borderColor: "rgba(0, 123, 255, 1)", borderWidth: 1 }
           ]
         },
-        options: { scales: { y: { beginAtZero: true } } }
+        options: { scales: { y: { beginAtZero: true } }, responsive: true, maintainAspectRatio: false }
       });
 
-      // Gráfico de Lucro (mantido como exemplo, ajuste conforme seus dados reais)
-      const labelsMesesExemplo = ["Dez/24", "Jan/25", "Fev/25", "Mar/25", "Abr/25", "Mai/25"];
+      // Gráfico de Lucro
       const lucroCtx = document.getElementById("lucroChart").getContext("2d");
       new Chart(lucroCtx, {
         type: "line",
         data: {
-          labels: labelsMesesExemplo,
-          datasets: [{ label: "Lucro por Mês", data: [5000, 5500, 4800, 6200, 5800, 6067.22], borderColor: "green", fill: false, tension: 0.1 }]
+          labels: dadosLucroReais.labels, // Usar labels dos dados reais
+          datasets: [{ label: "Lucro por Mês", data: dadosLucroReais.valores, borderColor: "green", fill: false, tension: 0.1 }]
         },
-        options: { scales: { y: { beginAtZero: true } } }
+        options: { scales: { y: { beginAtZero: true } }, responsive: true, maintainAspectRatio: false }
       });
 
-      // Gráfico de Perda (mantido como exemplo, ajuste conforme seus dados reais)
+      // Gráfico de Perda
       const perdaCtx = document.getElementById("perdaChart").getContext("2d");
       new Chart(perdaCtx, {
         type: "line",
         data: {
-          labels: labelsMesesExemplo,
-          datasets: [{ label: "Perda por Mês", data: [300, 200, 400, 150, 250, 100], borderColor: "red", fill: false, tension: 0.1 }]
+          labels: dadosPerdaReais.labels, // Usar labels dos dados reais
+          datasets: [{ label: "Perda por Mês", data: dadosPerdaReais.valores, borderColor: "red", fill: false, tension: 0.1 }]
         },
-        options: { scales: { y: { beginAtZero: true } } }
+        options: { scales: { y: { beginAtZero: true } }, responsive: true, maintainAspectRatio: false }
       });
 
       // Gráfico de Evolução de Eventos por Mês
       const eventosEvolucaoCtx = document.getElementById("eventosEvolucaoChart").getContext("2d");
       new Chart(eventosEvolucaoCtx, {
-        type: "bar", // Pode ser 'line' também
+        type: "bar",
         data: {
-          labels: dadosEventosEvolucaoExemplo.labels,
-          datasets: [{ label: "Quantidade de Eventos", data: dadosEventosEvolucaoExemplo.quantidades, backgroundColor: "rgba(255, 159, 64, 0.7)", borderColor: "rgba(255, 159, 64, 1)", borderWidth: 1 }]
+          labels: dadosEventosReais.labels, // Usar labels dos dados reais
+          datasets: [{ label: "Quantidade de Eventos", data: dadosEventosReais.quantidades, backgroundColor: "rgba(255, 159, 64, 0.7)", borderColor: "rgba(255, 159, 64, 1)", borderWidth: 1 }]
         },
-        options: { scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } } } // Garante que o eixo Y conte de 1 em 1
+        options: { scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } }, responsive: true, maintainAspectRatio: false }
       });
     }
 
-    // Inicializa os gráficos quando a página carregar
     document.addEventListener("DOMContentLoaded", inicializarGraficos);
-
   </script>
 </body>
 </html>
