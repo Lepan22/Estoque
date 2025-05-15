@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <title>Lista de Clientes</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <!-- Alterado para novo_style_v4.css e removido style.css antigo e <style> embutido -->
+  <!-- Corrigido o caminho para o CSS e removido style.css antigo e <style> embutido -->
   <link href="assets/novo_style_v4.css" rel="stylesheet" />
 </head>
 <body>
@@ -27,16 +27,15 @@
       <h1>Lista de Clientes Fechados</h1>
 
       <div class="form-grupo" style="margin-bottom: 20px;">
-        <!-- Adicionado margin-bottom para separar do botão e da tabela -->
         <label for="filtroNome" class="sr-only">Buscar por nome do evento...</label>
         <input type="text" id="filtroNome" placeholder="Buscar por nome do evento..." />
       </div>
       
       <div style="margin-bottom: 20px;">
-        <button class="botao" onclick="window.location.href='clientes.html'">Criar Novo Cliente</button>
-        <button class="botao" onclick="window.location.href='leads.html'">Leads</button> 
-        <!-- Botão Leads como primário também, pode ser alterado para botao-secundario se preferir -->
-        <button class="botao botao-secundario" onclick="window.location.href='dashboard.html'">Voltar</button>
+        <!-- Botões estilizados para parecerem com o menu lateral -->
+        <button style="background-color: var(--cor-primaria-menu); color: var(--cor-texto-menu); padding: 10px 15px; border-radius: var(--borda-radius-padrao); margin-bottom: 8px; font-size: 0.85rem; border: none; cursor: pointer;" onclick="window.location.href=	'clientes.html'">Criar Novo Cliente</button>
+        <button style="background-color: var(--cor-primaria-menu); color: var(--cor-texto-menu); padding: 10px 15px; border-radius: var(--borda-radius-padrao); margin-bottom: 8px; font-size: 0.85rem; border: none; cursor: pointer;" onclick="window.location.href=	'leads.html'">Leads</button>
+        <button style="background-color: #6c757d; color: white; padding: 10px 15px; border-radius: var(--borda-radius-padrao); margin-bottom: 8px; font-size: 0.85rem; border: none; cursor: pointer;" onclick="window.location.href=	'dashboard.html'">Voltar</button>
       </div>
 
       <table id="tabelaClientes" class="tabela-moderna">
@@ -93,13 +92,14 @@
 
       lista.forEach(d => {
         const tr = document.createElement("tr");
+        // Botão de editar na tabela também pode usar o estilo do menu se desejado, ou manter o botao-secundario
         tr.innerHTML = `
           <td>${d.nome}</td>
           <td>${d.condominio}</td>
           <td>${d.frequencia}</td>
           <td>${d.quantidade}</td>
-          <td>R$ ${d.media.toFixed(2).replace('.', ',')}</td>
-          <td><button class="botao botao-secundario" onclick="editarCliente('${d.id}')">Editar</button></td>
+          <td>R$ ${d.media.toFixed(2).replace(	'.	', 	',	')}</td>
+          <td><button class="botao botao-secundario" onclick="editarCliente(	'${d.id}	')">Editar</button></td>
         `;
         tbody.appendChild(tr);
       });
@@ -153,7 +153,6 @@
       document.querySelectorAll("th[data-sort]").forEach(th => {
         th.addEventListener("click", () => {
           const campo = th.getAttribute("data-sort");
-          // Basic sort, can be improved for asc/desc toggle
           let sortOrder = th.dataset.sortOrder || 'asc';
           dadosClientes.sort((a, b) => {
             let valA = a[campo];
@@ -163,8 +162,7 @@
             }
             return sortOrder === 'asc' ? valA - valB : valB - valA;
           });
-          th.dataset.sortOrder = sortOrder === 'asc' ? 'desc' : 'asc'; // Toggle sort order
-          // Remove sort order from other headers
+          th.dataset.sortOrder = sortOrder === 'asc' ? 'desc' : 'asc';
           document.querySelectorAll("th[data-sort]").forEach(otherTh => {
             if (otherTh !== th) delete otherTh.dataset.sortOrder;
           });
