@@ -54,16 +54,15 @@ body {
   box-shadow: 0 0 10px rgba(0,0,0,0.05);
 }
 
-/* === KPI Grid === */
 .kpi-grid {
   display: flex;
   gap: 16px;
   flex-wrap: wrap;
-  margin-bottom: 30px;
+  margin-top: 20px;
 }
 
 .kpi-card {
-  flex: 1 1 calc(25% - 12px);
+  flex: 1 1 200px;
   background: white;
   padding: 15px;
   border-radius: 6px;
@@ -77,40 +76,37 @@ body {
 }
 
 .kpi-value {
-  font-size: 1.6rem;
+  font-size: 1.8rem;
   font-weight: bold;
   color: #333;
   margin: 0;
 }
 
-/* === Gráfico Grid === */
-.charts-grid {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 20px;
-}
-
-.chart-box {
-  flex: 1 1 calc(50% - 10px);
-  background: white;
-  padding: 20px;
-  border-radius: 6px;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-  min-height: 300px;
-}
-
-/* === Responsivo === */
-@media (max-width: 768px) {
-  .kpi-card {
-    flex: 1 1 calc(50% - 10px);
+@media (max-width: 600px) {
+  .main-content {
+    margin-left: 0;
   }
-  .chart-box {
-    flex: 1 1 100%;
-  }
-}
 
-@media (max-width: 480px) {
-  .kpi-card {
-    flex: 1 1 100%;
+  .sidebar {
+    display: none;
+  }
+
+  .menu-toggle {
+    display: block;
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    background: #007bff;
+    color: white;
+    padding: 8px 12px;
+    border: none;
+    font-size: 18px;
+    border-radius: 4px;
+  }
+
+  .sidebar.active {
+    display: block;
+    z-index: 999;
+    background: #007bff;
   }
 }
