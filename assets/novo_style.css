@@ -1,4 +1,4 @@
-/******/ Novo Estilo Propósito - novo_style.css - v4 ******/
+/******/ Novo Estilo Propósito - novo_style.css - v5 (com classes de botão padronizadas) ******/
 
 :root {
   --cor-primaria-menu: #007bff;
@@ -8,6 +8,14 @@
   --cor-texto-padrao: #343a40;
   --cor-laranja-destaque: #FFA500;
   --cor-laranja-destaque-hover: #E69500;
+  --cor-cinza-botao-secundario: #6c757d; /* Cinza para botões secundários */
+  --cor-cinza-botao-secundario-hover: #5a6268;
+  --cor-vermelho-perigo: #dc3545; /* Vermelho para botões de perigo */
+  --cor-vermelho-perigo-hover: #c82333;
+  --cor-botao-icone-fundo: #f8f9fa; /* Fundo claro para botões de ícone */
+  --cor-botao-icone-fundo-hover: #e2e6ea;
+  --cor-botao-icone-texto: #495057; /* Cor escura para ícones */
+
   --sombra-padrao: 0 0 10px rgba(0, 0, 0, 0.05);
   --borda-radius-padrao: 6px;
   --font-size-label: 0.75rem;
@@ -89,11 +97,6 @@ h1 {
   margin-bottom: 12px;
 }
 
-/* Ajuste para H1 dentro do dashboard, se necessário um tamanho maior */
-/* Se o H1 do dashboard for o título "Dashboard" e precisar ser maior que 1.3rem */
-/* .dashboard-container h1 { font-size: 1.8rem; text-align: center; } */ 
-/* Adicionar classe .dashboard-container ao container principal do dashboard.html */
-
 h3 {
   font-size: 0.9rem;
   margin-top: 12px;
@@ -102,29 +105,85 @@ h3 {
   padding-bottom: 4px;
 }
 
-/* Botões */
-button, a.botao {
-  display: inline-block;
-  padding: 5px 10px;
-  background-color: var(--cor-laranja-destaque);
-  color: white;
-  border: none;
-  border-radius: 4px;
-  font-size: 0.75rem;
+/* --- BOTÕES PADRONIZADOS --- */
+.botao {
+  display: inline-flex; /* Para alinhar ícones e texto verticalmente */
+  align-items: center;
+  justify-content: center;
+  padding: 6px 12px; /* Padding base */
+  font-size: 0.8rem; /* Tamanho de fonte base */
   font-weight: 500;
+  border: 1px solid transparent; /* Borda base, pode ser sobrescrita */
+  border-radius: var(--borda-radius-padrao);
   cursor: pointer;
   text-decoration: none;
   text-align: center;
   margin-right: 6px;
   margin-bottom: 6px;
-  transition: background-color 0.3s ease, box-shadow 0.3s ease;
-  box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+  transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+  line-height: 1.4; /* Para melhor espaçamento vertical interno */
 }
 
-button:hover, a.botao:hover {
-  background-color: var(--cor-laranja-destaque-hover);
-  box-shadow: 0 2px 4px rgba(0,0,0,0.15);
+.botao:hover {
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
+
+/* Botão Primário (Laranja) */
+.botao-primario {
+  background-color: var(--cor-laranja-destaque);
+  color: white;
+  border-color: var(--cor-laranja-destaque);
+}
+.botao-primario:hover {
+  background-color: var(--cor-laranja-destaque-hover);
+  border-color: var(--cor-laranja-destaque-hover);
+  color: white;
+}
+
+/* Botão Secundário (Cinza) */
+.botao-secundario {
+  background-color: var(--cor-cinza-botao-secundario);
+  color: white;
+  border-color: var(--cor-cinza-botao-secundario);
+}
+.botao-secundario:hover {
+  background-color: var(--cor-cinza-botao-secundario-hover);
+  border-color: var(--cor-cinza-botao-secundario-hover);
+  color: white;
+}
+
+/* Botão de Perigo (Vermelho) */
+.botao-perigo {
+  background-color: var(--cor-vermelho-perigo);
+  color: white;
+  border-color: var(--cor-vermelho-perigo);
+}
+.botao-perigo:hover {
+  background-color: var(--cor-vermelho-perigo-hover);
+  border-color: var(--cor-vermelho-perigo-hover);
+  color: white;
+}
+
+/* Botão de Ícone (Fundo claro, ícone escuro) */
+.botao-icone {
+  background-color: var(--cor-botao-icone-fundo);
+  color: var(--cor-botao-icone-texto);
+  border-color: #ced4da; /* Borda sutil */
+  padding: 5px 8px; /* Padding menor para botões de ícone */
+}
+.botao-icone:hover {
+  background-color: var(--cor-botao-icone-fundo-hover);
+  border-color: #adb5bd;
+  color: var(--cor-texto-padrao);
+}
+
+/* Para botões que são apenas links (<a>), garantir que se pareçam com botões */
+a.botao {
+    /* Estilos base já aplicados por .botao */
+}
+
+/* --- FIM BOTÕES PADRONIZADOS --- */
 
 /* Estilos para formulários (clientes.html) */
 .form-grupo {
@@ -212,7 +271,8 @@ button:hover, a.botao:hover {
 .contato-group > .form-grupo input[name="contatoTel"] { margin-bottom: 0; }
 .contato-group > .form-grupo { margin-bottom: 0; }
 .contato-group .botao-remove {
-  padding: 3px 6px;
+  /* Usar .botao e .botao-perigo ou .botao-secundario */
+  padding: 3px 6px; /* Ajuste fino se necessário */
   font-size: 0.7rem;
   height: 24px;
   line-height: 1.5; 
@@ -224,49 +284,68 @@ button:hover, a.botao:hover {
 .kpi-cards {
   display: flex;
   gap: 20px;
-  justify-content: space-between; /* Ou space-around, conforme preferência original */
-  flex-wrap: wrap; /* Essencial para que os cards quebrem a linha se não couberem */
+  justify-content: space-between;
+  flex-wrap: wrap;
   margin-bottom: 30px;
 }
 
 .kpi {
   background: white;
-  padding: 20px; /* Padding original do dashboard para KPIs */
-  border-radius: 8px; /* Pode ser var(--borda-radius-padrao) ou 10px do original do dashboard */
+  padding: 20px;
+  border-radius: 8px;
   box-shadow: var(--sombra-padrao);
-  flex: 1 1 200px; /* Base de 200px, permite crescer e diminuir. Garante que 4 caibam em larguras comuns. */
+  flex: 1 1 200px;
   text-align: center;
-  min-width: 180px; /* Para não ficarem muito pequenos em telas menores antes de quebrar a linha */
+  min-width: 180px;
 }
 
 .kpi h2 {
   margin: 0 0 5px 0;
-  font-size: 24px; /* Tamanho original do h2 dos KPIs do dashboard */
-  color: var(--cor-texto-padrao); /* Cor padrão de texto, ou pode ser uma cor específica para KPIs */
+  font-size: 24px;
+  color: var(--cor-texto-padrao);
 }
 
 .kpi span {
-  font-size: 14px; /* Tamanho original do span dos KPIs do dashboard */
+  font-size: 14px;
   color: #6c757d;
 }
 
-/* Estilos para os gráficos do dashboard */
-.charts-grid { /* Se você usar essa classe no dashboard para os gráficos */
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 20px;
+/* Estilos para tabelas */
+.tabela-moderna {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 15px;
+  font-size: 0.8rem; /* Tamanho de fonte base para tabelas */
 }
 
-.chart-container { /* Se você usar essa classe no dashboard para os gráficos */
-  background: white;
-  padding: 15px;
-  border-radius: var(--borda-radius-padrao);
-  box-shadow: var(--sombra-padrao);
+.tabela-moderna th,
+.tabela-moderna td {
+  border: 1px solid #dee2e6;
+  padding: 6px 8px; /* Padding ajustado para tabelas */
+  text-align: left;
+  vertical-align: middle;
 }
 
-.chart-container canvas {
-  max-height: 280px;
-  width: 100% !important;
+.tabela-moderna thead th {
+  background-color: #e9ecef;
+  font-weight: 600;
+  color: var(--cor-texto-padrao);
+}
+
+.tabela-moderna tbody tr:nth-child(even) {
+  background-color: #f8f9fa; /* Cor bem sutil para linhas pares */
+}
+
+.tabela-moderna tbody tr:hover {
+  background-color: #e9ecef; /* Hover um pouco mais escuro */
+}
+
+/* Para botões dentro de tabelas, podem ser menores */
+.tabela-moderna .botao {
+    padding: 4px 8px;
+    font-size: 0.75rem;
+    margin-right: 4px;
+    margin-bottom: 4px;
 }
 
 .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); border: 0; }
@@ -293,12 +372,8 @@ button:hover, a.botao:hover {
     flex-basis: calc(50% - (var(--gap-form-row) / 2)) !important;
   }
 
-  /* Ajuste para KPIs em telas menores, se necessário */
   .kpi {
-    flex-basis: calc(50% - 10px); /* 2 KPIs por linha em telas menores, considerando gap de 20px */
+    flex-basis: calc(50% - 10px);
   }
-  /* Se quiser 1 KPI por linha em telas muito pequenas: */
-  /* @media (max-width: 480px) { .kpi { flex-basis: 100%; } } */
 }
-
 
