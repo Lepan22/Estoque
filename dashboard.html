@@ -6,8 +6,6 @@
   <title>Dashboard - LePan</title>
   <link rel="stylesheet" href="dash_style.css" />
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 </head>
 <body>
 
@@ -28,26 +26,14 @@
     <div class="container-principal">
       <h1>Dashboard</h1>
 
-      <div class="kpi-container">
-        <div class="kpi-card">
-          <p class="kpi-title">Clientes Ativos</p>
-          <p class="kpi-value" id="clientesAtivos">0</p>
-        </div>
-        <div class="kpi-card">
-          <p class="kpi-title">Receita do Mês</p>
-          <p class="kpi-value" id="receitaMes">R$ 0,00</p>
-        </div>
-        <div class="kpi-card">
-          <p class="kpi-title">Lucro do Mês</p>
-          <p class="kpi-value" id="lucroMes">R$ 0,00</p>
-        </div>
-        <div class="kpi-card">
-          <p class="kpi-title">Eventos no Mês</p>
-          <p class="kpi-value" id="eventosMes">0</p>
-        </div>
+      <div class="kpi-grid">
+        <div class="kpi-card"><p class="kpi-title">Clientes Ativos</p><p class="kpi-value" id="clientesAtivos">0</p></div>
+        <div class="kpi-card"><p class="kpi-title">Receita do Mês</p><p class="kpi-value" id="receitaMes">R$ 0,00</p></div>
+        <div class="kpi-card"><p class="kpi-title">Lucro do Mês</p><p class="kpi-value" id="lucroMes">R$ 0,00</p></div>
+        <div class="kpi-card"><p class="kpi-title">Eventos no Mês</p><p class="kpi-value" id="eventosMes">0</p></div>
       </div>
 
-      <div class="chart-container-grid">
+      <div class="charts-grid">
         <div class="chart-box"><canvas id="chartVendas"></canvas></div>
         <div class="chart-box"><canvas id="chartLucro"></canvas></div>
         <div class="chart-box"><canvas id="chartPerda"></canvas></div>
@@ -57,142 +43,9 @@
   </div>
 
   <script>
-    const menuToggleBtn = document.getElementById('menuToggleBtn');
-    const sidebarMenu = document.getElementById('sidebarMenu');
-    menuToggleBtn.addEventListener('click', () => {
-      sidebarMenu.classList.toggle('active');
+    document.getElementById("menuToggleBtn").addEventListener("click", () => {
+      document.getElementById("sidebarMenu").classList.toggle("active");
     });
-
-    const firebaseConfig = {
-      databaseURL: "https://controleestoquelepan-default-rtdb.firebaseio.com"
-    };
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.database();
-
-    function formatar(valor) {
-      return "R$ " + (valor || 0).toFixed(2).replace('.', ',');
-    }
-
-    function agruparPorMes(eventos) {
-      const mapa = {};
-      eventos.forEach(ev => {
-        if (ev.status !== "finalizado") return;
-        const mes = ev.data?.slice(0, 7);
-        if (!mapa[mes]) {
-          mapa[mes] = { receita: 0, estimativa: 0, perda: 0, lucro: 0, eventos: 0 };
-        }
-        const a = ev.analise || {};
-        const receita = parseFloat(a.valorVenda) || 0;
-        const estimativa = parseFloat(a.estimativaTotal) || 0;
-        const perda = parseFloat(a.valorPerda) || 0;
-        const cmv = parseFloat(a.cmvTotal) || 0;
-        const equipe = parseFloat(a.custoEquipe) || 0;
-        const logistica = parseFloat(a.custoLogistica) || 0;
-        const lucro = receita - cmv - equipe - logistica;
-
-        mapa[mes].receita += receita;
-        mapa[mes].estimativa += estimativa;
-        mapa[mes].perda += perda;
-        mapa[mes].lucro += lucro;
-        mapa[mes].eventos += 1;
-      });
-
-      return Object.keys(mapa).sort().map(mes => ({ mes, ...mapa[mes] }));
-    }
-
-    function atualizarKPIs(eventos, clientes) {
-      const ativos = Object.values(clientes || {}).filter(c => c.statusCliente === "Ativo").length;
-      document.getElementById("clientesAtivos").textContent = ativos;
-
-      const hoje = new Date();
-      const mesAtual = hoje.toISOString().slice(0, 7);
-
-      let receita = 0, lucro = 0, eventosMes = 0;
-
-      eventos.forEach(ev => {
-        if (ev.status !== "finalizado") return;
-        if ((ev.data || "").startsWith(mesAtual)) {
-          const a = ev.analise || {};
-          receita += parseFloat(a.vendaPDV) || 0;
-          const cmv = parseFloat(a.cmvTotal) || 0;
-          const equipe = parseFloat(a.custoEquipe) || 0;
-          const log = parseFloat(a.custoLogistica) || 0;
-          lucro += (parseFloat(a.valorVenda) || 0) - cmv - equipe - log;
-          eventosMes += 1;
-        }
-      });
-
-      document.getElementById("receitaMes").textContent = formatar(receita);
-      document.getElementById("lucroMes").textContent = formatar(lucro);
-      document.getElementById("eventosMes").textContent = eventosMes;
-    }
-
-    function criarGrafico(id, label, labels, dataset) {
-      const ctx = document.getElementById(id).getContext('2d');
-      new Chart(ctx, {
-        type: 'bar',
-        data: { labels, datasets: dataset },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          plugins: {
-            legend: { position: 'top' },
-            title: { display: true, text: label }
-          }
-        }
-      });
-    }
-
-    function criarLinha(id, label, labels, dados, cor = 'green') {
-      const ctx = document.getElementById(id).getContext('2d');
-      new Chart(ctx, {
-        type: 'line',
-        data: {
-          labels,
-          datasets: [{
-            label,
-            data: dados,
-            borderColor: cor,
-            backgroundColor: cor + '33',
-            tension: 0.3,
-            fill: true
-          }]
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          plugins: {
-            legend: { position: 'top' },
-            title: { display: true, text: label }
-          }
-        }
-      });
-    }
-
-    async function carregarDashboard() {
-      const [eventosSnap, clientesSnap] = await Promise.all([
-        db.ref("eventos").once("value"),
-        db.ref("clientes").once("value")
-      ]);
-
-      const eventos = Object.values(eventosSnap.val() || {});
-      const clientes = clientesSnap.val() || {};
-      const meses = agruparPorMes(eventos);
-      const labels = meses.map(m => m.mes);
-
-      atualizarKPIs(eventos, clientes);
-
-      criarGrafico("chartVendas", "Estimativa vs Venda", labels, [
-        { label: "Estimativa", data: meses.map(m => m.estimativa), backgroundColor: "#ccc" },
-        { label: "Venda Real", data: meses.map(m => m.receita), backgroundColor: "#007bff" }
-      ]);
-
-      criarLinha("chartLucro", "Lucro por Mês", labels, meses.map(m => m.lucro), "#28a745");
-      criarLinha("chartPerda", "Perda por Mês", labels, meses.map(m => m.perda), "#dc3545");
-      criarLinha("chartEventos", "Eventos por Mês", labels, meses.map(m => m.eventos), "#17a2b8");
-    }
-
-    carregarDashboard();
   </script>
 </body>
 </html>
