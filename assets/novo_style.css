@@ -1,331 +1,287 @@
-/****** General Styles ******/
+/******/ Novo Estilo Propósito - novo_style.css ******/
 
-body {
-    font-family: sans-serif;
-    margin: 0;
-    background-color: #f4f7f6;
-    display: flex;
-    min-height: 100vh;
-    color: #333;
+:root {
+  --cor-primaria-menu: #007bff;
+  --cor-texto-menu: #ffffff;
+  --cor-fundo-conteudo: #f8f9fa;
+  --cor-fundo-pagina: #e9ecef;
+  --cor-texto-padrao: #343a40;
+  --cor-laranja-destaque: #FFA500;
+  --cor-laranja-destaque-hover: #E69500;
+  --sombra-padrao: 0 0 10px rgba(0, 0, 0, 0.05);
+  --borda-radius-padrao: 6px;
+  --font-size-label: 0.75rem;
+  --font-size-input: 0.8rem;
+  --padding-input-vertical: 4px;
+  --padding-input-horizontal: 6px;
+  --margin-bottom-form-grupo: 8px;
+  --gap-form-row: 10px;
 }
 
-.container {
-    display: flex;
-    flex: 1;
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  background-color: var(--cor-fundo-pagina);
+  color: var(--cor-texto-padrao);
+  display: flex;
+  min-height: 100vh;
+  font-size: 14px; /* Base font size */
 }
 
 .sidebar {
-    width: 250px;
-    background-color: #fff;
-    padding: 20px;
-    box-shadow: 2px 0 5px rgba(0,0,0,0.1);
-    /* border-right: 1px solid #ddd; */ /* Linha lateral removida na primeira tentativa */
-    display: flex;
-    flex-direction: column;
-    align-items: center; /* Centraliza itens da sidebar */
+  width: 132px;
+  background-color: var(--cor-primaria-menu);
+  color: var(--cor-texto-menu);
+  padding: 15px;
+  height: 100vh;
+  position: fixed;
+  left: 0;
+  top: 0;
+  box-shadow: 2px 0 5px rgba(0,0,0,0.1);
+  overflow-y: auto;
 }
 
-.sidebar .logo {
-    font-size: 24px;
-    font-weight: bold;
-    color: #333;
-    margin-bottom: 30px;
-    text-align: center;
+.sidebar h2 {
+  text-align: center;
+  margin-bottom: 20px;
+  font-size: 1.5rem;
 }
 
-/* CORRIGIDO: Seletor ajustado para a estrutura HTML real da sidebar (.sidebar > ul) */
-.sidebar > ul {
-    list-style: none !important; /* Mantido !important para garantir a remoção dos bullets */
-    padding: 0;
-    margin: 0;
-    width: 100%;
+.sidebar ul {
+  list-style-type: none;
+  padding: 0;
+  margin: 0;
 }
 
-.sidebar ul li { /* Ajustado para aplicar a todos os li dentro de qualquer ul na sidebar, caso haja aninhamento futuro */
-    margin-bottom: 10px;
-}
-
-.sidebar ul li a { /* Ajustado para aplicar a todos os links dentro de li na sidebar */
-    text-decoration: none;
-    color: #333;
-    padding: 10px 15px;
-    display: block;
-    border-radius: 4px;
-    transition: background-color 0.3s ease;
+.sidebar ul li a {
+  display: block;
+  padding: 10px 12px;
+  text-decoration: none;
+  color: var(--cor-texto-menu);
+  border-radius: var(--borda-radius-padrao);
+  margin-bottom: 6px;
+  font-size: 0.85rem;
+  transition: background-color 0.3s ease;
 }
 
 .sidebar ul li a:hover,
 .sidebar ul li a.active {
-    background-color: #007bff;
-    color: #fff;
+  background-color: rgba(255, 255, 255, 0.2);
 }
 
 .main-content {
-    flex: 1;
+  margin-left: 132px;
+  padding: 20px;
+  width: calc(100% - 132px);
+  background-color: var(--cor-fundo-conteudo);
+  flex-grow: 1;
+}
+
+.container-principal {
+    background-color: #ffffff;
     padding: 20px;
-    overflow-y: auto;
+    border-radius: var(--borda-radius-padrao);
+    box-shadow: var(--sombra-padrao);
 }
 
-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 20px;
-    background-color: #fff;
-    padding: 15px 20px;
-    border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+h1 {
+  font-size: 1.4rem;
+  margin-bottom: 15px;
 }
 
-header h1 {
-    margin: 0;
-    font-size: 24px;
-    color: #333;
+h3 {
+  font-size: 1rem;
+  margin-top: 15px;
+  margin-bottom: 10px;
+  border-bottom: 1px solid #eee;
+  padding-bottom: 5px;
 }
 
-.header-actions .btn {
-    background-color: #007bff;
-    color: white;
-    padding: 10px 15px;
-    text-decoration: none;
-    border-radius: 4px;
-    transition: background-color 0.3s ease;
-    border: none;
-    cursor: pointer;
+/* Botões */
+button, a.botao {
+  display: inline-block;
+  padding: 6px 12px;
+  background-color: var(--cor-laranja-destaque);
+  color: white;
+  border: none;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  cursor: pointer;
+  text-decoration: none;
+  text-align: center;
+  margin-right: 8px;
+  margin-bottom: 8px;
+  transition: background-color 0.3s ease, box-shadow 0.3s ease;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.1);
 }
 
-.header-actions .btn:hover {
-    background-color: #0056b3;
+button:hover, a.botao:hover {
+  background-color: var(--cor-laranja-destaque-hover);
+  box-shadow: 0 2px 4px rgba(0,0,0,0.15);
 }
 
-.filters {
-    background-color: #fff;
-    padding: 20px;
-    border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    margin-bottom: 20px;
-    display: flex;
-    gap: 15px;
-    align-items: flex-end; /* Alinha itens na base */
+/* Estilos para formulários */
+.form-grupo {
+  margin-bottom: var(--margin-bottom-form-grupo);
 }
 
-.filters .form-group {
-    display: flex;
-    flex-direction: column;
+.form-grupo label {
+  display: block;
+  margin-bottom: 3px;
+  font-weight: 500;
+  font-size: var(--font-size-label);
+  color: #555;
 }
 
-.filters label {
-    margin-bottom: 5px;
-    font-weight: bold;
-    color: #555;
+.form-grupo input[type="text"],
+.form-grupo input[type="password"],
+.form-grupo input[type="email"],
+.form-grupo input[type="number"],
+.form-grupo input[type="date"],
+.form-grupo select,
+.form-grupo textarea {
+  width: 100%;
+  padding: var(--padding-input-vertical) var(--padding-input-horizontal);
+  border: 1px solid #ced4da;
+  border-radius: 4px;
+  box-sizing: border-box;
+  font-size: var(--font-size-input);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  height: auto; /* Reset height */
+  min-height: 28px; /* Minimum height for inputs */
 }
 
-.filters select,
-.filters input[type="date"] {
-    padding: 10px;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    background-color: #fff;
-    color: #333;
+.form-grupo select {
+    height: 28px; /* Specific height for select to match inputs */
+    line-height: 28px;
+    padding-top: 0;
+    padding-bottom: 0;
 }
 
-.summary-cards {
-    display: flex;
-    gap: 20px;
-    margin-bottom: 20px;
+.form-grupo textarea {
+  min-height: 56px; /* Two lines of text approx */
 }
 
-.card {
-    background-color: #fff;
-    padding: 20px;
-    border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    flex: 1;
-    text-align: center;
+.form-grupo input:focus, 
+.form-grupo select:focus, 
+.form-grupo textarea:focus {
+  border-color: var(--cor-laranja-destaque);
+  box-shadow: 0 0 0 0.15rem rgba(255, 165, 0, 0.2);
+  outline: none;
 }
 
-.card h3 {
-    margin-top: 0;
-    font-size: 16px;
-    color: #555;
+/* Adições/Ajustes para layout de formulário em colunas */
+.form-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--gap-form-row);
+  margin-bottom: 0; 
 }
 
-.card p {
-    font-size: 24px;
-    font-weight: bold;
-    color: #007bff;
-    margin: 5px 0 0;
+.form-row .form-grupo {
+  flex: 1 1 calc(50% - (var(--gap-form-row) / 2));
+  margin-bottom: var(--margin-bottom-form-grupo);
 }
 
-.table-container {
-    background-color: #fff;
-    padding: 20px;
-    border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+.form-row.three-cols .form-grupo {
+    flex: 1 1 calc(33.333% - (var(--gap-form-row) * 2 / 3));
 }
 
-.table-container table {
-    width: 100%;
-    border-collapse: collapse;
+.form-row.four-cols .form-grupo {
+    flex: 1 1 calc(25% - (var(--gap-form-row) * 3 / 4));
 }
 
-.table-container th,
-.table-container td {
-    padding: 12px 15px;
-    border-bottom: 1px solid #ddd;
-    text-align: left;
-    color: #333;
+.form-row .form-grupo.full-width {
+  flex-basis: 100%;
 }
 
-.table-container th {
-    background-color: #f8f9fa;
-    font-weight: bold;
-    color: #555;
+/* Ajustes para a seção de contatos */
+.contato-group {
+  display: flex; /* Make .contato-group a flex container itself */
+  align-items: flex-end; /* Align items to the bottom, useful if labels make height uneven */
+  gap: var(--gap-form-row);
+  width: 100%; /* Take full width if it's inside contatoContainer */
+  margin-bottom: var(--margin-bottom-form-grupo);
 }
 
-.table-container tbody tr:hover {
-    background-color: #f1f1f1;
+/* Remove .form-grupo class from direct children of .contato-group if they are just inputs/buttons */
+.contato-group > .form-grupo input[name="contatoNome"],
+.contato-group > .form-grupo input[name="contatoTel"] {
+  margin-bottom: 0; /* Remove bottom margin from inputs inside contact group items */
 }
 
-.table-container td .actions a,
-.table-container td .actions button {
-    margin-right: 5px;
-    padding: 5px 8px;
-    border-radius: 4px;
-    text-decoration: none;
-    font-size: 14px;
-    border: none;
-    cursor: pointer;
-    color: white; /* Cor do texto/ícone padrão para branco */
-    background-color: #6c757d; /* Cinza como fallback, se nenhuma classe específica for aplicada */
+.contato-group > .form-grupo {
+    margin-bottom: 0; /* No margin for the form-group wrapper inside contato-group */
 }
 
-/* Cores específicas para botões de ação para melhor contraste */
-/* Assegure que estas classes estão no seu HTML */
-.table-container td .actions a.view-btn,
-.table-container td .actions button.view-btn {
-    background-color: #007bff !important; /* Azul */
-    color: white !important;
+.contato-group .botao-remove {
+  padding: 4px 8px;
+  font-size: 0.75rem;
+  height: 28px; /* Match input height */
+  line-height: 1.5; /* Adjust line height for button text */
+  align-self: center; /* Vertically center button with inputs */
+  margin-bottom: 0; /* Align with inputs that have no margin-bottom in this context */
 }
 
-.table-container td .actions a.report-btn,
-.table-container td .actions button.report-btn {
-    background-color: #17a2b8 !important; /* Info (azul claro) */
-    color: white !important;
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0,0,0,0);
+  border: 0;
 }
 
-.table-container td .actions a.edit-btn,
-.table-container td .actions button.edit-btn {
-    background-color: #ffc107 !important; /* Amarelo */
-    color: #333 !important; /* Texto escuro para fundo claro */
+.divider {
+    height: 1px;
+    background-color: #eee;
+    margin: 15px 0;
 }
 
-.table-container td .actions button.pdf-btn {
-    background-color: #dc3545 !important; /* Vermelho */
-    color: white !important;
+.hidden {
+    display: none !important;
 }
 
-.table-container td .actions button.list-btn {
-    background-color: #28a745 !important; /* Verde */
-    color: white !important;
-}
-
-.table-container td .actions button.delete-btn {
-    background-color: #6c757d !important; /* Cinza */
-    color: white !important;
-}
-
-
-.status-aberto {
-    color: green;
-    font-weight: bold;
-}
-
-.status-finalizado {
-    color: red;
-    font-weight: bold;
-}
-
-.status-pendente {
-    color: orange;
-    font-weight: bold;
-}
-
-/* Estilos para o modal */
-.modal {
-    display: none; /* Escondido por padrão */
-    position: fixed; 
-    z-index: 1; 
-    left: 0;
-    top: 0;
-    width: 100%; 
-    height: 100%; 
-    overflow: auto; 
-    background-color: rgba(0,0,0,0.4); 
-}
-
-.modal-content {
-    background-color: #fefefe;
-    margin: 15% auto; 
-    padding: 20px;
-    border: 1px solid #888;
-    width: 80%; 
-    max-width: 500px;
-    border-radius: 8px;
-}
-
-.close-btn {
-    color: #aaa;
-    float: right;
-    font-size: 28px;
-    font-weight: bold;
-}
-
-.close-btn:hover,
-.close-btn:focus {
-    color: black;
-    text-decoration: none;
-    cursor: pointer;
-}
-
-/* Ajustes para responsividade */
+/* Responsividade */
 @media (max-width: 768px) {
-    .sidebar {
-        width: 100%;
-        height: auto;
-        position: relative;
-        box-shadow: none;
-        border-right: none;
-        border-bottom: 1px solid #ddd;
-    }
-    .container {
-        flex-direction: column;
-    }
-    .main-content {
-        padding: 10px;
-    }
-    header {
-        flex-direction: column;
-        align-items: flex-start;
-    }
-    header h1 {
-        margin-bottom: 10px;
-    }
-    .filters {
-        flex-direction: column;
-        gap: 10px;
-    }
-    .filters .form-group {
-        width: 100%;
-    }
-    .summary-cards {
-        flex-direction: column;
-    }
-    .table-container td .actions a,
-    .table-container td .actions button {
-        display: block; /* Empilha os botões em telas menores */
-        margin-bottom: 5px;
-        text-align: center;
-    }
+  .sidebar {
+    transform: translateX(-100%);
+    position: fixed;
+    z-index: 1000;
+    transition: transform 0.3s ease-in-out;
+  }
+  .sidebar.active {
+    transform: translateX(0);
+  }
+  .main-content {
+    margin-left: 0;
+    width: 100%;
+    padding: 15px;
+  }
+  .menu-toggle {
+    display: block;
+    position: fixed;
+    top: 10px;
+    left: 10px;
+    z-index: 1001;
+    background: var(--cor-laranja-destaque);
+    color: white;
+    border: none;
+    padding: 8px 10px;
+    border-radius: var(--borda-radius-padrao);
+    cursor: pointer;
+  }
+  .form-row.three-cols .form-grupo,
+  .form-row.four-cols .form-grupo {
+    flex-basis: calc(50% - (var(--gap-form-row) / 2)); /* Stack to 2 columns on smaller screens */
+  }
+  .form-row.four-cols .form-grupo:nth-child(n+3) {
+      /* If you want to force 1 column for 4-col items on mobile, uncomment below */
+      /* flex-basis: 100%; */
+  }
 }
+
 
