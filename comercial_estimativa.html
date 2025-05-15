@@ -4,62 +4,92 @@
   <meta charset="UTF-8">
   <title>Comercial - Estimativa</title>
   <link rel="stylesheet" href="assets/novo_style.css">
-</head>
-<body>
-  <div class="container">
-    <h1>Estimativa Comercial</h1>
+  <script type="module">
+    // Firebase SDK
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+    import { getDatabase, ref, push } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
 
-    <form id="estimativa-form" class="form-container">
-      <label for="data">Data (Mês/Ano):</label>
-      <input type="month" id="data" name="data" required>
+    const firebaseConfig = {
+      apiKey: "AIzaSyBN-bmzgrlzjmrKMmuClZ8LVll-vJyx-aE",
+      authDomain: "controleestoquelepan.firebaseapp.com",
+      databaseURL: "https://controleestoquelepan-default-rtdb.firebaseio.com",
+      projectId: "controleestoquelepan",
+      storageBucket: "controleestoquelepan.firebasestorage.app",
+      messagingSenderId: "779860276544",
+      appId: "1:779860276544:web:f45844571a8c0bab1576a5",
+      measurementId: "G-EDKYH7TKMG"
+    };
 
-      <label for="categoria">Categoria:</label>
-      <input type="text" id="categoria" name="categoria" placeholder="Ex: Evento, Workshop..." required>
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
 
-      <label for="valor_estimado">Valor Estimado (R$):</label>
-      <input type="number" id="valor_estimado" name="valor_estimado" step="0.01" required>
-
-      <button type="submit">Salvar Estimativa</button>
-    </form>
-
-    <div id="mensagem" class="mensagem-sucesso" style="display:none;"></div>
-  </div>
-
-  <script>
-    document.getElementById('estimativa-form').addEventListener('submit', async (e) => {
+    window.salvarEstimativa = async function salvarEstimativa(e) {
       e.preventDefault();
 
       const data = document.getElementById('data').value;
       const categoria = document.getElementById('categoria').value;
       const valorEstimado = parseFloat(document.getElementById('valor_estimado').value);
 
-      const estimativa = {
-        data: data,
-        categoria: categoria,
+      const novaEstimativa = {
+        data,
+        categoria,
         valor_estimado: valorEstimado
       };
 
       try {
-        const response = await fetch('/comercial_estimativa/', {
-          method: 'POST',
-          headers: {'Content-Type': 'application/json'},
-          body: JSON.stringify(estimativa)
-        });
-
-        if (response.ok) {
-          document.getElementById('mensagem').textContent = "Estimativa salva com sucesso!";
-          document.getElementById('mensagem').style.display = "block";
-          document.getElementById('estimativa-form').reset();
-        } else {
-          document.getElementById('mensagem').textContent = "Erro ao salvar. Verifique os dados.";
-          document.getElementById('mensagem').style.display = "block";
-        }
-      } catch (err) {
-        console.error(err);
-        document.getElementById('mensagem').textContent = "Erro de conexão com o servidor.";
-        document.getElementById('mensagem').style.display = "block";
+        await push(ref(db, 'comercial_estimativa'), novaEstimativa);
+        const msg = document.getElementById("mensagem");
+        msg.textContent = "Estimativa salva com sucesso!";
+        msg.style.color = "green";
+        msg.style.display = "block";
+        document.getElementById("estimativa-form").reset();
+      } catch (error) {
+        const msg = document.getElementById("mensagem");
+        msg.textContent = "Erro ao salvar no Firebase.";
+        msg.style.color = "red";
+        msg.style.display = "block";
+        console.error(error);
       }
-    });
+    }
   </script>
+</head>
+<body>
+  <nav class="sidebar">
+    <h2>Menu</h2>
+    <ul>
+      <li><a href="#">Início</a></li>
+      <li><a href="#" class="active">Estimativa</a></li>
+      <li><a href="#">Relatórios</a></li>
+    </ul>
+  </nav>
+
+  <main class="main-content">
+    <div class="container-principal">
+      <h1>Nova Estimativa Comercial</h1>
+
+      <form id="estimativa-form" onsubmit="salvarEstimativa(event)">
+        <div class="form-row three-cols">
+          <div class="form-grupo">
+            <label for="data">Data (Mês/Ano)</label>
+            <input type="month" id="data" name="data" required>
+          </div>
+
+          <div class="form-grupo">
+            <label for="categoria">Categoria</label>
+            <input type="text" id="categoria" name="categoria" placeholder="Ex: Evento, Workshop..." required>
+          </div>
+
+          <div class="form-grupo">
+            <label for="valor_estimado">Valor Estimado (R$)</label>
+            <input type="number" id="valor_estimado" name="valor_estimado" step="0.01" required>
+          </div>
+        </div>
+
+        <button type="submit">Salvar Estimativa</button>
+      </form>
+
+      <div id="mensagem" class="mensagem-sucesso" style="margin-top: 10px; display:none;"></div>
+    </div>
+  </main>
 </body>
 </html>
