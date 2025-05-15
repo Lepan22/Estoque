@@ -28,27 +28,27 @@
     <div class="container-principal">
       <h1>Dashboard</h1>
 
-      <!-- KPIs alinhados -->
+      <!-- KPIs com tamanhos proporcionais -->
       <div class="container-kpis-dashboard">
-        <div class="card-kpi-dashboard">
+        <div class="card-kpi-dashboard" style="flex: 1 1 20%;">
           <p class="kpi-title">Clientes Ativos</p>
           <p class="kpi-value" id="clientesAtivos">0</p>
         </div>
-        <div class="card-kpi-dashboard">
+        <div class="card-kpi-dashboard" style="flex: 1 1 30%;">
           <p class="kpi-title">Receita do Mês</p>
           <p class="kpi-value" id="receitaMes">R$ 0,00</p>
         </div>
-        <div class="card-kpi-dashboard">
+        <div class="card-kpi-dashboard" style="flex: 1 1 30%;">
           <p class="kpi-title">Lucro do Mês</p>
           <p class="kpi-value" id="lucroMes">R$ 0,00</p>
         </div>
-        <div class="card-kpi-dashboard">
+        <div class="card-kpi-dashboard" style="flex: 1 1 20%;">
           <p class="kpi-title">Eventos no Mês</p>
           <p class="kpi-value" id="eventosMes">0</p>
         </div>
       </div>
 
-      <!-- Gráficos ainda não ajustados -->
+      <!-- Gráficos (próxima etapa de alinhamento) -->
       <div class="charts-grid">
         <div class="chart-container">
           <canvas id="chartVendas"></canvas>
@@ -70,9 +70,9 @@
     const menuToggleBtn = document.getElementById('menuToggleBtn');
     const sidebarMenu = document.getElementById('sidebarMenu');
     if (menuToggleBtn && sidebarMenu) {
-        menuToggleBtn.addEventListener('click', () => {
-            sidebarMenu.classList.toggle('active');
-        });
+      menuToggleBtn.addEventListener('click', () => {
+        sidebarMenu.classList.toggle('active');
+      });
     }
 
     const firebaseConfig = {
