@@ -10,28 +10,28 @@
 
 /* Estilo para cada card de KPI */
 .kpi {
-  flex: 1 1 calc(25% - 11.25px); /* Tenta fazer 4 cards por linha (ajustado pelo gap). 15px * 3 gaps / 4 cards = 11.25px */
+  flex: 1 1 calc(25% - 11.25px);
   background-color: #ffffff;
-  padding: 15px;
+  padding: 14px; /* Reduzido de 15px */
   border-radius: var(--borda-radius-padrao, 6px);
   box-shadow: var(--sombra-padrao, 0 0 10px rgba(0, 0, 0, 0.05));
-  text-align: center; /* Centraliza o texto dentro do card */
-  min-width: 180px; /* Largura mínima para cada card, ajustável */
+  text-align: center;
+  min-width: 162px; /* Reduzido de 180px */
   box-sizing: border-box;
 }
 
 .kpi h2 {
-  font-size: 1.75rem; /* Tamanho do valor do KPI */
+  font-size: 1.55rem; /* Reduzido de 1.75rem */
   font-weight: bold;
   color: var(--cor-texto-padrao, #343a40);
   margin-top: 0;
-  margin-bottom: 5px;
+  margin-bottom: 4px; /* Ajustado proporcionalmente */
   line-height: 1.2;
 }
 
 .kpi span {
-  font-size: 0.9rem; /* Tamanho do título do KPI */
-  color: #6c757d; /* Cor do título do KPI */
+  font-size: 0.8rem; /* Reduzido de 0.9rem */
+  color: #6c757d;
   display: block;
 }
 
@@ -39,22 +39,22 @@
 .charts-grid {
   display: flex;
   flex-wrap: wrap;
-  gap: 20px; /* Espaçamento entre os containers de gráfico */
+  gap: 20px;
 }
 
 /* Estilo para cada container de gráfico */
 .chart-container {
-  flex: 1 1 calc(50% - 10px); /* Tenta fazer 2 gráficos por linha (ajustado pelo gap) */
+  flex: 1 1 calc(50% - 10px);
   background-color: #ffffff;
-  padding: 20px;
+  padding: 16px; /* Reduzido de 20px */
   border-radius: var(--borda-radius-padrao, 6px);
   box-shadow: var(--sombra-padrao, 0 0 10px rgba(0, 0, 0, 0.05));
-  min-height: 320px; /* Altura mínima para visualização do gráfico */
+  min-height: 256px; /* Reduzido de 320px */
   box-sizing: border-box;
 }
 
 .chart-container canvas {
-    max-height: 300px; /* Garante que o canvas não ultrapasse a altura do container */
+    max-height: 240px; /* Reduzido de 300px */
 }
 
 /* Ajustes de Responsividade */
@@ -62,18 +62,39 @@
 /* Telas médias (tablets, etc.) */
 @media (max-width: 992px) {
   .kpi {
-    flex: 1 1 calc(50% - 7.5px); /* 2 KPIs por linha */
+    flex: 1 1 calc(50% - 7.5px);
+    padding: 12px; /* Ajuste proporcional para telas médias */
+    min-width: 150px; /* Ajuste proporcional */
+  }
+  .kpi h2 {
+    font-size: 1.4rem; /* Ajuste proporcional */
+  }
+  .kpi span {
+    font-size: 0.75rem; /* Ajuste proporcional */
   }
   .chart-container {
-    flex: 1 1 100%; /* 1 gráfico por linha */
+    flex: 1 1 100%;
+    padding: 14px; /* Ajuste proporcional */
+    min-height: 220px; /* Ajuste proporcional */
+  }
+  .chart-container canvas {
+    max-height: 200px; /* Ajuste proporcional */
   }
 }
 
 /* Telas pequenas (smartphones) */
-@media (max-width: 767px) { /* Ajustado para ser antes do toggle do menu */
+@media (max-width: 767px) {
   .kpi {
-    flex: 1 1 100%; /* 1 KPI por linha */
-    margin-bottom: 10px; /* Adiciona um pequeno espaço entre KPIs empilhados */
+    flex: 1 1 100%;
+    margin-bottom: 10px;
+    padding: 10px;
+    min-width: unset; /* Remove min-width para ocupar 100% */
+  }
+  .kpi h2 {
+    font-size: 1.3rem;
+  }
+  .kpi span {
+    font-size: 0.7rem;
   }
   .kpi-cards {
     gap: 10px;
@@ -82,26 +103,18 @@
     gap: 15px;
   }
   .chart-container {
-    padding: 15px;
-    min-height: 280px;
+    padding: 12px;
+    min-height: 200px; /* Reduzido de 280px na media query anterior */
   }
-  .kpi h2 {
-    font-size: 1.5rem;
-  }
-  .kpi span {
-    font-size: 0.8rem;
+   .chart-container canvas {
+    max-height: 180px; /* Ajuste proporcional */
   }
 }
 
 /* Ajuste para o menu toggle não sobrepor o conteúdo em telas menores quando o menu está ativo */
 @media (max-width: 768px) {
   .main-content {
-    padding-top: 60px; /* Adiciona padding no topo para não ficar abaixo do botão de menu */
-  }
-  .menu-toggle {
-    /* Estilos do menu-toggle já existem em novo_style.css, mas podemos ajustar se necessário */
-    /* Exemplo: garantir que ele tenha um z-index alto se houver sobreposição */
-    /* z-index: 1002; */
+    padding-top: 60px;
   }
 }
 
