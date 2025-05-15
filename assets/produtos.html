@@ -27,34 +27,64 @@
 
       <form id="produtoForm">
         <input type="hidden" id="produtoId" />
-        <div class="form-row three-cols">
+        <div class="form-row">
           <div class="form-grupo">
             <label for="nome">Nome do Produto</label>
-            <input type="text" id="nome" required />
+            <input type="text" id="nome" placeholder="Nome do Produto" required />
           </div>
           <div class="form-grupo">
             <label for="nomenclatura">Nomenclatura</label>
-            <input type="text" id="nomenclatura" />
+            <input type="text" id="nomenclatura" placeholder="Nomenclatura" />
           </div>
           <div class="form-grupo">
             <label for="valorVenda">Valor de Venda (R$)</label>
-            <input type="number" id="valorVenda" step="0.01" />
+            <input type="number" id="valorVenda" step="0.01" placeholder="Valor de Venda (R$)" />
           </div>
-        </div>
-
-        <div class="form-row two-cols">
           <div class="form-grupo">
             <label for="custo">Custo (R$)</label>
-            <input type="number" id="custo" step="0.01" />
+            <input type="number" id="custo" step="0.01" placeholder="Custo (R$)" />
           </div>
           <div class="form-grupo">
             <label for="quantidadePorCaixa">Qtd por Caixa</label>
-            <input type="number" id="quantidadePorCaixa" />
+            <input type="number" id="quantidadePorCaixa" placeholder="Qtd por Caixa" />
           </div>
         </div>
-
         <button type="submit" class="botao">Salvar Produto</button>
       </form>
 
       <h2 style="margin-top: 30px;">Produtos Cadastrados</h2>
-      <table class
+      <table class="tabela-moderna">
+        <thead>
+          <tr>
+            <th>Nome</th>
+            <th>Nomenclatura</th>
+            <th>Valor de Venda</th>
+            <th>Custo</th>
+            <th>Qtd por Caixa</th>
+            <th>Ações</th>
+          </tr>
+        </thead>
+        <tbody id="produtosContainer"></tbody>
+      </table>
+
+      <div style="margin-top: 20px;">
+        <button id="exportarXLS" class="botao">Exportar XLS</button>
+        <input type="file" id="importarXLS" />
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const menuToggleBtn = document.getElementById("menuToggleBtn");
+    const sidebarMenu = document.getElementById("sidebarMenu");
+    if (menuToggleBtn && sidebarMenu) {
+      menuToggleBtn.addEventListener("click", () => {
+        sidebarMenu.classList.toggle("active");
+      });
+    }
+  </script>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <script type="module" src="produtos.js"></script>
+</body>
+</html>
