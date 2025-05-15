@@ -4,8 +4,8 @@
   <meta charset="UTF-8" />
   <title>Lista de Clientes</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <!-- Corrigido o caminho para o CSS e removido style.css antigo e <style> embutido -->
-  <link href="assets/novo_style_v4.css" rel="stylesheet" />
+  <!-- Corrigido o caminho para o CSS -->
+  <link href="assets/novo_style.css" rel="stylesheet" />
 </head>
 <body>
 
@@ -33,9 +33,9 @@
       
       <div style="margin-bottom: 20px;">
         <!-- Botões estilizados para parecerem com o menu lateral -->
-        <button style="background-color: var(--cor-primaria-menu); color: var(--cor-texto-menu); padding: 10px 15px; border-radius: var(--borda-radius-padrao); margin-bottom: 8px; font-size: 0.85rem; border: none; cursor: pointer;" onclick="window.location.href=	'clientes.html'">Criar Novo Cliente</button>
-        <button style="background-color: var(--cor-primaria-menu); color: var(--cor-texto-menu); padding: 10px 15px; border-radius: var(--borda-radius-padrao); margin-bottom: 8px; font-size: 0.85rem; border: none; cursor: pointer;" onclick="window.location.href=	'leads.html'">Leads</button>
-        <button style="background-color: #6c757d; color: white; padding: 10px 15px; border-radius: var(--borda-radius-padrao); margin-bottom: 8px; font-size: 0.85rem; border: none; cursor: pointer;" onclick="window.location.href=	'dashboard.html'">Voltar</button>
+        <button style="background-color: var(--cor-primaria-menu); color: var(--cor-texto-menu); padding: 10px 15px; border-radius: var(--borda-radius-padrao); margin-bottom: 8px; font-size: 0.85rem; border: none; cursor: pointer;" onclick="window.location.href='clientes.html'">Criar Novo Cliente</button>
+        <button style="background-color: var(--cor-primaria-menu); color: var(--cor-texto-menu); padding: 10px 15px; border-radius: var(--borda-radius-padrao); margin-bottom: 8px; font-size: 0.85rem; border: none; cursor: pointer;" onclick="window.location.href='leads.html'">Leads</button>
+        <button style="background-color: #6c757d; color: white; padding: 10px 15px; border-radius: var(--borda-radius-padrao); margin-bottom: 8px; font-size: 0.85rem; border: none; cursor: pointer;" onclick="window.location.href='dashboard.html'">Voltar</button>
       </div>
 
       <table id="tabelaClientes" class="tabela-moderna">
@@ -98,8 +98,8 @@
           <td>${d.condominio}</td>
           <td>${d.frequencia}</td>
           <td>${d.quantidade}</td>
-          <td>R$ ${d.media.toFixed(2).replace(	'.	', 	',	')}</td>
-          <td><button class="botao botao-secundario" onclick="editarCliente(	'${d.id}	')">Editar</button></td>
+          <td>R$ ${d.media.toFixed(2).replace('.', ',')}</td>
+          <td><button class="botao botao-secundario" onclick="editarCliente('${d.id}')">Editar</button></td>
         `;
         tbody.appendChild(tr);
       });
