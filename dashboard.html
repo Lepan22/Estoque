@@ -118,7 +118,7 @@
         if (ev.status !== "finalizado") return;
         if ((ev.data || "").startsWith(mesAtual)) {
           const a = ev.analise || {};
-          receita += parseFloat(a.valorVenda) || 0;
+          receita += parseFloat(a.vendaPDV) || 0;
           const cmv = parseFloat(a.cmvTotal) || 0;
           const equipe = parseFloat(a.custoEquipe) || 0;
           const log = parseFloat(a.custoLogistica) || 0;
