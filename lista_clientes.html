@@ -4,8 +4,20 @@
   <meta charset="UTF-8" />
   <title>Lista de Clientes</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <!-- Corrigido o caminho para o CSS -->
   <link href="assets/novo_style.css" rel="stylesheet" />
+  <style>
+    /* Estilo para zebrar a tabela */
+    #tabelaClientes tbody tr:nth-child(even) {
+      background-color: #f9f9f9; /* Cor clara para linhas pares */
+    }
+    #tabelaClientes tbody tr:nth-child(odd) {
+      background-color: #ffffff; /* Cor branca para linhas ímpares */
+    }
+    /* Ajuste para garantir que o hover do CSS global ainda funcione bem */
+    #tabelaClientes tbody tr:hover {
+        background-color: #f1f1f1; /* Cor de hover um pouco mais escura que a linha par */
+    }
+  </style>
 </head>
 <body>
 
@@ -32,10 +44,9 @@
       </div>
       
       <div style="margin-bottom: 20px;">
-        <!-- Botões estilizados para parecerem com o menu lateral -->
-        <button style="background-color: var(--cor-primaria-menu); color: var(--cor-texto-menu); padding: 10px 15px; border-radius: var(--borda-radius-padrao); margin-bottom: 8px; font-size: 0.85rem; border: none; cursor: pointer;" onclick="window.location.href='clientes.html'">Criar Novo Cliente</button>
-        <button style="background-color: var(--cor-primaria-menu); color: var(--cor-texto-menu); padding: 10px 15px; border-radius: var(--borda-radius-padrao); margin-bottom: 8px; font-size: 0.85rem; border: none; cursor: pointer;" onclick="window.location.href='leads.html'">Leads</button>
-        <button style="background-color: #6c757d; color: white; padding: 10px 15px; border-radius: var(--borda-radius-padrao); margin-bottom: 8px; font-size: 0.85rem; border: none; cursor: pointer;" onclick="window.location.href='dashboard.html'">Voltar</button>
+        <button style="background-color: var(--cor-primaria-menu); color: var(--cor-texto-menu); padding: 10px 15px; border-radius: var(--borda-radius-padrao); margin-bottom: 8px; font-size: 0.85rem; border: none; cursor: pointer;" onclick="window.location.href=	'clientes.html'">Criar Novo Cliente</button>
+        <button style="background-color: var(--cor-primaria-menu); color: var(--cor-texto-menu); padding: 10px 15px; border-radius: var(--borda-radius-padrao); margin-bottom: 8px; font-size: 0.85rem; border: none; cursor: pointer;" onclick="window.location.href=	'leads.html'">Leads</button>
+        <!-- Botão Voltar removido -->
       </div>
 
       <table id="tabelaClientes" class="tabela-moderna">
@@ -58,7 +69,6 @@
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
   <script>
-    // Script do menu toggle (copiado de clientes_layout_colunas.html)
     const menuToggleBtn = document.getElementById("menuToggleBtn");
     const sidebarMenu = document.getElementById("sidebarMenu");
     if (menuToggleBtn && sidebarMenu) {
@@ -76,10 +86,7 @@
     let dadosClientes = [];
 
     function normalizar(texto) {
-      return (texto || "")
-        .toLowerCase()
-        .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
-        .trim();
+      return (texto || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
     }
 
     function editarCliente(id) {
@@ -92,14 +99,13 @@
 
       lista.forEach(d => {
         const tr = document.createElement("tr");
-        // Botão de editar na tabela também pode usar o estilo do menu se desejado, ou manter o botao-secundario
         tr.innerHTML = `
           <td>${d.nome}</td>
           <td>${d.condominio}</td>
           <td>${d.frequencia}</td>
           <td>${d.quantidade}</td>
-          <td>R$ ${d.media.toFixed(2).replace('.', ',')}</td>
-          <td><button class="botao botao-secundario" onclick="editarCliente('${d.id}')">Editar</button></td>
+          <td>R$ ${d.media.toFixed(2).replace(	'.	', 		',		')}</td>
+          <td><button class="botao" style="background-color: var(--cor-laranja-destaque); color: white;" onclick="editarCliente(	'${d.id}'	)">Editar</button></td>
         `;
         tbody.appendChild(tr);
       });
@@ -117,39 +123,26 @@
       dadosClientes = Object.entries(clientes)
         .map(([id, cliente]) => {
           if (cliente.statusLead !== "Fechado") return null;
-
           const nomeEvento = cliente.nomeEvento || "";
           const eventosRelacionados = Object.values(eventos).filter(
             e => normalizar(e.nome) === normalizar(nomeEvento) && e.status === "finalizado"
           );
-
           const quantidade = eventosRelacionados.length;
           const somaVendas = eventosRelacionados.reduce((total, e) => total + parseFloat(e.analise?.vendaPDV || 0), 0);
           const media = quantidade > 0 ? somaVendas / quantidade : 0;
-
-          return {
-            id,
-            nome: nomeEvento,
-            condominio: cliente.nomeCondominio || "",
-            frequencia: cliente.frequencia || "",
-            quantidade,
-            media
-          };
+          return { id, nome: nomeEvento, condominio: cliente.nomeCondominio || "", frequencia: cliente.frequencia || "", quantidade, media };
         })
         .filter(Boolean);
-
       renderTabela(dadosClientes);
     }
 
     document.addEventListener("DOMContentLoaded", () => {
       carregarClientes();
-
       document.getElementById("filtroNome").addEventListener("input", e => {
         const termo = e.target.value.toLowerCase();
         const filtrado = dadosClientes.filter(c => c.nome.toLowerCase().includes(termo));
         renderTabela(filtrado);
       });
-
       document.querySelectorAll("th[data-sort]").forEach(th => {
         th.addEventListener("click", () => {
           const campo = th.getAttribute("data-sort");
