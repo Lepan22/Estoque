@@ -33,7 +33,7 @@
 
     <div class="button-container">
       <button id="salvarAlteracoesBtn">Salvar Alterações</button> <!-- ID usado pelo JS -->
-      <button id="finalizarEventoBtn">Finalizar Evento e Salvar Alterações</button> <!-- ID usado pelo JS -->
+      <button id="finalizarEventoBtn">Finalizar Evento</button> <!-- Texto do botão alterado -->
     </div>
   </div>
 
@@ -115,10 +115,12 @@
 
           // Verifica o status do evento para desabilitar campos e botões
           if (eventoAtual.status === "finalizado") {
-            btnFinal.textContent = "Evento Finalizado";
+            btnFinal.textContent = "Evento Finalizado"; // Manter este texto se já finalizado
             btnFinal.disabled = true;
             btnSalvar.disabled = true;
             itensBody.querySelectorAll("input").forEach(i => i.disabled = true);
+          } else {
+            btnFinal.textContent = "Finalizar Evento"; // Texto padrão se não finalizado
           }
         })
         .catch(err => {
@@ -138,9 +140,9 @@
         const itemOriginal = currentItens[idx];
 
         // Seleciona os inputs dentro da linha atual
-        const inputAssado = tr.querySelector('input[name="assado"]');
-        const inputCongelado = tr.querySelector('input[name="congelado"]');
-        const inputPerdido = tr.querySelector('input[name="perdido"]');
+        const inputAssado = tr.querySelector(\'input[name="assado"]\[\');
+        const inputCongelado = tr.querySelector(\'input[name="congelado"]\[\');
+        const inputPerdido = tr.querySelector(\'input[name="perdido"]\[\');
 
         // Obtém os valores, garantindo que sejam números e tratando caso o input não exista
         const assado = inputAssado ? (parseInt(inputAssado.value, 10) || 0) : 0;
@@ -156,7 +158,13 @@
     // Event listener para o botão Finalizar
     btnFinal.addEventListener("click", () => {
       // Impede múltiplos cliques se já estiver desabilitado
-      if (btnFinal.disabled) return; 
+      if (btnFinal.disabled) return;
+
+      // Adiciona a mensagem de confirmação
+      const confirmacao = confirm("Apos finalizar não será mais possivel fazer alteração. Tem certeza?");
+      if (!confirmacao) {
+        return; // Usuário cancelou, não faz nada
+      }
       
       btnFinal.disabled = true;
       btnFinal.textContent = "Processando...";
@@ -177,7 +185,7 @@
           alert("Falha ao finalizar o evento. Verifique o console para mais detalhes.");
           // Reabilita os botões em caso de erro
           btnFinal.disabled = false;
-          btnFinal.textContent = "Finalizar Evento e Salvar Alterações";
+          btnFinal.textContent = "Finalizar Evento"; // Volta ao texto correto
           // Só reabilita o Salvar se o evento não estava finalizado antes
           if (eventoAtual.status !== "finalizado") {
               btnSalvar.disabled = false;
@@ -197,7 +205,7 @@
       update(refEvento, { itens: itensAtualizados })
         .then(() => {
           alert("Alterações salvas com sucesso!");
-          // Atualiza a variável local 'currentItens' com os dados salvos
+          // Atualiza a variável local \'currentItens\' com os dados salvos
           currentItens = itensAtualizados;
         })
         .catch(err => {
@@ -218,3 +226,4 @@
   </script>
 </body>
 </html>
+
