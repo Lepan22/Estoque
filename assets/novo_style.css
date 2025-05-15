@@ -1,4 +1,4 @@
-/****** Novo Estilo Propósito - novo_style.css ******/
+/******/ Novo Estilo Propósito - novo_style.css ******/
 
 :root {
   --cor-primaria-menu: #007bff; /* Azul da referência para o menu */
@@ -84,12 +84,12 @@ h1, h2, h3, h4, h5, h6 {
 /* Botões */
 button, a.botao {
   display: inline-block;
-  padding: 12px 25px;
+  padding: 10px 20px;
   background-color: var(--cor-laranja-destaque);
   color: white;
   border: none;
   border-radius: var(--borda-radius-padrao);
-  font-size: 1rem;
+  font-size: 0.9rem;
   font-weight: 500;
   cursor: pointer;
   text-decoration: none;
@@ -147,13 +147,14 @@ button:hover, a.botao:hover {
 
 /* Estilos para formulários */
 .form-grupo {
-  margin-bottom: 20px;
+  margin-bottom: 12px;
 }
 
 .form-grupo label {
   display: block;
-  margin-bottom: 8px;
+  margin-bottom: 4px;
   font-weight: 500;
+  font-size: 0.8rem;
 }
 
 .form-grupo input[type="text"],
@@ -164,11 +165,11 @@ button:hover, a.botao:hover {
 .form-grupo select,
 .form-grupo textarea {
   width: 100%;
-  padding: 12px;
+  padding: 6px 8px;
   border: 1px solid #ced4da;
-  border-radius: var(--borda-radius-padrao);
+  border-radius: 4px;
   box-sizing: border-box;
-  font-size: 1rem;
+  font-size: 0.85rem;
   transition: border-color 0.3s ease, box-shadow 0.3s ease;
 }
 
@@ -327,10 +328,10 @@ button:hover, a.botao:hover {
 .botao-secundario {
   background-color: #6c757d; /* Cinza Bootstrap secundário */
   color: white;
-  padding: 8px 15px;
-  font-size: 0.9rem;
-  margin-top: 10px;
-  margin-bottom: 10px;
+  padding: 6px 12px;
+  font-size: 0.85rem;
+  margin-top: 8px;
+  margin-bottom: 8px;
   /* Herda display, border, border-radius, cursor, text-decoration, text-align, transition, box-shadow de 'button, a.botao' */
 }
 .botao-secundario:hover {
@@ -357,14 +358,14 @@ button:hover, a.botao:hover {
 .form-row {
   display: flex;
   flex-wrap: wrap; /* Permite que os itens quebrem para a próxima linha se não couberem */
-  gap: 20px; /* Espaçamento entre os grupos de formulário na mesma linha */
+  gap: 12px; /* Espaçamento entre os grupos de formulário na mesma linha */
   margin-bottom: 0; /* Remove a margem inferior da linha em si, o form-grupo já tem */
 }
 
 .form-row .form-grupo {
-  flex: 1 1 calc(50% - 10px); /* Tenta fazer cada grupo ocupar metade do espaço menos o gap, para 2 colunas */
-  /* Para 3 colunas, seria algo como calc(33.333% - 14px), ajustando o gap */
-  margin-bottom: 20px; /* Mantém a margem inferior para espaçamento vertical entre as linhas */
+  flex: 1 1 calc(50% - 6px); /* Tenta fazer cada grupo ocupar metade do espaço menos o gap (12px), para 2 colunas */
+  /* Para 3 colunas, seria algo como calc(33.333% - 8px), ajustando o gap */
+  margin-bottom: 12px; /* Mantém a margem inferior para espaçamento vertical entre as linhas */
 }
 
 /* Para campos que devem ocupar a linha inteira */
@@ -399,9 +400,11 @@ button:hover, a.botao:hover {
 .contato-group .botao-remove {
   margin-left: 0; /* Remove margem esquerda padrão se houver */
   flex-shrink: 0; /* Não encolhe o botão */
-  padding: 10px 12px; /* Ajuste no padding para consistência com inputs */
-  height: 46px; /* Mesma altura dos inputs com padding 12px + borda 1px*2 */
+  padding: 6px 10px; /* Reduzido */
+  font-size: 0.75rem; /* Adicionado/Reduzido */
+  height: 30px; /* Reduzido */
   box-sizing: border-box;
+  line-height: normal; /* ensure text is centered */
 }
 
 /* Garantir que a classe grid existente não interfira onde usamos form-row */
@@ -411,16 +414,17 @@ button:hover, a.botao:hover {
 
 /* Se quisermos um layout de 3 colunas para certas seções */
 .form-row.three-cols .form-grupo {
-    flex: 1 1 calc(33.333% - 14px); /* (gap * (num_cols - 1)) / num_cols  = (20px * 2) / 3 ~= 13.33px */
+    flex: 1 1 calc(33.333% - 8px); /* (gap 12px * 2) / 3 = 8px */
 }
 
 /* Se quisermos um layout de 4 colunas para certas seções */
 .form-row.four-cols .form-grupo {
-    flex: 1 1 calc(25% - 15px); /* (20px * 3) / 4 = 15px */
+    flex: 1 1 calc(25% - 9px); /* (gap 12px * 3) / 4 = 9px */
 }
 
 /* Para o caso de um campo único na linha, mas que não seja full-width por padrão */
 .form-row .form-grupo.single-item {
     flex-basis: 100%;
 }
+
 
