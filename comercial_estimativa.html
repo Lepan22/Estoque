@@ -1,61 +1,443 @@
-<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Comercial - Estimativa</title>
-  <link rel="stylesheet" href="assets/novo_style.css">
-</head>
-<body>
-  <aside class="sidebar">
-    <h2>Menu</h2>
-    <ul>
-      <li><a href="#">Início</a></li>
-      <li><a href="#" class="active">Estimativas</a></li>
-    </ul>
-  </aside>
+/****** Novo Estilo Propósito - novo_style.css ******/
 
-  <main class="main-content">
-    <div class="container-principal">
-      <h1>Nova Estimativa Comercial</h1>
+:root {
+  --cor-primaria-menu: #007bff;
+  --cor-texto-menu: #ffffff;
+  --cor-fundo-conteudo: #f8f9fa;
+  --cor-fundo-pagina: #e9ecef;
+  --cor-texto-padrao: #343a40;
+  --cor-laranja-destaque: #FFA500;
+  --cor-laranja-destaque-hover: #E69500;
+  --sombra-padrao: 0 0 10px rgba(0, 0, 0, 0.05);
+  --borda-radius-padrao: 6px;
+  --font-size-label: 0.75rem;
+  --font-size-input: 0.8rem;
+  --padding-input-vertical: 4px;
+  --padding-input-horizontal: 6px;
+  --margin-bottom-form-grupo: 8px;
+  --gap-form-row: 10px;
+}
 
-      <form id="estimativa-form">
-        <div class="form-row three-cols">
-          <div class="form-grupo">
-            <label for="data">Data (Mês/Ano)</label>
-            <input type="month" id="data" name="data" required>
-          </div>
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  background-color: var(--cor-fundo-pagina);
+  color: var(--cor-texto-padrao);
+  display: flex;
+  min-height: 100vh;
+  font-size: 14px; /* Base font size */
+}
 
-          <div class="form-grupo">
-            <label for="categoria">Categoria</label>
-            <input type="text" id="categoria" name="categoria" required>
-          </div>
+.sidebar {
+  width: 132px;
+  background-color: var(--cor-primaria-menu);
+  color: var(--cor-texto-menu);
+  padding: 15px;
+  height: 100vh;
+  position: fixed;
+  left: 0;
+  top: 0;
+  box-shadow: 2px 0 5px rgba(0,0,0,0.1);
+  overflow-y: auto;
+}
 
-          <div class="form-grupo">
-            <label for="valor">Valor Estimado (R$)</label>
-            <input type="number" id="valor" name="valor" step="0.01" required>
-          </div>
-        </div>
+.sidebar h2 {
+  text-align: center;
+  margin-bottom: 20px;
+  font-size: 1.5rem;
+}
 
-        <button type="submit">Salvar Estimativa</button>
-      </form>
+.sidebar ul {
+  list-style-type: none;
+  padding: 0;
+  margin: 0;
+}
 
-      <h3>Estimativas Registradas</h3>
-      <table id="tabela-estimativas" style="width:100%; border-collapse: collapse; margin-top: 15px;">
-        <thead>
-          <tr style="background-color: #ddd;">
-            <th style="padding: 8px;">Data</th>
-            <th>Categoria</th>
-            <th>Valor</th>
-            <th>Ações</th>
-          </tr>
-        </thead>
-        <tbody id="corpo-tabela"></tbody>
-      </table>
-    </div>
-  </main>
+.sidebar ul li a {
+  display: block;
+  padding: 10px 12px;
+  text-decoration: none;
+  color: var(--cor-texto-menu);
+  border-radius: var(--borda-radius-padrao);
+  margin-bottom: 6px;
+  font-size: 0.85rem;
+  transition: background-color 0.3s ease;
+}
 
-  <!-- JS na pasta assets -->
-  <script type="module" src="assets/comercial_estimativa.js"></script>
-</body>
-</html>
+.sidebar ul li a:hover,
+.sidebar ul li a.active {
+  background-color: rgba(255, 255, 255, 0.2);
+}
+
+.main-content {
+  margin-left: 132px;
+  padding: 20px;
+  width: calc(100% - 132px);
+  background-color: var(--cor-fundo-conteudo);
+  flex-grow: 1;
+}
+
+.container-principal {
+    background-color: #ffffff;
+    padding: 20px;
+    border-radius: var(--borda-radius-padrao);
+    box-shadow: var(--sombra-padrao);
+}
+
+h1 {
+  font-size: 1.4rem;
+  margin-bottom: 15px;
+}
+
+h3 {
+  font-size: 1rem;
+  margin-top: 15px;
+  margin-bottom: 10px;
+  border-bottom: 1px solid #eee;
+  padding-bottom: 5px;
+}
+
+/* Botões Gerais */
+button, a.botao {
+  display: inline-block;
+  padding: 6px 12px;
+  background-color: var(--cor-laranja-destaque);
+  color: white;
+  border: none;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  cursor: pointer;
+  text-decoration: none;
+  text-align: center;
+  margin-right: 8px;
+  margin-bottom: 8px;
+  transition: background-color 0.3s ease, box-shadow 0.3s ease;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+}
+
+button:hover, a.botao:hover {
+  background-color: var(--cor-laranja-destaque-hover);
+  box-shadow: 0 2px 4px rgba(0,0,0,0.15);
+}
+
+/* Estilos para formulários */
+.form-grupo {
+  margin-bottom: var(--margin-bottom-form-grupo);
+}
+
+.form-grupo label {
+  display: block;
+  margin-bottom: 3px;
+  font-weight: 500;
+  font-size: var(--font-size-label);
+  color: #555;
+}
+
+.form-grupo input[type="text"],
+.form-grupo input[type="password"],
+.form-grupo input[type="email"],
+.form-grupo input[type="number"],
+.form-grupo input[type="date"],
+.form-grupo select,
+.form-grupo textarea {
+  width: 100%;
+  padding: var(--padding-input-vertical) var(--padding-input-horizontal);
+  border: 1px solid #ced4da;
+  border-radius: 4px;
+  box-sizing: border-box;
+  font-size: var(--font-size-input);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  height: auto; /* Reset height */
+  min-height: 28px; /* Minimum height for inputs */
+}
+
+.form-grupo select {
+    height: 28px; /* Specific height for select to match inputs */
+    line-height: 28px;
+    padding-top: 0;
+    padding-bottom: 0;
+}
+
+.form-grupo textarea {
+  min-height: 56px; /* Two lines of text approx */
+}
+
+.form-grupo input:focus, 
+.form-grupo select:focus, 
+.form-grupo textarea:focus {
+  border-color: var(--cor-laranja-destaque);
+  box-shadow: 0 0 0 0.15rem rgba(255, 165, 0, 0.2);
+  outline: none;
+}
+
+.form-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--gap-form-row);
+  margin-bottom: 0; 
+}
+
+.form-row .form-grupo {
+  flex: 1 1 calc(50% - (var(--gap-form-row) / 2));
+  margin-bottom: var(--margin-bottom-form-grupo);
+}
+
+.form-row.three-cols .form-grupo {
+    flex: 1 1 calc(33.333% - (var(--gap-form-row) * 2 / 3));
+}
+
+.form-row.four-cols .form-grupo {
+    flex: 1 1 calc(25% - (var(--gap-form-row) * 3 / 4));
+}
+
+.form-row .form-grupo.full-width {
+  flex-basis: 100%;
+}
+
+.contato-group {
+  display: flex;
+  align-items: flex-end;
+  gap: var(--gap-form-row);
+  width: 100%;
+  margin-bottom: var(--margin-bottom-form-grupo);
+}
+
+.contato-group > .form-grupo input[name="contatoNome"],
+.contato-group > .form-grupo input[name="contatoTel"] {
+  margin-bottom: 0;
+}
+
+.contato-group > .form-grupo {
+    margin-bottom: 0;
+}
+
+.contato-group .botao-remove {
+  padding: 4px 8px;
+  font-size: 0.75rem;
+  height: 28px;
+  line-height: 1.5;
+  align-self: center;
+  margin-bottom: 0;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0,0,0,0);
+  border: 0;
+}
+
+.divider {
+    height: 1px;
+    background-color: #eee;
+    margin: 15px 0;
+}
+
+.hidden {
+    display: none !important;
+}
+
+/* Responsividade */
+@media (max-width: 768px) {
+  .sidebar {
+    transform: translateX(-100%);
+    position: fixed;
+    z-index: 1000;
+    transition: transform 0.3s ease-in-out;
+  }
+  .sidebar.active {
+    transform: translateX(0);
+  }
+  .main-content {
+    margin-left: 0;
+    width: 100%;
+    padding: 15px;
+  }
+  .menu-toggle {
+    display: block;
+    position: fixed;
+    top: 10px;
+    left: 10px;
+    z-index: 1001;
+    background: var(--cor-laranja-destaque);
+    color: white;
+    border: none;
+    padding: 8px 10px;
+    border-radius: var(--borda-radius-padrao);
+    cursor: pointer;
+  }
+  .form-row.three-cols .form-grupo,
+  .form-row.four-cols .form-grupo {
+    flex-basis: calc(50% - (var(--gap-form-row) / 2));
+  }
+}
+
+/* === AJUSTES PARA BOTÕES DE AÇÃO NA TABELA (especialmente para evento.html) === */
+
+/* Estilo para links de ação na tabela (ex: "Ver", ícones de link) */
+.main-content table td a {
+    display: inline-block;
+    padding: 5px 8px;
+    margin: 2px;
+    border-radius: 4px;
+    text-decoration: none;
+    font-size: 0.9em; /* Ajuste para o tamanho do ícone/texto */
+    text-align: center;
+    cursor: pointer;
+    background-color: #007bff; /* Azul para links como "Ver" */
+    color: white !important; /* Texto/ícone branco para bom contraste */
+    border: 1px solid #007bff;
+    transition: opacity 0.2s ease;
+}
+
+.main-content table td a:hover {
+    opacity: 0.8;
+}
+
+/* Estilo para botões de ação na tabela (ex: ícones de documento, lixeira) */
+.main-content table td button {
+    display: inline-block;
+    padding: 5px 8px;
+    margin: 2px;
+    border-radius: 4px;
+    font-size: 0.9em; /* Ajuste para o tamanho do ícone */
+    text-align: center;
+    cursor: pointer;
+    background-color: #6c757d; /* Cinza escuro para botões de ícone */
+    color: white !important; /* Ícone branco para bom contraste */
+    border: 1px solid #6c757d;
+    transition: opacity 0.2s ease;
+}
+
+.main-content table td button:hover {
+    opacity: 0.8;
+}
+
+/* Para garantir que os ícones SVG dentro desses botões/links herdem a cor: */
+.main-content table td a svg,
+.main-content table td button svg {
+    fill: currentColor; /* Faz o SVG herdar a cor do elemento pai (a ou button) */
+    width: 1em; /* Ajuste conforme necessário */
+    height: 1em; /* Ajuste conforme necessário */
+    vertical-align: middle;
+}
+
+/*
+  RECOMENDAÇÃO IMPORTANTE:
+  Para ter cores DIFERENTES para CADA tipo de ação (editar, excluir, relatório, etc.),
+  o ideal é adicionar classes CSS específicas a cada link (<a>) ou botão (<button>)
+  DIRETAMENTE NO SEU CÓDIGO HTML. 
+
+  Por exemplo, no seu HTML:
+  <a href="..." class="btn-action-view">Ver</a>
+  <a href="..." class="btn-action-edit">✏️</a>
+  <button class="btn-action-delete">🗑️</button>
+
+  E então, no CSS, você adicionaria estilos para essas classes:
+  .main-content table td .btn-action-view { background-color: #007bff; color: white !important; }
+  .main-content table td .btn-action-edit { background-color: #ffc107; color: #212529 !important; } /* Amarelo com texto escuro */
+  .main-content table td .btn-action-delete { background-color: #dc3545; color: white !important; } /* Vermelho */
+  .main-content table td .btn-action-report { background-color: #17a2b8; color: white !important; } /* Ciano */
+  .main-content table td .btn-action-pdf { background-color: #6f42c1; color: white !important; } /* Roxo */
+  .main-content table td .btn-action-list { background-color: #20c997; color: white !important; } /* Verde azulado */
+*/
+
+/* Efeito Zebrado para Tabelas */
+.main-content table tbody tr:nth-child(odd) {
+    background-color: #f9f9f9; /* Uma cor clara para linhas ímpares */
+}
+
+.main-content table tbody tr:hover {
+    background-color: #f1f1f1; /* Mantém o hover, mas pode ser ajustado se necessário */
+}
+
+/* As regras para .dashboard-kpis, .kpi-card, .dashboard-charts, .chart-container foram removidas 
+   porque o HTML do dashboard não usa essas classes. 
+   Serão adicionadas novas regras abaixo baseadas na estrutura real do dashboard.html */
+
+
+
+
+/* === AJUSTES PARA LAYOUT DO DASHBOARD (KPIs e Gráficos) === */
+
+/* 
+  INSTRUÇÃO IMPORTANTE PARA O DASHBOARD:
+  Para que os KPIs e Gráficos se alinhem corretamente, você precisará 
+  garantir que seu arquivo dashboard.html tenha uma estrutura similar
+  à sugerida abaixo, ou nos informe a estrutura exata para ajustarmos os seletores.
+*/
+
+/* Container para os KPIs - Envolva seus 4 KPIs com uma div com esta classe */
+.main-content .container-kpis-dashboard {
+    display: flex;
+    flex-wrap: wrap; /* Permite quebra de linha em telas menores, se necessário */
+    gap: 15px; /* Espaçamento entre os cards de KPI */
+    margin-bottom: 25px; /* Espaço abaixo dos KPIs */
+}
+
+/* Estilo para cada card de KPI - Cada um dos seus 4 KPIs deve ter esta classe */
+.main-content .card-kpi-dashboard {
+    flex: 1 1 calc(25% - 12px); /* Tenta fazer 4 cards por linha (ajustado pelo gap) */
+    background-color: #ffffff;
+    padding: 20px;
+    border-radius: var(--borda-radius-padrao);
+    box-shadow: var(--sombra-padrao);
+    text-align: left; /* Alinhamento do texto dentro do card */
+    min-width: 200px; /* Largura mínima para cada card */
+}
+
+.main-content .card-kpi-dashboard .kpi-title {
+    font-size: 0.9rem; /* Tamanho do título do KPI */
+    color: #6c757d; /* Cor do título do KPI */
+    margin-top: 0;
+    margin-bottom: 5px;
+    font-weight: 500;
+}
+
+.main-content .card-kpi-dashboard .kpi-value {
+    font-size: 1.75rem; /* Tamanho do valor do KPI */
+    font-weight: bold;
+    color: var(--cor-texto-padrao);
+    margin-top: 0;
+    margin-bottom: 0;
+    line-height: 1.2;
+}
+
+/* Container para os Gráficos - Envolva seus gráficos com uma div com esta classe */
+.main-content .container-charts-dashboard {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px; /* Espaçamento entre os containers de gráfico */
+}
+
+/* Estilo para cada container de gráfico - Cada gráfico deve estar em uma div com esta classe */
+.main-content .chart-item-dashboard {
+    flex: 1 1 calc(50% - 10px); /* Tenta fazer 2 gráficos por linha (ajustado pelo gap) */
+    background-color: #ffffff;
+    padding: 20px;
+    border-radius: var(--borda-radius-padrao);
+    box-shadow: var(--sombra-padrao);
+    min-height: 320px; /* Altura mínima para visualização do gráfico */
+}
+
+/* Ajuste para telas menores, se os KPIs e gráficos precisarem empilhar */
+@media (max-width: 992px) { /* Telas médias */
+    .main-content .card-kpi-dashboard {
+        flex: 1 1 calc(50% - 8px); /* 2 KPIs por linha */
+    }
+    .main-content .chart-item-dashboard {
+        flex: 1 1 100%; /* 1 gráfico por linha */
+    }
+}
+
+@media (max-width: 576px) { /* Telas pequenas */
+    .main-content .card-kpi-dashboard {
+        flex: 1 1 100%; /* 1 KPI por linha */
+    }
+}
+
