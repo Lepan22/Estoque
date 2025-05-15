@@ -17,12 +17,11 @@
   <div class="sidebar" id="sidebarMenu">
     <h2>LePan</h2>
     <ul>
-      <li><a href="#" class="active">Dashboard</a></li> <!-- Link para o próprio dashboard -->
+      <li><a href="#" class="active">Dashboard</a></li>
       <li><a href="assets/relatorio.html">📊 Relatórios</a></li>
       <li><a href="assets/produtos.html">📦 Produtos</a></li>
       <li><a href="lista_clientes.html">👥 Clientes</a></li>
       <li><a href="evento.html">📅 Eventos</a></li>
-      <!-- Adicionar outros links relevantes do sistema aqui -->
     </ul>
   </div>
 
@@ -55,7 +54,6 @@
   </div>
 
   <script>
-    // Script do menu toggle
     const menuToggleBtn = document.getElementById('menuToggleBtn');
     const sidebarMenu = document.getElementById('sidebarMenu');
     if (menuToggleBtn && sidebarMenu) {
@@ -64,7 +62,6 @@
         });
     }
 
-    // Script original do dashboard (Firebase, Charts, etc.)
     const firebaseConfig = {
       databaseURL: "https://controleestoquelepan-default-rtdb.firebaseio.com"
     };
@@ -75,35 +72,62 @@
       return "R$ " + (valor || 0).toFixed(2).replace('.', ',');
     }
 
-    function agruparPorMes(eventos) {
-      const mapa = {};
+    function agruparDadosMensais(eventos, estimativasComerciais) {
+      const mapaMensal = {};
+      const mesesParaIncluir = [];
+      const hoje = new Date();
+
+      for (let i = 5; i >= 0; i--) {
+        const dataMes = new Date(hoje.getFullYear(), hoje.getMonth() - i, 1);
+        const ano = dataMes.getFullYear();
+        const mesNum = dataMes.getMonth() + 1;
+        const mesChave = `${ano}-${mesNum < 10 ? '0' : ''}${mesNum}`;
+        
+        mesesParaIncluir.push(mesChave);
+        mapaMensal[mesChave] = {
+            vendaRealPDV: 0,
+            estimativaComercial: 0,
+            receitaTotalEvento: 0,
+            perda: 0,
+            lucro: 0,
+            eventos: 0
+        };
+      }
+
       eventos.forEach(ev => {
         if (ev.status !== "finalizado") return;
-        const mes = ev.data?.slice(0, 7); // formato YYYY-MM
-        if (!mapa[mes]) {
-          mapa[mes] = { receita: 0, estimativa: 0, perda: 0, lucro: 0, eventos: 0 };
-        }
-        const a = ev.analise || {};
-        const receita = parseFloat(a.valorVenda) || 0;
-        const estimativa = parseFloat(a.estimativaTotal) || 0;
-        const perda = parseFloat(a.valorPerda) || 0;
-        const cmv = parseFloat(a.cmvTotal) || 0;
-        const equipe = parseFloat(a.custoEquipe) || 0;
-        const logistica = parseFloat(a.custoLogistica) || 0;
-        const lucro = receita - cmv - equipe - logistica;
+        const mesEvento = ev.data?.slice(0, 7);
+        if (mapaMensal[mesEvento]) {
+            const a = ev.analise || {};
+            mapaMensal[mesEvento].vendaRealPDV += parseFloat(a.vendaPDV) || 0;
+            
+            const receitaEvento = parseFloat(a.valorVenda) || 0;
+            mapaMensal[mesEvento].receitaTotalEvento += receitaEvento;
 
-        mapa[mes].receita += receita;
-        mapa[mes].estimativa += estimativa;
-        mapa[mes].perda += perda;
-        mapa[mes].lucro += lucro;
-        mapa[mes].eventos += 1;
+            mapaMensal[mesEvento].perda += parseFloat(a.valorPerda) || 0;
+            const cmv = parseFloat(a.cmvTotal) || 0;
+            const equipe = parseFloat(a.custoEquipe) || 0;
+            const logistica = parseFloat(a.custoLogistica) || 0;
+            mapaMensal[mesEvento].lucro += receitaEvento - cmv - equipe - logistica;
+            mapaMensal[mesEvento].eventos += 1;
+        }
       });
 
-      const ordenado = Object.keys(mapa).sort().map(mes => ({
-        mes,
-        ...mapa[mes]
+      if (estimativasComerciais) {
+        Object.values(estimativasComerciais).forEach(est => {
+            const mesEstimativa = est.data?.slice(0, 7);
+            if (mapaMensal[mesEstimativa]) {
+                mapaMensal[mesEstimativa].estimativaComercial += parseFloat(est.valor) || 0;
+            }
+        });
+      }
+      
+      const resultadoFinal = mesesParaIncluir.map(mesChave => ({
+        mes: mesChave,
+        ...mapaMensal[mesChave]
       }));
-      return ordenado;
+
+      return resultadoFinal;
     }
 
     function atualizarKPIs(eventos, clientes) {
@@ -112,101 +136,109 @@
 
       const hoje = new Date();
       const mesAtual = hoje.toISOString().slice(0, 7);
-
-      let receita = 0, lucro = 0, eventosMes = 0;
+      let receitaDoMesKPI = 0, lucroDoMesKPI = 0, eventosNoMesKPI = 0;
 
       eventos.forEach(ev => {
         if (ev.status !== "finalizado") return;
         if ((ev.data || "").startsWith(mesAtual)) {
           const a = ev.analise || {};
-          receita += parseFloat(a.vendaPDV) || 0;
+          receitaDoMesKPI += parseFloat(a.vendaPDV) || 0;
           const cmv = parseFloat(a.cmvTotal) || 0;
           const equipe = parseFloat(a.custoEquipe) || 0;
           const log = parseFloat(a.custoLogistica) || 0;
-          lucro += (parseFloat(a.valorVenda) || 0) - cmv - equipe - log;
-          eventosMes += 1;
+          lucroDoMesKPI += (parseFloat(a.valorVenda) || 0) - cmv - equipe - log;
+          eventosNoMesKPI += 1;
         }
       });
 
-      document.getElementById("receitaMes").textContent = formatar(receita);
-      document.getElementById("lucroMes").textContent = formatar(lucro);
-      document.getElementById("eventosMes").textContent = eventosMes;
+      document.getElementById("receitaMes").textContent = formatar(receitaDoMesKPI);
+      document.getElementById("lucroMes").textContent = formatar(lucroDoMesKPI);
+      document.getElementById("eventosMes").textContent = eventosNoMesKPI;
     }
 
-    function criarGrafico(id, label, labels, dataset) {
-      const ctx = document.getElementById(id).getContext('2d');
-      new Chart(ctx, {
-        type: 'bar',
-        data: { labels, datasets: dataset },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false, // Adicionado para melhor controle com CSS
-          plugins: {
-            legend: { position: 'top' },
-            title: { display: true, text: label }
-          }
-        }
-      });
-    }
+    let charts = {}; // Objeto para armazenar instâncias dos gráficos
 
-    function criarLinha(id, label, labels, dados, cor = 'green') {
-      const ctx = document.getElementById(id).getContext('2d');
-      new Chart(ctx, {
-        type: 'line',
-        data: {
-          labels,
-          datasets: [{
-            label,
-            data: dados,
-            borderColor: cor,
-            backgroundColor: cor + '33',
-            tension: 0.3,
-            fill: true
-          }]
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false, // Adicionado para melhor controle com CSS
-          plugins: {
-            legend: { position: 'top' },
-            title: { display: true, text: label }
-          }
+    function criarOuAtualizarGrafico(id, tipo, labelTitulo, labelsEixoX, datasets) {
+        const ctx = document.getElementById(id).getContext('2d');
+        if (charts[id]) {
+            charts[id].destroy(); // Destruir gráfico existente antes de recriar
         }
-      });
+        charts[id] = new Chart(ctx, {
+            type: tipo,
+            data: {
+                labels: labelsEixoX,
+                datasets: datasets
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { position: 'top' },
+                    title: { display: true, text: labelTitulo }
+                }
+            }
+        });
     }
 
     async function carregarDashboard() {
-      const [eventosSnap, clientesSnap] = await Promise.all([
+      const [eventosSnap, clientesSnap, estimativasComerciaisSnap] = await Promise.all([
         db.ref("eventos").once("value"),
-        db.ref("clientes").once("value")
+        db.ref("clientes").once("value"),
+        db.ref("comercial_estimativa").once("value")
       ]);
 
       const eventos = Object.values(eventosSnap.val() || {});
       const clientes = clientesSnap.val() || {};
-      const meses = agruparPorMes(eventos);
-      const labels = meses.map(m => m.mes);
+      const estimativasComerciais = estimativasComerciaisSnap.val() || {};
+
+      const dadosMensaisAgrupados = agruparDadosMensais(eventos, estimativasComerciais);
+      const labelsEixoX = dadosMensaisAgrupados.map(m => m.mes);
 
       atualizarKPIs(eventos, clientes);
 
-      criarGrafico("chartVendas", "Estimativa vs Venda", labels, [
+      criarOuAtualizarGrafico("chartVendas", 'bar', "Estimativa (Comercial) vs Venda Real (PDV) - Últimos 6 Meses", labelsEixoX, [
         {
-          label: "Estimativa",
-          data: meses.map(m => m.estimativa),
-          backgroundColor: "#ccc"
+          label: "Estimativa (Comercial)",
+          data: dadosMensaisAgrupados.map(m => m.estimativaComercial),
+          backgroundColor: "#FFC107" // Amarelo para estimativa
         },
         {
-          label: "Venda Real",
-          data: meses.map(m => m.receita),
+          label: "Venda Real (PDV)",
+          data: dadosMensaisAgrupados.map(m => m.vendaRealPDV),
           backgroundColor: "#007bff"
         }
       ]);
 
-      criarLinha("chartLucro", "Lucro por Mês", labels, meses.map(m => m.lucro), "#28a745");
-      criarLinha("chartPerda", "Perda por Mês", labels, meses.map(m => m.perda), "#dc3545");
-      criarLinha("chartEventos", "Eventos por Mês", labels, meses.map(m => m.eventos), "#17a2b8");
+      criarOuAtualizarGrafico("chartLucro", 'line', "Lucro por Mês - Últimos 6 Meses", labelsEixoX, [{
+        label: "Lucro por Mês",
+        data: dadosMensaisAgrupados.map(m => m.lucro),
+        borderColor: "#28a745",
+        backgroundColor: "#28a745" + '33',
+        tension: 0.3,
+        fill: true
+      }]);
+
+      criarOuAtualizarGrafico("chartPerda", 'line', "Perda por Mês - Últimos 6 Meses", labelsEixoX, [{
+        label: "Perda por Mês",
+        data: dadosMensaisAgrupados.map(m => m.perda),
+        borderColor: "#dc3545",
+        backgroundColor: "#dc3545" + '33',
+        tension: 0.3,
+        fill: true
+      }]);
+
+      criarOuAtualizarGrafico("chartEventos", 'line', "Eventos por Mês - Últimos 6 Meses", labelsEixoX, [{
+        label: "Eventos por Mês",
+        data: dadosMensaisAgrupados.map(m => m.eventos),
+        borderColor: "#17a2b8",
+        backgroundColor: "#17a2b8" + '33',
+        tension: 0.3,
+        fill: true
+      }]);
     }
 
     carregarDashboard();
   </script>
 </body>
 </html>
+
