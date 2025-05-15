@@ -28,7 +28,7 @@
 
         <!-- Seção Dados Principais -->
         <div class="section">
-          <div class="form-row">
+          <div class="form-row three-cols">
             <div class="form-grupo">
               <label for="dataCadastro">Data Cadastro</label>
               <input type="date" id="dataCadastro" readonly />
@@ -37,21 +37,23 @@
               <label for="nomeEvento">Nome do Evento</label>
               <input type="text" id="nomeEvento" />
             </div>
-          </div>
-          <div class="form-row">
             <div class="form-grupo">
               <label for="nomeCondominio">Nome Condomínio</label>
               <input type="text" id="nomeCondominio" />
             </div>
+          </div>
+          <div class="form-row three-cols">
             <div class="form-grupo">
               <label for="tipoCondominio">Tipo</label>
               <input type="text" id="tipoCondominio" />
             </div>
-          </div>
-          <div class="form-row">
-            <div class="form-grupo full-width">
+            <div class="form-grupo">
               <label for="indicadoPor">Indicado por</label>
               <input type="text" id="indicadoPor" />
+            </div>
+            <div class="form-grupo">
+                <label for="origem">Origem</label>
+                <input type="text" id="origem" />
             </div>
           </div>
         </div>
@@ -69,23 +71,7 @@
 
         <!-- Seção Detalhes Adicionais -->
         <div class="section">
-          <div class="form-row">
-            <div class="form-grupo">
-                <label for="origem">Origem</label>
-                <input type="text" id="origem" />
-            </div>
-            <div class="form-grupo">
-                <label for="dataUltimoContato">Dt. Último Contato</label>
-                <input type="date" id="dataUltimoContato" />
-            </div>
-          </div>
-          <div class="form-row">
-            <div class="form-grupo full-width">
-                <label for="comentario">Comentário</label>
-                <textarea id="comentario"></textarea>
-            </div>
-          </div>
-          <div class="form-row three-cols">
+          <div class="form-row four-cols">
             <div class="form-grupo">
                 <label for="qtdApto">Qtd Apto</label>
                 <input type="number" id="qtdApto" />
@@ -103,8 +89,12 @@
                     <option>Alto</option>
                 </select>
             </div>
+            <div class="form-grupo">
+                <label for="dataUltimoContato">Dt. Último Contato</label>
+                <input type="date" id="dataUltimoContato" />
+            </div>
           </div>
-          <div class="form-row">
+          <div class="form-row three-cols">
             <div class="form-grupo">
                 <label for="endereco">Endereço</label>
                 <input type="text" id="endereco" />
@@ -113,9 +103,13 @@
                 <label for="regiao">Região</label>
                 <input type="text" id="regiao" />
             </div>
+            <div class="form-grupo">
+                <label for="comentario">Comentário</label>
+                <textarea id="comentario"></textarea>
+            </div>
           </div>
            <div class="form-row">
-            <div class="form-grupo full-width">
+            <div class="form-grupo">
                 <label for="statusLead">Status Lead</label>
                 <select id="statusLead">
                     <option value="">Selecione</option>
@@ -133,7 +127,7 @@
         <!-- Seção Dados do Evento (Lead Fechado) -->
         <div id="fechadoFields" class="section hidden">
           <h3>Dados do Evento (Lead Fechado)</h3>
-          <div class="form-row">
+          <div class="form-row four-cols">
             <div class="form-grupo">
                 <label for="dataPrimeiroEvento">Data do Primeiro Evento</label>
                 <input type="date" id="dataPrimeiroEvento" />
@@ -142,8 +136,6 @@
                 <label for="valorPrimeiroEvento">Valor do Primeiro Evento</label>
                 <input type="number" id="valorPrimeiroEvento" />
             </div>
-          </div>
-          <div class="form-row">
             <div class="form-grupo">
                 <label for="qtdEventos">Quantidade de Eventos</label>
                 <input type="number" id="qtdEventos" readonly />
@@ -153,7 +145,7 @@
                 <input type="number" id="valorTotalVendido" readonly />
             </div>
           </div>
-          <div class="form-row">
+          <div class="form-row four-cols">
             <div class="form-grupo">
                 <label for="mediaVendas">Média de Vendas</label>
                 <input type="number" id="mediaVendas" readonly />
@@ -162,8 +154,6 @@
                 <label for="frequencia">Frequência</label>
                 <input type="text" id="frequencia" />
             </div>
-          </div>
-          <div class="form-row">
             <div class="form-grupo">
                 <label for="statusCliente">Status Cliente</label>
                 <select id="statusCliente">
@@ -270,13 +260,20 @@
     const container = document.getElementById("contatoContainer");
     if (!container) return;
     const div = document.createElement("div");
-    // Cada contato em sua própria .form-row para controle de layout individual se necessário, ou manter em .contato-group simples
-    div.className = "contato-group form-grupo"; // .form-grupo para herdar espaçamentos e ser item flex
+    div.className = "contato-group form-row"; // Alterado para form-row para usar o gap e flex-wrap
     div.innerHTML = `
-      <input type="text" name="contatoNome" placeholder="Nome do Contato" value="${nome}" />
-      <input type="tel" name="contatoTel" placeholder="Telefone" value="${telefone}" />
+      <div class="form-grupo" style="flex-grow: 2;">
+        <label for="contatoNome_${container.children.length}" class="sr-only">Nome do Contato</label>
+        <input type="text" id="contatoNome_${container.children.length}" name="contatoNome" placeholder="Nome do Contato" value="${nome}" />
+      </div>
+      <div class="form-grupo" style="flex-grow: 1;">
+        <label for="contatoTel_${container.children.length}" class="sr-only">Telefone</label>
+        <input type="tel" id="contatoTel_${container.children.length}" name="contatoTel" placeholder="Telefone" value="${telefone}" />
+      </div>
       <button type="button" class="botao botao-remove" onclick="this.parentElement.remove()">❌</button>
     `;
+    // Adicionar sr-only class para labels de contato se não forem visíveis
+    // CSS: .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); border: 0; }
     container.appendChild(div);
   }
 
@@ -293,8 +290,8 @@
 
         const contatos = [];
         document.querySelectorAll(".contato-group").forEach(grupo => {
-          const nomeInput = grupo.querySelector("[name=\"contatoNome\"]");
-          const telInput = grupo.querySelector("[name=\"contatoTel\"]");
+          const nomeInput = grupo.querySelector("[name='contatoNome']");
+          const telInput = grupo.querySelector("[name='contatoTel']");
           const nome = nomeInput ? nomeInput.value : "";
           const tel = telInput ? telInput.value : "";
           if (nome || tel) contatos.push({ nome, telefone: tel });
@@ -319,3 +316,4 @@
 </script>
 </body>
 </html>
+
