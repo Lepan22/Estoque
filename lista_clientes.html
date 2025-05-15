@@ -4,77 +4,70 @@
   <meta charset="UTF-8" />
   <title>Lista de Clientes</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <link href="assets/style.css" rel="stylesheet" />
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      padding: 20px;
-      max-width: 1000px;
-      margin: auto;
-    }
-    h1 {
-      margin-bottom: 20px;
-    }
-    input[type="text"] {
-      padding: 6px;
-      width: 300px;
-      margin-bottom: 20px;
-    }
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-bottom: 20px;
-    }
-    th, td {
-      padding: 8px;
-      border: 1px solid #ccc;
-      text-align: left;
-    }
-    th {
-      background-color: #f0f0f0;
-      cursor: pointer;
-    }
-    button {
-      margin-right: 10px;
-      padding: 6px 10px;
-      border: none;
-      background-color: #ccc;
-      border-radius: 4px;
-      cursor: pointer;
-    }
-    .edit-btn {
-      background-color: #a0d468;
-    }
-  </style>
+  <!-- Alterado para novo_style_v4.css e removido style.css antigo e <style> embutido -->
+  <link href="assets/novo_style_v4.css" rel="stylesheet" />
 </head>
 <body>
-  <h1>Lista de Clientes Fechados</h1>
 
-  <input type="text" id="filtroNome" placeholder="Buscar por nome do evento..." />
+  <button class="menu-toggle" id="menuToggleBtn">☰</button>
 
-  <table id="tabelaClientes">
-    <thead>
-      <tr>
-        <th data-sort="nome">Nome</th>
-        <th data-sort="condominio">Condomínio</th>
-        <th data-sort="frequencia">Frequência</th>
-        <th data-sort="quantidade">Qtd. Eventos</th>
-        <th data-sort="media">Valor Médio Venda</th>
-        <th>Ações</th>
-      </tr>
-    </thead>
-    <tbody></tbody>
-  </table>
+  <div class="sidebar" id="sidebarMenu">
+    <h2>LePan</h2>
+    <ul>
+      <li><a href="dashboard.html">Dashboard</a></li>
+      <li><a href="assets/relatorio.html">📊 Relatórios</a></li>
+      <li><a href="assets/produtos.html">📦 Produtos</a></li>
+      <li><a href="lista_clientes.html" class="active">👥 Clientes</a></li>
+      <li><a href="evento.html">📅 Eventos</a></li>
+    </ul>
+  </div>
 
-  <div>
-    <button onclick="window.location.href='clientes.html'">Criar Novo Cliente</button>
-    <button onclick="window.location.href='leads.html'">Leads</button>
-    <button onclick="window.location.href='dashboard.html'">Voltar</button>
+  <div class="main-content">
+    <div class="container-principal">
+      <h1>Lista de Clientes Fechados</h1>
+
+      <div class="form-grupo" style="margin-bottom: 20px;">
+        <!-- Adicionado margin-bottom para separar do botão e da tabela -->
+        <label for="filtroNome" class="sr-only">Buscar por nome do evento...</label>
+        <input type="text" id="filtroNome" placeholder="Buscar por nome do evento..." />
+      </div>
+      
+      <div style="margin-bottom: 20px;">
+        <button class="botao" onclick="window.location.href='clientes.html'">Criar Novo Cliente</button>
+        <button class="botao" onclick="window.location.href='leads.html'">Leads</button> 
+        <!-- Botão Leads como primário também, pode ser alterado para botao-secundario se preferir -->
+        <button class="botao botao-secundario" onclick="window.location.href='dashboard.html'">Voltar</button>
+      </div>
+
+      <table id="tabelaClientes" class="tabela-moderna">
+        <thead>
+          <tr>
+            <th data-sort="nome">Nome</th>
+            <th data-sort="condominio">Condomínio</th>
+            <th data-sort="frequencia">Frequência</th>
+            <th data-sort="quantidade">Qtd. Eventos</th>
+            <th data-sort="media">Valor Médio Venda</th>
+            <th>Ações</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+
+    </div>
   </div>
 
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
   <script>
+    // Script do menu toggle (copiado de clientes_layout_colunas.html)
+    const menuToggleBtn = document.getElementById("menuToggleBtn");
+    const sidebarMenu = document.getElementById("sidebarMenu");
+    if (menuToggleBtn && sidebarMenu) {
+        menuToggleBtn.addEventListener("click", () => {
+            sidebarMenu.classList.toggle("active");
+        });
+    }
+
     const firebaseConfig = {
       databaseURL: "https://controleestoquelepan-default-rtdb.firebaseio.com"
     };
@@ -91,7 +84,7 @@
     }
 
     function editarCliente(id) {
-      window.location.href = `clientes.html?idCliente=${id}`; // ✅ corrigido
+      window.location.href = `clientes.html?idCliente=${id}`;
     }
 
     function renderTabela(lista) {
@@ -106,7 +99,7 @@
           <td>${d.frequencia}</td>
           <td>${d.quantidade}</td>
           <td>R$ ${d.media.toFixed(2).replace('.', ',')}</td>
-          <td><button class="edit-btn" onclick="editarCliente('${d.id}')">Editar</button></td>
+          <td><button class="botao botao-secundario" onclick="editarCliente('${d.id}')">Editar</button></td>
         `;
         tbody.appendChild(tr);
       });
@@ -160,11 +153,20 @@
       document.querySelectorAll("th[data-sort]").forEach(th => {
         th.addEventListener("click", () => {
           const campo = th.getAttribute("data-sort");
+          // Basic sort, can be improved for asc/desc toggle
+          let sortOrder = th.dataset.sortOrder || 'asc';
           dadosClientes.sort((a, b) => {
-            if (typeof a[campo] === "string") {
-              return a[campo].localeCompare(b[campo]);
+            let valA = a[campo];
+            let valB = b[campo];
+            if (typeof valA === "string") {
+              return sortOrder === 'asc' ? valA.localeCompare(valB) : valB.localeCompare(valA);
             }
-            return b[campo] - a[campo];
+            return sortOrder === 'asc' ? valA - valB : valB - valA;
+          });
+          th.dataset.sortOrder = sortOrder === 'asc' ? 'desc' : 'asc'; // Toggle sort order
+          // Remove sort order from other headers
+          document.querySelectorAll("th[data-sort]").forEach(otherTh => {
+            if (otherTh !== th) delete otherTh.dataset.sortOrder;
           });
           renderTabela(dadosClientes);
         });
@@ -173,3 +175,4 @@
   </script>
 </body>
 </html>
+
