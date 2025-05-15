@@ -10,12 +10,12 @@
   --cor-laranja-destaque-hover: #E69500;
   --sombra-padrao: 0 0 10px rgba(0, 0, 0, 0.05);
   --borda-radius-padrao: 6px;
-  --font-size-label: 0.75rem;
-  --font-size-input: 0.8rem;
+  --font-size-label: 0.75rem; /* Mantido, mas podemos reduzir se necessário */
+  --font-size-input: 0.65rem; /* AJUSTADO CONFORME SOLICITAÇÃO DO USUÁRIO */
   --padding-input-vertical: 4px;
   --padding-input-horizontal: 6px;
-  --margin-bottom-form-grupo: 8px;
-  --gap-form-row: 10px;
+  --margin-bottom-form-grupo: 5px; /* AJUSTADO CONFORME SOLICITAÇÃO DO USUÁRIO */
+  --gap-form-row: 5px; /* AJUSTADO CONFORME SOLICITAÇÃO DO USUÁRIO */
 }
 
 body {
@@ -25,7 +25,7 @@ body {
   color: var(--cor-texto-padrao);
   display: flex;
   min-height: 100vh;
-  font-size: 14px; /* Base font size */
+  font-size: 13px; /* Base font size slightly reduced */
 }
 
 .sidebar {
@@ -71,7 +71,7 @@ body {
 
 .main-content {
   margin-left: 132px;
-  padding: 20px;
+  padding: 15px; /* Reduzido padding geral */
   width: calc(100% - 132px);
   background-color: var(--cor-fundo-conteudo);
   flex-grow: 1;
@@ -79,39 +79,39 @@ body {
 
 .container-principal {
     background-color: #ffffff;
-    padding: 20px;
+    padding: 15px; /* Reduzido padding do container */
     border-radius: var(--borda-radius-padrao);
     box-shadow: var(--sombra-padrao);
 }
 
 h1 {
-  font-size: 1.4rem;
-  margin-bottom: 15px;
+  font-size: 1.3rem; /* Reduzido */
+  margin-bottom: 12px; /* Reduzido */
 }
 
 h3 {
-  font-size: 1rem;
-  margin-top: 15px;
-  margin-bottom: 10px;
+  font-size: 0.9rem; /* Reduzido */
+  margin-top: 12px; /* Reduzido */
+  margin-bottom: 8px; /* Reduzido */
   border-bottom: 1px solid #eee;
-  padding-bottom: 5px;
+  padding-bottom: 4px; /* Reduzido */
 }
 
 /* Botões */
 button, a.botao {
   display: inline-block;
-  padding: 6px 12px;
+  padding: 5px 10px; /* Reduzido */
   background-color: var(--cor-laranja-destaque);
   color: white;
   border: none;
   border-radius: 4px;
-  font-size: 0.8rem;
+  font-size: 0.75rem; /* Reduzido */
   font-weight: 500;
   cursor: pointer;
   text-decoration: none;
   text-align: center;
-  margin-right: 8px;
-  margin-bottom: 8px;
+  margin-right: 6px; /* Reduzido */
+  margin-bottom: 6px; /* Reduzido */
   transition: background-color 0.3s ease, box-shadow 0.3s ease;
   box-shadow: 0 1px 2px rgba(0,0,0,0.1);
 }
@@ -128,7 +128,7 @@ button:hover, a.botao:hover {
 
 .form-grupo label {
   display: block;
-  margin-bottom: 3px;
+  margin-bottom: 2px; /* Reduzido */
   font-weight: 500;
   font-size: var(--font-size-label);
   color: #555;
@@ -144,23 +144,23 @@ button:hover, a.botao:hover {
   width: 100%;
   padding: var(--padding-input-vertical) var(--padding-input-horizontal);
   border: 1px solid #ced4da;
-  border-radius: 4px;
+  border-radius: 3px; /* Reduzido */
   box-sizing: border-box;
   font-size: var(--font-size-input);
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
-  height: auto; /* Reset height */
-  min-height: 28px; /* Minimum height for inputs */
+  height: auto; 
+  min-height: 24px; /* Reduzido */
 }
 
 .form-grupo select {
-    height: 28px; /* Specific height for select to match inputs */
-    line-height: 28px;
+    height: 24px; /* Reduzido */
+    line-height: 24px;
     padding-top: 0;
     padding-bottom: 0;
 }
 
 .form-grupo textarea {
-  min-height: 56px; /* Two lines of text approx */
+  min-height: 48px; /* Reduzido */
 }
 
 .form-grupo input:focus, 
@@ -180,48 +180,64 @@ button:hover, a.botao:hover {
 }
 
 .form-row .form-grupo {
-  flex: 1 1 calc(50% - (var(--gap-form-row) / 2));
+  flex-grow: 1; /* Allow growing */
+  flex-shrink: 1; /* Allow shrinking */
+  /* flex-basis is set by column classes or specific field classes */
   margin-bottom: var(--margin-bottom-form-grupo);
 }
 
+.form-row.two-cols .form-grupo {
+    flex-basis: calc(50% - (var(--gap-form-row) / 2));
+}
+
 .form-row.three-cols .form-grupo {
-    flex: 1 1 calc(33.333% - (var(--gap-form-row) * 2 / 3));
+    flex-basis: calc(33.333% - (var(--gap-form-row) * 2 / 3));
 }
 
 .form-row.four-cols .form-grupo {
-    flex: 1 1 calc(25% - (var(--gap-form-row) * 3 / 4));
+    flex-basis: calc(25% - (var(--gap-form-row) * 3 / 4));
+}
+
+.form-row.five-cols .form-grupo {
+    flex-basis: calc(20% - (var(--gap-form-row) * 4 / 5));
 }
 
 .form-row .form-grupo.full-width {
   flex-basis: 100%;
 }
 
+/* Specific field width adjustments - can be done via adding classes to .form-grupo in HTML */
+.form-grupo.field-xs { flex-basis: 100px !important; flex-grow: 0; } /* Extra Small */
+.form-grupo.field-sm { flex-basis: 150px !important; flex-grow: 0; } /* Small */
+.form-grupo.field-md { flex-basis: 200px !important; flex-grow: 0; } /* Medium */
+.form-grupo.field-lg { flex-basis: 250px !important; flex-grow: 0; } /* Large */
+.form-grupo.field-xl { flex-basis: 300px !important; flex-grow: 0; } /* Extra Large */
+
 /* Ajustes para a seção de contatos */
 .contato-group {
-  display: flex; /* Make .contato-group a flex container itself */
-  align-items: flex-end; /* Align items to the bottom, useful if labels make height uneven */
+  display: flex; 
+  align-items: flex-end; 
   gap: var(--gap-form-row);
-  width: 100%; /* Take full width if it's inside contatoContainer */
+  width: 100%; 
   margin-bottom: var(--margin-bottom-form-grupo);
 }
 
-/* Remove .form-grupo class from direct children of .contato-group if they are just inputs/buttons */
 .contato-group > .form-grupo input[name="contatoNome"],
 .contato-group > .form-grupo input[name="contatoTel"] {
-  margin-bottom: 0; /* Remove bottom margin from inputs inside contact group items */
+  margin-bottom: 0; 
 }
 
 .contato-group > .form-grupo {
-    margin-bottom: 0; /* No margin for the form-group wrapper inside contato-group */
+    margin-bottom: 0; 
 }
 
 .contato-group .botao-remove {
-  padding: 4px 8px;
-  font-size: 0.75rem;
-  height: 28px; /* Match input height */
-  line-height: 1.5; /* Adjust line height for button text */
-  align-self: center; /* Vertically center button with inputs */
-  margin-bottom: 0; /* Align with inputs that have no margin-bottom in this context */
+  padding: 3px 6px; /* Reduzido */
+  font-size: 0.7rem; /* Reduzido */
+  height: 24px; /* Match input height */
+  line-height: 1.5; 
+  align-self: center; 
+  margin-bottom: 0; 
 }
 
 .sr-only {
@@ -238,7 +254,7 @@ button:hover, a.botao:hover {
 .divider {
     height: 1px;
     background-color: #eee;
-    margin: 15px 0;
+    margin: 10px 0; /* Reduzido */
 }
 
 .hidden {
@@ -259,7 +275,7 @@ button:hover, a.botao:hover {
   .main-content {
     margin-left: 0;
     width: 100%;
-    padding: 15px;
+    padding: 10px; /* Reduzido */
   }
   .menu-toggle {
     display: block;
@@ -274,13 +290,22 @@ button:hover, a.botao:hover {
     border-radius: var(--borda-radius-padrao);
     cursor: pointer;
   }
+  .form-row.two-cols .form-grupo,
   .form-row.three-cols .form-grupo,
-  .form-row.four-cols .form-grupo {
-    flex-basis: calc(50% - (var(--gap-form-row) / 2)); /* Stack to 2 columns on smaller screens */
+  .form-row.four-cols .form-grupo,
+  .form-row.five-cols .form-grupo {
+    flex-basis: calc(50% - (var(--gap-form-row) / 2)); 
   }
-  .form-row.four-cols .form-grupo:nth-child(n+3) {
-      /* If you want to force 1 column for 4-col items on mobile, uncomment below */
-      /* flex-basis: 100%; */
+  .form-row .form-grupo.field-xs, 
+  .form-row .form-grupo.field-sm, 
+  .form-row .form-grupo.field-md, 
+  .form-row .form-grupo.field-lg, 
+  .form-row .form-grupo.field-xl {
+    flex-basis: calc(50% - (var(--gap-form-row) / 2)) !important; /* Override specific widths for 2-col mobile */
+  }
+
+  .form-row .form-grupo:nth-child(odd) {
+    /* clear: left; */ /* May help alignment in some cases on mobile */
   }
 }
 
