@@ -4,18 +4,25 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Comercial - Estimativa</title>
-  <link rel="stylesheet" href="assets/novo_style.css">
+  <link rel="stylesheet" href="assets/novo_style.css" />
 </head>
 <body>
-  <aside class="sidebar">
-    <h2>Menu</h2>
-    <ul>
-      <li><a href="#">Início</a></li>
-      <li><a href="#" class="active">Estimativas</a></li>
-    </ul>
-  </aside>
 
-  <main class="main-content">
+  <button class="menu-toggle" id="menuToggleBtn">☰</button>
+
+  <div class="sidebar" id="sidebarMenu">
+    <h2>LePan</h2>
+    <ul>
+      <li><a href="../dashboard.html">Dashboard</a></li>
+      <li><a href="relatorio.html">📊 Relatórios</a></li>
+      <li><a href="produtos.html">📦 Produtos</a></li>
+      <li><a href="../lista_clientes.html">👥 Clientes</a></li>
+      <li><a href="../evento.html">📅 Eventos</a></li>
+      <li><a href="comercial_estimativa.html" class="active">📈 Estimativa Comercial</a></li>
+    </ul>
+  </div>
+
+  <div class="main-content">
     <div class="container-principal">
       <h1>Nova Estimativa Comercial</h1>
 
@@ -23,28 +30,28 @@
         <div class="form-row three-cols">
           <div class="form-grupo">
             <label for="data">Data (Mês/Ano)</label>
-            <input type="month" id="data" name="data" required>
+            <input type="month" id="data" name="data" required />
           </div>
 
           <div class="form-grupo">
             <label for="categoria">Categoria</label>
-            <input type="text" id="categoria" name="categoria" required>
+            <input type="text" id="categoria" name="categoria" required />
           </div>
 
           <div class="form-grupo">
             <label for="valor">Valor Estimado (R$)</label>
-            <input type="number" id="valor" name="valor" step="0.01" required>
+            <input type="number" id="valor" name="valor" step="0.01" required />
           </div>
         </div>
 
-        <button type="submit">Salvar Estimativa</button>
+        <button type="submit" class="botao">Salvar Estimativa</button>
       </form>
 
-      <h3>Estimativas Registradas</h3>
-      <table id="tabela-estimativas" style="width:100%; border-collapse: collapse; margin-top: 15px;">
+      <h3 style="margin-top: 30px;">Estimativas Registradas</h3>
+      <table class="tabela-moderna" id="tabela-estimativas">
         <thead>
-          <tr style="background-color: #ddd;">
-            <th style="padding: 8px;">Data</th>
+          <tr>
+            <th>Data</th>
             <th>Categoria</th>
             <th>Valor</th>
             <th>Ações</th>
@@ -53,9 +60,18 @@
         <tbody id="corpo-tabela"></tbody>
       </table>
     </div>
-  </main>
+  </div>
 
-  <!-- JS na pasta assets -->
+  <script>
+    const menuToggleBtn = document.getElementById("menuToggleBtn");
+    const sidebarMenu = document.getElementById("sidebarMenu");
+    if (menuToggleBtn && sidebarMenu) {
+      menuToggleBtn.addEventListener("click", () => {
+        sidebarMenu.classList.toggle("active");
+      });
+    }
+  </script>
+
   <script type="module" src="assets/comercial_estimativa.js"></script>
 </body>
 </html>
