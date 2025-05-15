@@ -351,3 +351,76 @@ button:hover, a.botao:hover {
   background-color: #c82333;
 }
 
+
+
+/* Adições/Ajustes para layout de formulário em colunas */
+.form-row {
+  display: flex;
+  flex-wrap: wrap; /* Permite que os itens quebrem para a próxima linha se não couberem */
+  gap: 20px; /* Espaçamento entre os grupos de formulário na mesma linha */
+  margin-bottom: 0; /* Remove a margem inferior da linha em si, o form-grupo já tem */
+}
+
+.form-row .form-grupo {
+  flex: 1 1 calc(50% - 10px); /* Tenta fazer cada grupo ocupar metade do espaço menos o gap, para 2 colunas */
+  /* Para 3 colunas, seria algo como calc(33.333% - 14px), ajustando o gap */
+  margin-bottom: 20px; /* Mantém a margem inferior para espaçamento vertical entre as linhas */
+}
+
+/* Para campos que devem ocupar a linha inteira */
+.form-row .form-grupo.full-width {
+  flex-basis: 100%;
+}
+
+/* Ajuste específico para o campo de comentário e observação para ocupar mais espaço se estiver sozinho na linha */
+.form-row .form-grupo textarea#comentario,
+.form-row .form-grupo textarea#observacao {
+  min-height: 100px; /* Altura mínima para textareas */
+}
+
+/* Ajustes para a seção de contatos, para que os inputs e o botão fiquem bem alinhados */
+.contato-group {
+  /* .contato-group já é um .form-grupo, então herdará flex properties se dentro de .form-row */
+  /* Se .contato-group não estiver dentro de .form-row, precisará de display:flex próprio */
+  /* display: flex; */ /* Removido pois .form-grupo já pode ser flex item */
+  align-items: center; /* Alinha verticalmente os itens */
+  gap: 10px;
+  /* margin-bottom: 10px; */ /* Já tem no .form-grupo */
+}
+
+.contato-group input[name="contatoNome"] {
+  flex-grow: 2; /* Nome pode ser maior */
+}
+
+.contato-group input[name="contatoTel"] {
+  flex-grow: 1;
+}
+
+.contato-group .botao-remove {
+  margin-left: 0; /* Remove margem esquerda padrão se houver */
+  flex-shrink: 0; /* Não encolhe o botão */
+  padding: 10px 12px; /* Ajuste no padding para consistência com inputs */
+  height: 46px; /* Mesma altura dos inputs com padding 12px + borda 1px*2 */
+  box-sizing: border-box;
+}
+
+/* Garantir que a classe grid existente não interfira onde usamos form-row */
+/* .section > .grid .form-grupo { */ /* Esta regra pode ser muito específica ou conflitar, avaliar */
+    /* flex-basis: auto; */ /* Reseta o flex-basis se estiver dentro de um .grid tradicional */
+/* } */
+
+/* Se quisermos um layout de 3 colunas para certas seções */
+.form-row.three-cols .form-grupo {
+    flex: 1 1 calc(33.333% - 14px); /* (gap * (num_cols - 1)) / num_cols  = (20px * 2) / 3 ~= 13.33px */
+}
+
+/* Se quisermos um layout de 4 colunas para certas seções */
+.form-row.four-cols .form-grupo {
+    flex: 1 1 calc(25% - 15px); /* (20px * 3) / 4 = 15px */
+}
+
+/* Para o caso de um campo único na linha, mas que não seja full-width por padrão */
+.form-row .form-grupo.single-item {
+    flex-basis: 100%;
+}
+
