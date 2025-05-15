@@ -16,12 +16,12 @@
   <div class="sidebar" id="sidebarMenu">
     <h2>LePan</h2>
     <ul>
-      <li><a href="#" class="active">Dashboard</a></li> <!-- Link para o próprio dashboard -->
+      <li><a href="#" class="active">Dashboard</a></li>
+      <li><a href="comercial_estimativa.html">📈 Gestão de Estimativas</a></li> <!-- Link para nova página -->
       <li><a href="assets/relatorio.html">📊 Relatórios</a></li>
       <li><a href="assets/produtos.html">📦 Produtos</a></li>
       <li><a href="lista_clientes.html">👥 Clientes</a></li>
       <li><a href="evento.html">📅 Eventos</a></li>
-      <!-- Adicionar outros links relevantes do sistema aqui -->
     </ul>
   </div>
 
@@ -31,7 +31,7 @@
 
       <div class="kpi-cards">
         <div class="kpi"><h2 id="clientesAtivos">0</h2><span>Clientes Ativos</span></div>
-        <div class="kpi"><h2 id="receitaMes">R$ 0,00</h2><span>Receita do Mês</span></div>
+        <div class="kpi"><h2 id="receitaMes">R$ 0,00</h2><span>Receita do Mês (PDV)</span></div>
         <div class="kpi"><h2 id="lucroMes">R$ 0,00</h2><span>Lucro do Mês</span></div>
         <div class="kpi"><h2 id="eventosMes">0</h2><span>Eventos no Mês</span></div>
       </div>
@@ -74,25 +74,24 @@
       return "R$ " + (valor || 0).toFixed(2).replace('.', ',');
     }
 
+    // Modificado para usar vendaPDV para receita e lucro consistentemente
     function agruparPorMes(eventos) {
       const mapa = {};
       eventos.forEach(ev => {
         if (ev.status !== "finalizado") return;
         const mes = ev.data?.slice(0, 7); // formato YYYY-MM
         if (!mapa[mes]) {
-          mapa[mes] = { receita: 0, estimativa: 0, perda: 0, lucro: 0, eventos: 0 };
+          mapa[mes] = { receita: 0, perda: 0, lucro: 0, eventos: 0 }; // estimativa removida daqui
         }
         const a = ev.analise || {};
-        const receita = parseFloat(a.valorVenda) || 0;
-        const estimativa = parseFloat(a.estimativaTotal) || 0;
+        const receita = parseFloat(a.vendaPDV) || 0; // USAR VENDA PDV
         const perda = parseFloat(a.valorPerda) || 0;
         const cmv = parseFloat(a.cmvTotal) || 0;
         const equipe = parseFloat(a.custoEquipe) || 0;
         const logistica = parseFloat(a.custoLogistica) || 0;
-        const lucro = receita - cmv - equipe - logistica;
+        const lucro = receita - cmv - equipe - logistica; // Lucro baseado na receita (vendaPDV)
 
         mapa[mes].receita += receita;
-        mapa[mes].estimativa += estimativa;
         mapa[mes].perda += perda;
         mapa[mes].lucro += lucro;
         mapa[mes].eventos += 1;
@@ -105,6 +104,7 @@
       return ordenado;
     }
 
+    // Modificado para usar vendaPDV para receita e lucro consistentemente
     function atualizarKPIs(eventos, clientes) {
       const ativos = Object.values(clientes || {}).filter(c => c.statusCliente === "Ativo").length;
       document.getElementById("clientesAtivos").textContent = ativos;
@@ -112,45 +112,64 @@
       const hoje = new Date();
       const mesAtual = hoje.toISOString().slice(0, 7);
 
-      let receita = 0, lucro = 0, eventosMes = 0;
+      let receitaDoMes = 0, lucroDoMes = 0, eventosNoMes = 0;
 
       eventos.forEach(ev => {
         if (ev.status !== "finalizado") return;
         if ((ev.data || "").startsWith(mesAtual)) {
           const a = ev.analise || {};
-          receita += parseFloat(a.vendaPDV) || 0;
+          const vendaPDVAtual = parseFloat(a.vendaPDV) || 0;
+          receitaDoMes += vendaPDVAtual;
           const cmv = parseFloat(a.cmvTotal) || 0;
           const equipe = parseFloat(a.custoEquipe) || 0;
           const log = parseFloat(a.custoLogistica) || 0;
-          lucro += (parseFloat(a.valorVenda) || 0) - cmv - equipe - log;
-          eventosMes += 1;
+          lucroDoMes += vendaPDVAtual - cmv - equipe - log; // Lucro baseado na vendaPDV
+          eventosNoMes += 1;
         }
       });
 
-      document.getElementById("receitaMes").textContent = formatar(receita);
-      document.getElementById("lucroMes").textContent = formatar(lucro);
-      document.getElementById("eventosMes").textContent = eventosMes;
+      document.getElementById("receitaMes").textContent = formatar(receitaDoMes);
+      document.getElementById("lucroMes").textContent = formatar(lucroDoMes);
+      document.getElementById("eventosMes").textContent = eventosNoMes;
     }
 
     function criarGrafico(id, label, labels, dataset) {
-      const ctx = document.getElementById(id).getContext('2d');
-      new Chart(ctx, {
+      const chartElement = document.getElementById(id);
+      if (!chartElement) {
+          console.error(`Elemento do gráfico com ID '${id}' não encontrado.`);
+          return null;
+      }
+      const ctx = chartElement.getContext('2d');
+      // Destruir gráfico existente se houver para evitar sobreposição
+      if (chartElement.chartInstance) {
+          chartElement.chartInstance.destroy();
+      }
+      chartElement.chartInstance = new Chart(ctx, {
         type: 'bar',
         data: { labels, datasets: dataset },
         options: {
           responsive: true,
-          maintainAspectRatio: false, // Adicionado para melhor controle com CSS
+          maintainAspectRatio: false,
           plugins: {
             legend: { position: 'top' },
             title: { display: true, text: label }
           }
         }
       });
+      return chartElement.chartInstance;
     }
 
     function criarLinha(id, label, labels, dados, cor = 'green') {
-      const ctx = document.getElementById(id).getContext('2d');
-      new Chart(ctx, {
+      const chartElement = document.getElementById(id);
+      if (!chartElement) {
+          console.error(`Elemento do gráfico com ID '${id}' não encontrado.`);
+          return null;
+      }
+      const ctx = chartElement.getContext('2d');
+      if (chartElement.chartInstance) {
+          chartElement.chartInstance.destroy();
+      }
+      chartElement.chartInstance = new Chart(ctx, {
         type: 'line',
         data: {
           labels,
@@ -165,47 +184,95 @@
         },
         options: {
           responsive: true,
-          maintainAspectRatio: false, // Adicionado para melhor controle com CSS
+          maintainAspectRatio: false,
           plugins: {
             legend: { position: 'top' },
             title: { display: true, text: label }
           }
         }
       });
+      return chartElement.chartInstance;
     }
 
     async function carregarDashboard() {
-      const [eventosSnap, clientesSnap] = await Promise.all([
-        db.ref("eventos").once("value"),
-        db.ref("clientes").once("value")
-      ]);
+      try {
+        const [eventosSnap, clientesSnap, estimativasResponse] = await Promise.all([
+          db.ref("eventos").once("value"),
+          db.ref("clientes").once("value"),
+          fetch('/api/estimativas') // Busca da API Flask
+        ]);
 
-      const eventos = Object.values(eventosSnap.val() || {});
-      const clientes = clientesSnap.val() || {};
-      const meses = agruparPorMes(eventos);
-      const labels = meses.map(m => m.mes);
-
-      atualizarKPIs(eventos, clientes);
-
-      criarGrafico("chartVendas", "Estimativa vs Venda", labels, [
-        {
-          label: "Estimativa",
-          data: meses.map(m => m.estimativa),
-          backgroundColor: "#ccc"
-        },
-        {
-          label: "Venda Real",
-          data: meses.map(m => m.receita),
-          backgroundColor: "#007bff"
+        const eventosData = eventosSnap.val() || {};
+        const clientesData = clientesSnap.val() || {};
+        
+        if (!estimativasResponse.ok) {
+            console.error("Erro ao buscar estimativas da API:", estimativasResponse.statusText);
+            // Tratar erro, talvez mostrar mensagem para o usuário
+            return; // Interromper se as estimativas não puderem ser carregadas
         }
-      ]);
+        const estimativasApi = await estimativasResponse.json();
 
-      criarLinha("chartLucro", "Lucro por Mês", labels, meses.map(m => m.lucro), "#28a745");
-      criarLinha("chartPerda", "Perda por Mês", labels, meses.map(m => m.perda), "#dc3545");
-      criarLinha("chartEventos", "Eventos por Mês", labels, meses.map(m => m.eventos), "#17a2b8");
+        const eventos = Object.values(eventosData);
+        const clientes = clientesData;
+
+        const mesesComDadosReais = agruparPorMes(eventos);
+
+        const estimativasAgrupadasPorMes = {};
+        estimativasApi.forEach(est => {
+            const mesAno = est.data_estimativa; // Formato "YYYY-MM"
+            estimativasAgrupadasPorMes[mesAno] = (estimativasAgrupadasPorMes[mesAno] || 0) + parseFloat(est.valor_estimado);
+        });
+
+        const todosOsMeses = new Set();
+        mesesComDadosReais.forEach(m => todosOsMeses.add(m.mes));
+        Object.keys(estimativasAgrupadasPorMes).forEach(m => todosOsMeses.add(m));
+        const labelsGlobais = Array.from(todosOsMeses).sort();
+
+        const dataEstimativaParaGrafico = labelsGlobais.map(mes => estimativasAgrupadasPorMes[mes] || 0);
+        
+        const receitaRealPorMesMap = {};
+        mesesComDadosReais.forEach(m => { receitaRealPorMesMap[m.mes] = m.receita; });
+        const dataReceitaRealParaGrafico = labelsGlobais.map(mes => receitaRealPorMesMap[mes] || 0);
+
+        atualizarKPIs(eventos, clientes);
+
+        criarGrafico("chartVendas", "Estimativa vs Venda (PDV)", labelsGlobais, [
+          {
+            label: "Estimativa",
+            data: dataEstimativaParaGrafico,
+            backgroundColor: "#ffc107" // Amarelo para estimativa
+          },
+          {
+            label: "Venda Real (PDV)",
+            data: dataReceitaRealParaGrafico,
+            backgroundColor: "#007bff"
+          }
+        ]);
+
+        const lucroPorMesMap = {};
+        mesesComDadosReais.forEach(m => { lucroPorMesMap[m.mes] = m.lucro; });
+        const dataLucro = labelsGlobais.map(mes => lucroPorMesMap[mes] || 0);
+
+        const perdaPorMesMap = {};
+        mesesComDadosReais.forEach(m => { perdaPorMesMap[m.mes] = m.perda; });
+        const dataPerda = labelsGlobais.map(mes => perdaPorMesMap[mes] || 0);
+        
+        const eventosPorMesMap = {};
+        mesesComDadosReais.forEach(m => { eventosPorMesMap[m.mes] = m.eventos; });
+        const dataEventos = labelsGlobais.map(mes => eventosPorMesMap[mes] || 0);
+
+        criarLinha("chartLucro", "Lucro por Mês", labelsGlobais, dataLucro, "#28a745");
+        criarLinha("chartPerda", "Perda por Mês", labelsGlobais, dataPerda, "#dc3545");
+        criarLinha("chartEventos", "Eventos por Mês", labelsGlobais, dataEventos, "#17a2b8");
+
+      } catch (error) {
+          console.error("Erro ao carregar o dashboard:", error);
+          // Exibir uma mensagem de erro mais amigável para o usuário no dashboard se necessário
+      }
     }
 
     carregarDashboard();
   </script>
 </body>
 </html>
+
