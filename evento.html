@@ -6,7 +6,7 @@
   <title>Painel de Eventos</title>
   <link rel="stylesheet" href="assets/novo_style.css">
   <style>
-    /* Estilos específicos para a página de eventos */
+    /* Estilos específicos para a página de eventos que não conflitam ou complementam o novo_style.css */
     .resumo-container {
       display: flex;
       justify-content: center;
@@ -16,7 +16,7 @@
     }
 
     .resumo-box {
-      background-color: #e9ecef;
+      background-color: #e9ecef; 
       padding: 10px 15px;
       border-radius: var(--borda-radius-padrao);
       font-size: 0.9rem;
@@ -44,44 +44,7 @@
         min-height: 70px;
         height: auto;
     }
-
-    /* Tabela com linhas alternadas mais escuras */
-    #eventos-tabela tbody tr:nth-child(even) {
-      background-color: #e9ecef; /* Tom de cinza mais escuro para linhas pares */
-    }
-    #eventos-tabela tbody tr:nth-child(odd) {
-      background-color: #ffffff; /* Branco para linhas ímpares */
-    }
-    #eventos-tabela tbody tr:hover {
-        background-color: #d8dfe5; /* Cor de hover um pouco mais escura */
-    }
-
-    /* Botões de ação na tabela */
-    #eventos-tbody .botao {
-        padding: 5px 10px; /* Aumentando um pouco o padding para melhor clique */
-        font-size: 0.75rem; /* Aumentando um pouco a fonte */
-        margin: 2px;
-        line-height: 1.2; /* Melhorar alinhamento vertical do texto/ícone */
-    }
-
-    /* Botão de ação primário (ex: Editar, Ver) */
-    #eventos-tbody .botao-acao-principal {
-        background-color: var(--cor-laranja-destaque) !important;
-        color: white !important;
-    }
-    #eventos-tbody .botao-acao-principal:hover {
-        background-color: var(--cor-laranja-destaque-hover) !important;
-    }
-
-    /* Botões de ícone secundários (Duplicar, Copiar Link, Excluir) */
-    #eventos-tbody .botao-icone {
-        background-color: #d1d5db; /* Um cinza um pouco mais escuro para os botões de ícone */
-        color: #374151; /* Cor do ícone/texto mais escura */
-    }
-    #eventos-tbody .botao-icone:hover {
-        background-color: #b0b6bf;
-    }
-
+    /* A estilização de zebra da tabela foi movida para o CSS global .tabela-moderna tbody tr:nth-child(even) */
   </style>
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js";
@@ -158,15 +121,14 @@
               <td>${status || "aberto"}</td>
               <td>R$ ${valorVenda.toFixed(2).replace('.',',')}</td>
               <td>
-                <a href="form.html?id=${id}" class="botao botao-acao-principal">Ver</a>
+                <a href="form.html?id=${id}" class="botao botao-primario">Ver</a>
                 <a href="analise_evento.html?id=${id}" class="botao botao-icone">📊</a>
-                <a href="assets/criar-evento.html?id=${id}" class="botao botao-acao-principal">✏️</a>
+                <a href="assets/criar-evento.html?id=${id}" class="botao botao-primario">✏️</a>
                 <button class="botao botao-icone duplicar" data-id="${id}">📄</button>
                 <button class="botao botao-icone copiar-link" data-id="${id}">📋</button>
-                <button class="botao botao-icone excluir-evento" data-id="${id}" style="background-color: #ef4444; color: white;">🗑️</button> 
+                <button class="botao botao-perigo excluir-evento" data-id="${id}">🗑️</button> 
               </td>
             `;
-            // O botão excluir recebeu um estilo inline para ser vermelho, como alerta
             tabelaBody.appendChild(tr);
           });
 
@@ -244,7 +206,7 @@
         <h1>Painel de Eventos</h1>
 
         <div style="margin-bottom: 20px;">
-            <a href="assets/criar-evento.html" class="botao">➕ Criar Evento</a>
+            <a href="assets/criar-evento.html" class="botao botao-primario">➕ Criar Evento</a>
         </div>
 
         <div class="resumo-container">
