@@ -1,43 +1,92 @@
-
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Cadastro de Produtos</title>
-  <link rel="stylesheet" href="style.css"/>
+  <link rel="stylesheet" href="assets/novo_style.css" />
 </head>
 <body>
-  <h1>Cadastro de Produtos</h1>
-  <form id="produtoForm">
-    <input type="hidden" id="produtoId" />
-    <div class="form-inline">
-      <input type="text" id="nome" placeholder="Nome do Produto" required />
-      <input type="text" id="nomenclatura" placeholder="Nomenclatura" />
-      <input type="number" id="valorVenda" step="0.01" placeholder="Valor de Venda (R$)" />
-      <input type="number" id="custo" step="0.01" placeholder="Custo (R$)" />
-      <input type="number" id="quantidadePorCaixa" placeholder="Qtd por Caixa" />
+
+  <button class="menu-toggle" id="menuToggleBtn">☰</button>
+
+  <div class="sidebar" id="sidebarMenu">
+    <h2>LePan</h2>
+    <ul>
+      <li><a href="dashboard.html">Dashboard</a></li>
+      <li><a href="assets/relatorio.html">📊 Relatórios</a></li>
+      <li><a href="assets/produtos.html" class="active">📦 Produtos</a></li>
+      <li><a href="lista_clientes.html">👥 Clientes</a></li>
+      <li><a href="evento.html">📅 Eventos</a></li>
+    </ul>
+  </div>
+
+  <div class="main-content">
+    <div class="container-principal">
+      <h1>Cadastro de Produtos</h1>
+
+      <form id="produtoForm">
+        <input type="hidden" id="produtoId" />
+        <div class="form-row three-cols">
+          <div class="form-grupo">
+            <label for="nome">Nome do Produto</label>
+            <input type="text" id="nome" required />
+          </div>
+          <div class="form-grupo">
+            <label for="nomenclatura">Nomenclatura</label>
+            <input type="text" id="nomenclatura" />
+          </div>
+          <div class="form-grupo">
+            <label for="valorVenda">Valor de Venda (R$)</label>
+            <input type="number" id="valorVenda" step="0.01" />
+          </div>
+        </div>
+
+        <div class="form-row two-cols">
+          <div class="form-grupo">
+            <label for="custo">Custo (R$)</label>
+            <input type="number" id="custo" step="0.01" />
+          </div>
+          <div class="form-grupo">
+            <label for="quantidadePorCaixa">Qtd por Caixa</label>
+            <input type="number" id="quantidadePorCaixa" />
+          </div>
+        </div>
+
+        <button type="submit" class="botao">Salvar Produto</button>
+      </form>
+
+      <h2 style="margin-top: 30px;">Produtos Cadastrados</h2>
+      <table class="tabela-moderna">
+        <thead>
+          <tr>
+            <th>Nome</th>
+            <th>Nomenclatura</th>
+            <th>Valor de Venda</th>
+            <th>Custo</th>
+            <th>Qtd por Caixa</th>
+            <th>Ações</th>
+          </tr>
+        </thead>
+        <tbody id="produtosContainer"></tbody>
+      </table>
+
+      <div style="margin-top: 20px;">
+        <button id="exportarXLS" class="botao">Exportar XLS</button>
+        <input type="file" id="importarXLS" />
+      </div>
     </div>
-    <button type="submit">Salvar Produto</button>
-  </form>
+  </div>
 
-  <h2>Produtos Cadastrados</h2>
-  <table>
-    <thead>
-      <tr>
-        <th>Nome</th>
-        <th>Nomenclatura</th>
-        <th>Valor de Venda</th>
-        <th>Custo</th>
-        <th>Qtd por Caixa</th>
-        <th>Ações</th>
-      </tr>
-    </thead>
-    <tbody id="produtosContainer"></tbody>
-  </table>
-
-  <button id="exportarXLS">Exportar XLS</button>
-  <input type="file" id="importarXLS" />
+  <script>
+    const menuToggleBtn = document.getElementById("menuToggleBtn");
+    const sidebarMenu = document.getElementById("sidebarMenu");
+    if (menuToggleBtn && sidebarMenu) {
+      menuToggleBtn.addEventListener("click", () => {
+        sidebarMenu.classList.toggle("active");
+      });
+    }
+  </script>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
   <script type="module" src="produtos.js"></script>
