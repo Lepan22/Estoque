@@ -347,3 +347,75 @@ button:hover, a.botao:hover {
   .main-content table td .btn-action-list { background-color: #20c997; color: white !important; } /* Verde azulado */
 */
 
+
+
+
+/* Efeito Zebrado para Tabelas */
+.main-content table tbody tr:nth-child(odd) {
+    background-color: #f9f9f9; /* Uma cor clara para linhas ímpares */
+}
+
+.main-content table tbody tr:hover {
+    background-color: #f1f1f1; /* Mantém o hover, mas pode ser ajustado se necessário */
+}
+
+
+
+
+/* Ajustes para KPIs no Dashboard */
+/* Supondo que os KPIs estão dentro de um container com a classe '.kpi-container' 
+   e cada KPI é um card com a classe '.kpi-card'. 
+   Se as classes forem diferentes no seu HTML, precisaremos ajustá-las. */
+
+.dashboard-kpis {
+    display: flex; /* Alinha os cards de KPI em uma linha */
+    flex-wrap: wrap; /* Permite quebra de linha se não couberem */
+    gap: 20px; /* Espaçamento entre os cards de KPI */
+    margin-bottom: 20px; /* Espaçamento abaixo do container de KPIs */
+}
+
+.kpi-card {
+    flex: 1 1 calc(25% - 20px); /* Tenta fazer cada card ocupar 25% (para 4 cards), ajustando pelo gap */
+    background-color: #ffffff;
+    padding: 15px;
+    border-radius: var(--borda-radius-padrao);
+    box-shadow: var(--sombra-padrao);
+    text-align: center;
+    min-width: 200px; /* Largura mínima para evitar que fiquem muito estreitos */
+}
+
+.kpi-card h3 {
+    font-size: 0.9rem;
+    color: #555;
+    margin-top: 0;
+    margin-bottom: 5px;
+}
+
+.kpi-card .kpi-value {
+    font-size: 1.8rem;
+    font-weight: bold;
+    color: var(--cor-laranja-destaque);
+    margin-bottom: 5px;
+}
+
+.kpi-card .kpi-description {
+    font-size: 0.8rem;
+    color: #777;
+}
+
+/* Se você tiver um container específico para os gráficos, pode querer que ele também use flex */
+.dashboard-charts {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+}
+
+.chart-container {
+    flex: 1 1 calc(50% - 10px); /* Para dois gráficos lado a lado */
+    background-color: #ffffff;
+    padding: 15px;
+    border-radius: var(--borda-radius-padrao);
+    box-shadow: var(--sombra-padrao);
+    min-width: 300px;
+}
+
