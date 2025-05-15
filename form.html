@@ -139,10 +139,10 @@
         if (isNaN(idx) || idx < 0 || idx >= currentItens.length) return; 
         const itemOriginal = currentItens[idx];
 
-        // Seleciona os inputs dentro da linha atual
-        const inputAssado = tr.querySelector(\'input[name="assado"]\[\');
-        const inputCongelado = tr.querySelector(\'input[name="congelado"]\[\');
-        const inputPerdido = tr.querySelector(\'input[name="perdido"]\[\');
+        // Seleciona os inputs dentro da linha atual - CORRIGIDO
+        const inputAssado = tr.querySelector('input[name="assado"]');
+        const inputCongelado = tr.querySelector('input[name="congelado"]');
+        const inputPerdido = tr.querySelector('input[name="perdido"]');
 
         // Obtém os valores, garantindo que sejam números e tratando caso o input não exista
         const assado = inputAssado ? (parseInt(inputAssado.value, 10) || 0) : 0;
