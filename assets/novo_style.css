@@ -347,9 +347,6 @@ button:hover, a.botao:hover {
   .main-content table td .btn-action-list { background-color: #20c997; color: white !important; } /* Verde azulado */
 */
 
-
-
-
 /* Efeito Zebrado para Tabelas */
 .main-content table tbody tr:nth-child(odd) {
     background-color: #f9f9f9; /* Uma cor clara para linhas ímpares */
@@ -359,63 +356,88 @@ button:hover, a.botao:hover {
     background-color: #f1f1f1; /* Mantém o hover, mas pode ser ajustado se necessário */
 }
 
+/* As regras para .dashboard-kpis, .kpi-card, .dashboard-charts, .chart-container foram removidas 
+   porque o HTML do dashboard não usa essas classes. 
+   Serão adicionadas novas regras abaixo baseadas na estrutura real do dashboard.html */
 
 
 
-/* Ajustes para KPIs no Dashboard */
-/* Supondo que os KPIs estão dentro de um container com a classe '.kpi-container' 
-   e cada KPI é um card com a classe '.kpi-card'. 
-   Se as classes forem diferentes no seu HTML, precisaremos ajustá-las. */
 
-.dashboard-kpis {
-    display: flex; /* Alinha os cards de KPI em uma linha */
-    flex-wrap: wrap; /* Permite quebra de linha se não couberem */
-    gap: 20px; /* Espaçamento entre os cards de KPI */
-    margin-bottom: 20px; /* Espaçamento abaixo do container de KPIs */
+/* === AJUSTES PARA LAYOUT DO DASHBOARD (KPIs e Gráficos) === */
+
+/* 
+  INSTRUÇÃO IMPORTANTE PARA O DASHBOARD:
+  Para que os KPIs e Gráficos se alinhem corretamente, você precisará 
+  garantir que seu arquivo dashboard.html tenha uma estrutura similar
+  à sugerida abaixo, ou nos informe a estrutura exata para ajustarmos os seletores.
+*/
+
+/* Container para os KPIs - Envolva seus 4 KPIs com uma div com esta classe */
+.main-content .container-kpis-dashboard {
+    display: flex;
+    flex-wrap: wrap; /* Permite quebra de linha em telas menores, se necessário */
+    gap: 15px; /* Espaçamento entre os cards de KPI */
+    margin-bottom: 25px; /* Espaço abaixo dos KPIs */
 }
 
-.kpi-card {
-    flex: 1 1 calc(25% - 20px); /* Tenta fazer cada card ocupar 25% (para 4 cards), ajustando pelo gap */
+/* Estilo para cada card de KPI - Cada um dos seus 4 KPIs deve ter esta classe */
+.main-content .card-kpi-dashboard {
+    flex: 1 1 calc(25% - 12px); /* Tenta fazer 4 cards por linha (ajustado pelo gap) */
     background-color: #ffffff;
-    padding: 15px;
+    padding: 20px;
     border-radius: var(--borda-radius-padrao);
     box-shadow: var(--sombra-padrao);
-    text-align: center;
-    min-width: 200px; /* Largura mínima para evitar que fiquem muito estreitos */
+    text-align: left; /* Alinhamento do texto dentro do card */
+    min-width: 200px; /* Largura mínima para cada card */
 }
 
-.kpi-card h3 {
-    font-size: 0.9rem;
-    color: #555;
+.main-content .card-kpi-dashboard .kpi-title {
+    font-size: 0.9rem; /* Tamanho do título do KPI */
+    color: #6c757d; /* Cor do título do KPI */
     margin-top: 0;
     margin-bottom: 5px;
+    font-weight: 500;
 }
 
-.kpi-card .kpi-value {
-    font-size: 1.8rem;
+.main-content .card-kpi-dashboard .kpi-value {
+    font-size: 1.75rem; /* Tamanho do valor do KPI */
     font-weight: bold;
-    color: var(--cor-laranja-destaque);
-    margin-bottom: 5px;
+    color: var(--cor-texto-padrao);
+    margin-top: 0;
+    margin-bottom: 0;
+    line-height: 1.2;
 }
 
-.kpi-card .kpi-description {
-    font-size: 0.8rem;
-    color: #777;
-}
-
-/* Se você tiver um container específico para os gráficos, pode querer que ele também use flex */
-.dashboard-charts {
+/* Container para os Gráficos - Envolva seus gráficos com uma div com esta classe */
+.main-content .container-charts-dashboard {
     display: flex;
     flex-wrap: wrap;
-    gap: 20px;
+    gap: 20px; /* Espaçamento entre os containers de gráfico */
 }
 
-.chart-container {
-    flex: 1 1 calc(50% - 10px); /* Para dois gráficos lado a lado */
+/* Estilo para cada container de gráfico - Cada gráfico deve estar em uma div com esta classe */
+.main-content .chart-item-dashboard {
+    flex: 1 1 calc(50% - 10px); /* Tenta fazer 2 gráficos por linha (ajustado pelo gap) */
     background-color: #ffffff;
-    padding: 15px;
+    padding: 20px;
     border-radius: var(--borda-radius-padrao);
     box-shadow: var(--sombra-padrao);
-    min-width: 300px;
+    min-height: 320px; /* Altura mínima para visualização do gráfico */
+}
+
+/* Ajuste para telas menores, se os KPIs e gráficos precisarem empilhar */
+@media (max-width: 992px) { /* Telas médias */
+    .main-content .card-kpi-dashboard {
+        flex: 1 1 calc(50% - 8px); /* 2 KPIs por linha */
+    }
+    .main-content .chart-item-dashboard {
+        flex: 1 1 100%; /* 1 gráfico por linha */
+    }
+}
+
+@media (max-width: 576px) { /* Telas pequenas */
+    .main-content .card-kpi-dashboard {
+        flex: 1 1 100%; /* 1 KPI por linha */
+    }
 }
 
