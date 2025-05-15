@@ -3,9 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Gestão de Clientes - Novo Layout (Incremental)</title>
+  <title>Gestão de Clientes - Layout Colunas</title>
   <link href="assets/novo_style.css" rel="stylesheet" />
-  <!-- A tag <style> original foi removida. O novo_style.css cuidará dos estilos. -->
 </head>
 <body>
 
@@ -19,101 +18,175 @@
       <li><a href="assets/produtos.html">📦 Produtos</a></li>
       <li><a href="lista_clientes.html" class="active">👥 Clientes</a></li>
       <li><a href="evento.html">📅 Eventos</a></li>
-      <!-- Adicionar outros links de navegação conforme necessário -->
     </ul>
   </div>
 
   <div class="main-content">
     <div class="container-principal">
-      <!-- Conteúdo original da página clientes.html (o form e seus elementos) -->
       <form id="formCliente">
         <h1>Cadastro de Cliente</h1>
 
-        <div class="section grid">
-          <div class="form-group">
-            <label for="dataCadastro">Data Cadastro</label>
-            <input type="date" id="dataCadastro" readonly />
+        <!-- Seção Dados Principais -->
+        <div class="section">
+          <div class="form-row">
+            <div class="form-grupo">
+              <label for="dataCadastro">Data Cadastro</label>
+              <input type="date" id="dataCadastro" readonly />
+            </div>
+            <div class="form-grupo">
+              <label for="nomeEvento">Nome do Evento</label>
+              <input type="text" id="nomeEvento" />
+            </div>
           </div>
-          <div class="form-group">
-            <label for="nomeEvento">Nome do Evento</label>
-            <input type="text" id="nomeEvento" />
+          <div class="form-row">
+            <div class="form-grupo">
+              <label for="nomeCondominio">Nome Condomínio</label>
+              <input type="text" id="nomeCondominio" />
+            </div>
+            <div class="form-grupo">
+              <label for="tipoCondominio">Tipo</label>
+              <input type="text" id="tipoCondominio" />
+            </div>
           </div>
-          <div class="form-group">
-            <label for="nomeCondominio">Nome Condomínio</label>
-            <input type="text" id="nomeCondominio" />
-          </div>
-          <div class="form-group">
-            <label for="tipoCondominio">Tipo</label>
-            <input type="text" id="tipoCondominio" />
-          </div>
-          <div class="form-group">
-            <label for="indicadoPor">Indicado por</label>
-            <input type="text" id="indicadoPor" />
+          <div class="form-row">
+            <div class="form-grupo full-width">
+              <label for="indicadoPor">Indicado por</label>
+              <input type="text" id="indicadoPor" />
+            </div>
           </div>
         </div>
 
+        <!-- Seção Contatos -->
         <div class="section">
           <h3>Contatos</h3>
-          <div id="contatoContainer"></div>
-          <!-- O botão original será estilizado pelo novo_style.css se tiver a classe .botao -->
+          <div id="contatoContainer">
+            <!-- Contatos serão adicionados dinamicamente aqui -->
+          </div>
           <button type="button" class="botao botao-secundario" onclick="adicionarContato()">➕ Adicionar Contato</button>
         </div>
 
         <div class="divider"></div>
 
-        <div class="section grid">
-          <div class="form-group"><label for="origem">Origem</label><input type="text" id="origem" /></div>
-          <div class="form-group"><label for="dataUltimoContato">Dt. Último Contato</label><input type="date" id="dataUltimoContato" /></div>
-          <div class="form-group"><label for="comentario">Comentário</label><textarea id="comentario"></textarea></div>
-          <div class="form-group"><label for="qtdApto">Qtd Apto</label><input type="number" id="qtdApto" /></div>
-          <div class="form-group"><label for="tipoApto">Tipo Apto</label><input type="text" id="tipoApto" /></div>
-          <div class="form-group"><label for="perfilEconomico">Perfil Econômico</label>
-            <select id="perfilEconomico">
-              <option value="">Selecione</option>
-              <option>Baixo</option>
-              <option>Médio</option>
-              <option>Alto</option>
-            </select>
+        <!-- Seção Detalhes Adicionais -->
+        <div class="section">
+          <div class="form-row">
+            <div class="form-grupo">
+                <label for="origem">Origem</label>
+                <input type="text" id="origem" />
+            </div>
+            <div class="form-grupo">
+                <label for="dataUltimoContato">Dt. Último Contato</label>
+                <input type="date" id="dataUltimoContato" />
+            </div>
           </div>
-          <div class="form-group"><label for="endereco">Endereço</label><input type="text" id="endereco" /></div>
-          <div class="form-group"><label for="regiao">Região</label><input type="text" id="regiao" /></div>
-          <div class="form-group"><label for="statusLead">Status Lead</label>
-            <select id="statusLead">
-              <option value="">Selecione</option>
-              <option>Novo</option>
-              <option>Aberto</option>
-              <option>Em Contato</option>
-              <option>Fechado</option>
-              <option>Frio</option>
-              <option>Encerrado</option>
-            </select>
+          <div class="form-row">
+            <div class="form-grupo full-width">
+                <label for="comentario">Comentário</label>
+                <textarea id="comentario"></textarea>
+            </div>
+          </div>
+          <div class="form-row three-cols">
+            <div class="form-grupo">
+                <label for="qtdApto">Qtd Apto</label>
+                <input type="number" id="qtdApto" />
+            </div>
+            <div class="form-grupo">
+                <label for="tipoApto">Tipo Apto</label>
+                <input type="text" id="tipoApto" />
+            </div>
+            <div class="form-grupo">
+                <label for="perfilEconomico">Perfil Econômico</label>
+                <select id="perfilEconomico">
+                    <option value="">Selecione</option>
+                    <option>Baixo</option>
+                    <option>Médio</option>
+                    <option>Alto</option>
+                </select>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-grupo">
+                <label for="endereco">Endereço</label>
+                <input type="text" id="endereco" />
+            </div>
+            <div class="form-grupo">
+                <label for="regiao">Região</label>
+                <input type="text" id="regiao" />
+            </div>
+          </div>
+           <div class="form-row">
+            <div class="form-grupo full-width">
+                <label for="statusLead">Status Lead</label>
+                <select id="statusLead">
+                    <option value="">Selecione</option>
+                    <option>Novo</option>
+                    <option>Aberto</option>
+                    <option>Em Contato</option>
+                    <option>Fechado</option>
+                    <option>Frio</option>
+                    <option>Encerrado</option>
+                </select>
+            </div>
           </div>
         </div>
 
-        <div id="fechadoFields" class="hidden">
+        <!-- Seção Dados do Evento (Lead Fechado) -->
+        <div id="fechadoFields" class="section hidden">
           <h3>Dados do Evento (Lead Fechado)</h3>
-          <div class="grid">
-            <div class="form-group"><label for="dataPrimeiroEvento">Data do Primeiro Evento</label><input type="date" id="dataPrimeiroEvento" /></div>
-            <div class="form-group"><label for="valorPrimeiroEvento">Valor do Primeiro Evento</label><input type="number" id="valorPrimeiroEvento" /></div>
-            <div class="form-group"><label for="qtdEventos">Quantidade de Eventos</label><input type="number" id="qtdEventos" readonly /></div>
-            <div class="form-group"><label for="valorTotalVendido">Valor Total Vendido</label><input type="number" id="valorTotalVendido" readonly /></div>
-            <div class="form-group"><label for="mediaVendas">Média de Vendas</label><input type="number" id="mediaVendas" readonly /></div>
-            <div class="form-group"><label for="frequencia">Frequência</label><input type="text" id="frequencia" /></div>
-            <div class="form-group"><label for="statusCliente">Status Cliente</label>
-              <select id="statusCliente">
-                <option>Ativo</option>
-                <option>Inativo</option>
-                <option>Pausado</option>
-              </select>
+          <div class="form-row">
+            <div class="form-grupo">
+                <label for="dataPrimeiroEvento">Data do Primeiro Evento</label>
+                <input type="date" id="dataPrimeiroEvento" />
             </div>
-            <div class="form-group"><label for="dataUltimoEvento">Data do Último Evento</label><input type="date" id="dataUltimoEvento" /></div>
-            <div class="form-group"><label for="observacao">Observação</label><textarea id="observacao"></textarea></div>
+            <div class="form-grupo">
+                <label for="valorPrimeiroEvento">Valor do Primeiro Evento</label>
+                <input type="number" id="valorPrimeiroEvento" />
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-grupo">
+                <label for="qtdEventos">Quantidade de Eventos</label>
+                <input type="number" id="qtdEventos" readonly />
+            </div>
+            <div class="form-grupo">
+                <label for="valorTotalVendido">Valor Total Vendido</label>
+                <input type="number" id="valorTotalVendido" readonly />
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-grupo">
+                <label for="mediaVendas">Média de Vendas</label>
+                <input type="number" id="mediaVendas" readonly />
+            </div>
+            <div class="form-grupo">
+                <label for="frequencia">Frequência</label>
+                <input type="text" id="frequencia" />
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-grupo">
+                <label for="statusCliente">Status Cliente</label>
+                <select id="statusCliente">
+                    <option>Ativo</option>
+                    <option>Inativo</option>
+                    <option>Pausado</option>
+                </select>
+            </div>
+            <div class="form-grupo">
+                <label for="dataUltimoEvento">Data do Último Evento</label>
+                <input type="date" id="dataUltimoEvento" />
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-grupo full-width">
+                <label for="observacao">Observação</label>
+                <textarea id="observacao"></textarea>
+            </div>
           </div>
         </div>
 
         <button type="submit" class="botao">Salvar Cliente</button>
       </form>
-      <!-- Fim do conteúdo original -->
     </div>
   </div>
 
@@ -138,11 +211,20 @@
   const db = firebase.database();
 
   document.addEventListener("DOMContentLoaded", () => {
-    document.getElementById("dataCadastro").valueAsDate = new Date();
-    document.getElementById("statusLead").addEventListener("change", e => {
-      const show = e.target.value === "Fechado";
-      document.getElementById("fechadoFields").classList.toggle("hidden", !show);
-    });
+    const dataCadastroEl = document.getElementById("dataCadastro");
+    if (dataCadastroEl) {
+        dataCadastroEl.valueAsDate = new Date();
+    }
+    
+    const statusLeadEl = document.getElementById("statusLead");
+    const fechadoFieldsEl = document.getElementById("fechadoFields");
+
+    if (statusLeadEl && fechadoFieldsEl) {
+        statusLeadEl.addEventListener("change", e => {
+            const show = e.target.value === "Fechado";
+            fechadoFieldsEl.classList.toggle("hidden", !show);
+        });
+    }
 
     adicionarContato(); // Adiciona o primeiro campo de contato
 
@@ -156,70 +238,84 @@
 
         Object.keys(cliente).forEach(chave => {
           const el = document.getElementById(chave);
-          if (el) el.value = cliente[chave];
+          if (el) {
+            if (el.tagName === 'SELECT') {
+                el.value = cliente[chave];
+            } else {
+                el.value = cliente[chave];
+            }
+          }
         });
-
-        document.getElementById("contatoContainer").innerHTML = "";
-        (cliente.contatos || []).forEach(c => {
-          const div = document.createElement("div");
-          div.className = "contato-group";
-          div.innerHTML = `
-            <input type="text" name="contatoNome" placeholder="Nome" value="${c.nome || ''}" />
-            <input type="tel" name="contatoTel" placeholder="Telefone" value="${c.telefone || ''}" />
-            <button type="button" class="botao botao-remove" onclick="this.parentElement.remove()">❌</button>
-          `; // Aplicando classes de botão do novo_style.css
-          document.getElementById("contatoContainer").appendChild(div);
-        });
-
-        if (document.getElementById("statusLead").value === "Fechado") {
-            document.getElementById("fechadoFields").classList.remove("hidden");
-        } else {
-            document.getElementById("fechadoFields").classList.add("hidden");
+        
+        const contatoContainerEl = document.getElementById("contatoContainer");
+        if (contatoContainerEl) {
+            contatoContainerEl.innerHTML = ""; 
+            (cliente.contatos || []).forEach(c => {
+                adicionarContato(c.nome, c.telefone);
+            });
         }
+
+        if (statusLeadEl && fechadoFieldsEl && statusLeadEl.value === "Fechado") {
+            fechadoFieldsEl.classList.remove("hidden");
+        } else if (fechadoFieldsEl) {
+            fechadoFieldsEl.classList.add("hidden");
+        }
+      }).catch(error => {
+          console.error("Erro ao buscar dados do cliente:", error);
       });
     }
   });
 
-  function adicionarContato() {
+  function adicionarContato(nome = "", telefone = "") {
     const container = document.getElementById("contatoContainer");
+    if (!container) return;
     const div = document.createElement("div");
-    div.className = "contato-group";
+    // Cada contato em sua própria .form-row para controle de layout individual se necessário, ou manter em .contato-group simples
+    div.className = "contato-group form-grupo"; // .form-grupo para herdar espaçamentos e ser item flex
     div.innerHTML = `
-      <input type="text" name="contatoNome" placeholder="Nome do Contato" />
-      <input type="tel" name="contatoTel" placeholder="Telefone" />
+      <input type="text" name="contatoNome" placeholder="Nome do Contato" value="${nome}" />
+      <input type="tel" name="contatoTel" placeholder="Telefone" value="${telefone}" />
       <button type="button" class="botao botao-remove" onclick="this.parentElement.remove()">❌</button>
-    `; // Aplicando classes de botão do novo_style.css
+    `;
     container.appendChild(div);
   }
 
-  document.getElementById("formCliente").addEventListener("submit", async (e) => {
-    e.preventDefault();
+  const formClienteEl = document.getElementById("formCliente");
+  if (formClienteEl) {
+      formClienteEl.addEventListener("submit", async (e) => {
+        e.preventDefault();
 
-    const data = {};
-    document.querySelectorAll("#formCliente input, #formCliente select, #formCliente textarea").forEach(el => {
-      if (el.name && el.name.startsWith("contato")) return;
-      if (el.id) data[el.id] = el.value;
-    });
+        const data = {};
+        document.querySelectorAll("#formCliente input, #formCliente select, #formCliente textarea").forEach(el => {
+          if (el.name && el.name.startsWith("contato")) return;
+          if (el.id) data[el.id] = el.value;
+        });
 
-    const contatos = [];
-    document.querySelectorAll(".contato-group").forEach(grupo => {
-      const nomeInput = grupo.querySelector('[name="contatoNome"]');
-      const telInput = grupo.querySelector('[name="contatoTel"]');
-      const nome = nomeInput ? nomeInput.value : "";
-      const tel = telInput ? telInput.value : "";
-      if (nome || tel) contatos.push({ nome, telefone: tel });
-    });
-    data.contatos = contatos;
+        const contatos = [];
+        document.querySelectorAll(".contato-group").forEach(grupo => {
+          const nomeInput = grupo.querySelector("[name=\"contatoNome\"]");
+          const telInput = grupo.querySelector("[name=\"contatoTel\"]");
+          const nome = nomeInput ? nomeInput.value : "";
+          const tel = telInput ? telInput.value : "";
+          if (nome || tel) contatos.push({ nome, telefone: tel });
+        });
+        data.contatos = contatos;
 
-    const params = new URLSearchParams(window.location.search);
-    const idCliente = params.get("idCliente");
+        const params = new URLSearchParams(window.location.search);
+        const idCliente = params.get("idCliente");
 
-    const ref = idCliente ? db.ref("clientes/" + idCliente) : db.ref("clientes").push();
-    await ref.set(data);
-
-    alert("Cliente salvo com sucesso!");
-    window.location.href = "lista_clientes.html";
-  });
+        const ref = idCliente ? db.ref("clientes/" + idCliente) : db.ref("clientes").push();
+        
+        try {
+            await ref.set(data);
+            alert("Cliente salvo com sucesso!");
+            window.location.href = "lista_clientes.html";
+        } catch (error) {
+            console.error("Erro ao salvar cliente:", error);
+            alert("Erro ao salvar cliente. Verifique o console para mais detalhes.");
+        }
+      });
+  }
 </script>
 </body>
 </html>
