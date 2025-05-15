@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Cadastro de Produtos</title>
-  <link rel="stylesheet" href="assets/novo_style.css" />
+  <link rel="stylesheet" href="novo_style.css" />
 </head>
 <body>
 
@@ -13,11 +13,11 @@
   <div class="sidebar" id="sidebarMenu">
     <h2>LePan</h2>
     <ul>
-      <li><a href="dashboard.html">Dashboard</a></li>
-      <li><a href="assets/relatorio.html">📊 Relatórios</a></li>
-      <li><a href="assets/produtos.html" class="active">📦 Produtos</a></li>
-      <li><a href="lista_clientes.html">👥 Clientes</a></li>
-      <li><a href="evento.html">📅 Eventos</a></li>
+      <li><a href="../dashboard.html">Dashboard</a></li>
+      <li><a href="relatorio.html">📊 Relatórios</a></li>
+      <li><a href="produtos.html" class="active">📦 Produtos</a></li>
+      <li><a href="../lista_clientes.html">👥 Clientes</a></li>
+      <li><a href="../evento.html">📅 Eventos</a></li>
     </ul>
   </div>
 
@@ -57,38 +57,4 @@
       </form>
 
       <h2 style="margin-top: 30px;">Produtos Cadastrados</h2>
-      <table class="tabela-moderna">
-        <thead>
-          <tr>
-            <th>Nome</th>
-            <th>Nomenclatura</th>
-            <th>Valor de Venda</th>
-            <th>Custo</th>
-            <th>Qtd por Caixa</th>
-            <th>Ações</th>
-          </tr>
-        </thead>
-        <tbody id="produtosContainer"></tbody>
-      </table>
-
-      <div style="margin-top: 20px;">
-        <button id="exportarXLS" class="botao">Exportar XLS</button>
-        <input type="file" id="importarXLS" />
-      </div>
-    </div>
-  </div>
-
-  <script>
-    const menuToggleBtn = document.getElementById("menuToggleBtn");
-    const sidebarMenu = document.getElementById("sidebarMenu");
-    if (menuToggleBtn && sidebarMenu) {
-      menuToggleBtn.addEventListener("click", () => {
-        sidebarMenu.classList.toggle("active");
-      });
-    }
-  </script>
-
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-  <script type="module" src="produtos.js"></script>
-</body>
-</html>
+      <table class
