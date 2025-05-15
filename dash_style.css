@@ -54,15 +54,16 @@ body {
   box-shadow: 0 0 10px rgba(0,0,0,0.05);
 }
 
+/* KPI Grid com 4 colunas */
 .kpi-grid {
   display: flex;
-  gap: 16px;
   flex-wrap: wrap;
+  gap: 16px;
   margin-top: 20px;
 }
 
 .kpi-card {
-  flex: 1 1 200px;
+  flex: 1 1 calc(25% - 12px);
   background: white;
   padding: 15px;
   border-radius: 6px;
@@ -82,31 +83,15 @@ body {
   margin: 0;
 }
 
+/* Responsivo */
+@media (max-width: 900px) {
+  .kpi-card {
+    flex: 1 1 calc(50% - 10px);
+  }
+}
+
 @media (max-width: 600px) {
-  .main-content {
-    margin-left: 0;
-  }
-
-  .sidebar {
-    display: none;
-  }
-
-  .menu-toggle {
-    display: block;
-    position: absolute;
-    top: 10px;
-    left: 10px;
-    background: #007bff;
-    color: white;
-    padding: 8px 12px;
-    border: none;
-    font-size: 18px;
-    border-radius: 4px;
-  }
-
-  .sidebar.active {
-    display: block;
-    z-index: 999;
-    background: #007bff;
+  .kpi-card {
+    flex: 1 1 100%;
   }
 }
