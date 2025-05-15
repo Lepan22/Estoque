@@ -1,4 +1,4 @@
-/******/ Novo Estilo Propósito - novo_style.css ******/
+/******/ Novo Estilo Propósito - novo_style.css - v4 ******/
 
 :root {
   --cor-primaria-menu: #007bff;
@@ -11,11 +11,11 @@
   --sombra-padrao: 0 0 10px rgba(0, 0, 0, 0.05);
   --borda-radius-padrao: 6px;
   --font-size-label: 0.75rem;
-  --font-size-input: 0.8rem;
+  --font-size-input: 0.65rem;
   --padding-input-vertical: 4px;
   --padding-input-horizontal: 6px;
-  --margin-bottom-form-grupo: 8px;
-  --gap-form-row: 10px;
+  --margin-bottom-form-grupo: 5px;
+  --gap-form-row: 5px;
 }
 
 body {
@@ -25,7 +25,7 @@ body {
   color: var(--cor-texto-padrao);
   display: flex;
   min-height: 100vh;
-  font-size: 14px; /* Base font size */
+  font-size: 13px;
 }
 
 .sidebar {
@@ -71,7 +71,7 @@ body {
 
 .main-content {
   margin-left: 132px;
-  padding: 20px;
+  padding: 15px;
   width: calc(100% - 132px);
   background-color: var(--cor-fundo-conteudo);
   flex-grow: 1;
@@ -79,39 +79,44 @@ body {
 
 .container-principal {
     background-color: #ffffff;
-    padding: 20px;
+    padding: 15px;
     border-radius: var(--borda-radius-padrao);
     box-shadow: var(--sombra-padrao);
 }
 
 h1 {
-  font-size: 1.4rem;
-  margin-bottom: 15px;
+  font-size: 1.3rem;
+  margin-bottom: 12px;
 }
 
+/* Ajuste para H1 dentro do dashboard, se necessário um tamanho maior */
+/* Se o H1 do dashboard for o título "Dashboard" e precisar ser maior que 1.3rem */
+/* .dashboard-container h1 { font-size: 1.8rem; text-align: center; } */ 
+/* Adicionar classe .dashboard-container ao container principal do dashboard.html */
+
 h3 {
-  font-size: 1rem;
-  margin-top: 15px;
-  margin-bottom: 10px;
+  font-size: 0.9rem;
+  margin-top: 12px;
+  margin-bottom: 8px;
   border-bottom: 1px solid #eee;
-  padding-bottom: 5px;
+  padding-bottom: 4px;
 }
 
 /* Botões */
 button, a.botao {
   display: inline-block;
-  padding: 6px 12px;
+  padding: 5px 10px;
   background-color: var(--cor-laranja-destaque);
   color: white;
   border: none;
   border-radius: 4px;
-  font-size: 0.8rem;
+  font-size: 0.75rem;
   font-weight: 500;
   cursor: pointer;
   text-decoration: none;
   text-align: center;
-  margin-right: 8px;
-  margin-bottom: 8px;
+  margin-right: 6px;
+  margin-bottom: 6px;
   transition: background-color 0.3s ease, box-shadow 0.3s ease;
   box-shadow: 0 1px 2px rgba(0,0,0,0.1);
 }
@@ -121,14 +126,14 @@ button:hover, a.botao:hover {
   box-shadow: 0 2px 4px rgba(0,0,0,0.15);
 }
 
-/* Estilos para formulários */
+/* Estilos para formulários (clientes.html) */
 .form-grupo {
   margin-bottom: var(--margin-bottom-form-grupo);
 }
 
 .form-grupo label {
   display: block;
-  margin-bottom: 3px;
+  margin-bottom: 2px;
   font-weight: 500;
   font-size: var(--font-size-label);
   color: #555;
@@ -144,23 +149,23 @@ button:hover, a.botao:hover {
   width: 100%;
   padding: var(--padding-input-vertical) var(--padding-input-horizontal);
   border: 1px solid #ced4da;
-  border-radius: 4px;
+  border-radius: 3px;
   box-sizing: border-box;
   font-size: var(--font-size-input);
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
-  height: auto; /* Reset height */
-  min-height: 28px; /* Minimum height for inputs */
+  height: auto; 
+  min-height: 24px;
 }
 
 .form-grupo select {
-    height: 28px; /* Specific height for select to match inputs */
-    line-height: 28px;
+    height: 24px;
+    line-height: 24px;
     padding-top: 0;
     padding-bottom: 0;
 }
 
 .form-grupo textarea {
-  min-height: 56px; /* Two lines of text approx */
+  min-height: 48px;
 }
 
 .form-grupo input:focus, 
@@ -171,7 +176,6 @@ button:hover, a.botao:hover {
   outline: none;
 }
 
-/* Adições/Ajustes para layout de formulário em colunas */
 .form-row {
   display: flex;
   flex-wrap: wrap;
@@ -180,108 +184,121 @@ button:hover, a.botao:hover {
 }
 
 .form-row .form-grupo {
-  flex: 1 1 calc(50% - (var(--gap-form-row) / 2));
+  flex-grow: 1;
+  flex-shrink: 1;
   margin-bottom: var(--margin-bottom-form-grupo);
 }
 
-.form-row.three-cols .form-grupo {
-    flex: 1 1 calc(33.333% - (var(--gap-form-row) * 2 / 3));
-}
+.form-row.two-cols .form-grupo { flex-basis: calc(50% - (var(--gap-form-row) / 2)); }
+.form-row.three-cols .form-grupo { flex-basis: calc(33.333% - (var(--gap-form-row) * 2 / 3)); }
+.form-row.four-cols .form-grupo { flex-basis: calc(25% - (var(--gap-form-row) * 3 / 4)); }
+.form-row.five-cols .form-grupo { flex-basis: calc(20% - (var(--gap-form-row) * 4 / 5)); }
+.form-row .form-grupo.full-width { flex-basis: 100%; }
 
-.form-row.four-cols .form-grupo {
-    flex: 1 1 calc(25% - (var(--gap-form-row) * 3 / 4));
-}
+.form-grupo.field-xs { flex-basis: 100px !important; flex-grow: 0; }
+.form-grupo.field-sm { flex-basis: 150px !important; flex-grow: 0; }
+.form-grupo.field-md { flex-basis: 200px !important; flex-grow: 0; }
+.form-grupo.field-lg { flex-basis: 250px !important; flex-grow: 0; }
+.form-grupo.field-xl { flex-basis: 300px !important; flex-grow: 0; }
 
-.form-row .form-grupo.full-width {
-  flex-basis: 100%;
-}
-
-/* Ajustes para a seção de contatos */
 .contato-group {
-  display: flex; /* Make .contato-group a flex container itself */
-  align-items: flex-end; /* Align items to the bottom, useful if labels make height uneven */
+  display: flex; 
+  align-items: flex-end; 
   gap: var(--gap-form-row);
-  width: 100%; /* Take full width if it's inside contatoContainer */
+  width: 100%; 
   margin-bottom: var(--margin-bottom-form-grupo);
 }
-
-/* Remove .form-grupo class from direct children of .contato-group if they are just inputs/buttons */
 .contato-group > .form-grupo input[name="contatoNome"],
-.contato-group > .form-grupo input[name="contatoTel"] {
-  margin-bottom: 0; /* Remove bottom margin from inputs inside contact group items */
-}
-
-.contato-group > .form-grupo {
-    margin-bottom: 0; /* No margin for the form-group wrapper inside contato-group */
-}
-
+.contato-group > .form-grupo input[name="contatoTel"] { margin-bottom: 0; }
+.contato-group > .form-grupo { margin-bottom: 0; }
 .contato-group .botao-remove {
-  padding: 4px 8px;
-  font-size: 0.75rem;
-  height: 28px; /* Match input height */
-  line-height: 1.5; /* Adjust line height for button text */
-  align-self: center; /* Vertically center button with inputs */
-  margin-bottom: 0; /* Align with inputs that have no margin-bottom in this context */
+  padding: 3px 6px;
+  font-size: 0.7rem;
+  height: 24px;
+  line-height: 1.5; 
+  align-self: center; 
+  margin-bottom: 0; 
 }
 
-.sr-only {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  padding: 0;
-  margin: -1px;
-  overflow: hidden;
-  clip: rect(0,0,0,0);
-  border: 0;
+/* Estilos para Dashboard (dashboard.html) */
+.kpi-cards {
+  display: flex;
+  gap: 20px;
+  justify-content: space-between; /* Ou space-around, conforme preferência original */
+  flex-wrap: wrap; /* Essencial para que os cards quebrem a linha se não couberem */
+  margin-bottom: 30px;
 }
 
-.divider {
-    height: 1px;
-    background-color: #eee;
-    margin: 15px 0;
+.kpi {
+  background: white;
+  padding: 20px; /* Padding original do dashboard para KPIs */
+  border-radius: 8px; /* Pode ser var(--borda-radius-padrao) ou 10px do original do dashboard */
+  box-shadow: var(--sombra-padrao);
+  flex: 1 1 200px; /* Base de 200px, permite crescer e diminuir. Garante que 4 caibam em larguras comuns. */
+  text-align: center;
+  min-width: 180px; /* Para não ficarem muito pequenos em telas menores antes de quebrar a linha */
 }
 
-.hidden {
-    display: none !important;
+.kpi h2 {
+  margin: 0 0 5px 0;
+  font-size: 24px; /* Tamanho original do h2 dos KPIs do dashboard */
+  color: var(--cor-texto-padrao); /* Cor padrão de texto, ou pode ser uma cor específica para KPIs */
 }
 
-/* Responsividade */
+.kpi span {
+  font-size: 14px; /* Tamanho original do span dos KPIs do dashboard */
+  color: #6c757d;
+}
+
+/* Estilos para os gráficos do dashboard */
+.charts-grid { /* Se você usar essa classe no dashboard para os gráficos */
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 20px;
+}
+
+.chart-container { /* Se você usar essa classe no dashboard para os gráficos */
+  background: white;
+  padding: 15px;
+  border-radius: var(--borda-radius-padrao);
+  box-shadow: var(--sombra-padrao);
+}
+
+.chart-container canvas {
+  max-height: 280px;
+  width: 100% !important;
+}
+
+.sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); border: 0; }
+.divider { height: 1px; background-color: #eee; margin: 10px 0; }
+.hidden { display: none !important; }
+
 @media (max-width: 768px) {
-  .sidebar {
-    transform: translateX(-100%);
-    position: fixed;
-    z-index: 1000;
-    transition: transform 0.3s ease-in-out;
-  }
-  .sidebar.active {
-    transform: translateX(0);
-  }
-  .main-content {
-    margin-left: 0;
-    width: 100%;
-    padding: 15px;
-  }
-  .menu-toggle {
-    display: block;
-    position: fixed;
-    top: 10px;
-    left: 10px;
-    z-index: 1001;
-    background: var(--cor-laranja-destaque);
-    color: white;
-    border: none;
-    padding: 8px 10px;
-    border-radius: var(--borda-radius-padrao);
-    cursor: pointer;
-  }
+  .sidebar { transform: translateX(-100%); position: fixed; z-index: 1000; transition: transform 0.3s ease-in-out; }
+  .sidebar.active { transform: translateX(0); }
+  .main-content { margin-left: 0; width: 100%; padding: 10px; }
+  .menu-toggle { display: block; position: fixed; top: 10px; left: 10px; z-index: 1001; background: var(--cor-laranja-destaque); color: white; border: none; padding: 8px 10px; border-radius: var(--borda-radius-padrao); cursor: pointer; }
+  
+  .form-row.two-cols .form-grupo,
   .form-row.three-cols .form-grupo,
-  .form-row.four-cols .form-grupo {
-    flex-basis: calc(50% - (var(--gap-form-row) / 2)); /* Stack to 2 columns on smaller screens */
+  .form-row.four-cols .form-grupo,
+  .form-row.five-cols .form-grupo {
+    flex-basis: calc(50% - (var(--gap-form-row) / 2)); 
   }
-  .form-row.four-cols .form-grupo:nth-child(n+3) {
-      /* If you want to force 1 column for 4-col items on mobile, uncomment below */
-      /* flex-basis: 100%; */
+  .form-row .form-grupo.field-xs, 
+  .form-row .form-grupo.field-sm, 
+  .form-row .form-grupo.field-md, 
+  .form-row .form-grupo.field-lg, 
+  .form-row .form-grupo.field-xl {
+    flex-basis: calc(50% - (var(--gap-form-row) / 2)) !important;
   }
+
+  /* Ajuste para KPIs em telas menores, se necessário */
+  .kpi {
+    flex-basis: calc(50% - 10px); /* 2 KPIs por linha em telas menores, considerando gap de 20px */
+  }
+  /* Se quiser 1 KPI por linha em telas muito pequenas: */
+  /* @media (max-width: 480px) { .kpi { flex-basis: 100%; } } */
 }
 
 
