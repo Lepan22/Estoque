@@ -63,7 +63,8 @@ function atualizarTabelaEventosTemp() {
   });
 }
 
-adicionarEventoBtn.addEventListener("click", () => {
+adicionarEventoBtn.addEventListener("click", (e) => {
+  e.preventDefault(); // evita submit
   const eventoId = eventoSelect.value;
   const nomeEvento = eventosDisponiveis[eventoId]?.nome;
   const valor = parseFloat(document.getElementById("valorEvento").value || 0);
@@ -95,13 +96,6 @@ logisticaForm.addEventListener("submit", async (e) => {
   const refBase = ref(db, "logistica");
 
   if (id) {
-    // Se for edição, mantém dados antigos e mescla os novos
-    const snap = await get(child(refBase, id));
-    const antigo = snap.val() || {};
-    const valoresAntigos = antigo.valores || {};
-    const valoresAtualizados = { ...valoresAntigos, ...data.valores };
-    data.valores = valoresAtualizados;
-
     await update(child(refBase, id), data);
   } else {
     await push(refBase, data);
