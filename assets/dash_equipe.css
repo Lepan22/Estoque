@@ -1,0 +1,62 @@
+/* Estilo exclusivo para equipe.html */
+
+#equipeForm {
+  padding: 10px;
+  margin-bottom: 20px;
+  background: #f9f9f9;
+  border-radius: 6px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.form-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.form-grupo {
+  flex: 1 1 45%;
+  min-width: 200px;
+}
+
+.form-grupo.full-width {
+  flex: 1 1 100%;
+}
+
+.tabela-container {
+  max-height: 400px;
+  overflow-y: auto;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  background: white;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+thead {
+  background: #f0f0f0;
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+
+th, td {
+  padding: 8px 10px;
+  text-align: left;
+  border-bottom: 1px solid #eee;
+}
+
+tbody tr:hover {
+  background: #f8f8f8;
+}
+
+button {
+  background: #ffc107;
+  border: none;
+  padding: 4px 8px;
+  border-radius: 4px;
+  cursor: pointer;
+}
