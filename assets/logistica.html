@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Cadastro de Logística</title>
+  <link rel="stylesheet" href="novo_style.css" />
+  <link rel="stylesheet" href="dash_equipe.css" />
+  <style>
+    #logisticaForm {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+
+    .form-grupo {
+      display: flex;
+      flex-direction: column;
+      flex: 1 1 22%;
+      min-width: 180px;
+    }
+
+    .form-grupo.full-width {
+      flex: 1 1 100%;
+    }
+
+    .botao {
+      height: 38px;
+      align-self: flex-end;
+    }
+
+    .rating {
+      display: flex;
+      gap: 2px;
+      font-size: 18px;
+    }
+
+    .rating input {
+      display: none;
+    }
+
+    .rating label {
+      cursor: pointer;
+      color: #ccc;
+    }
+
+    .rating input:checked ~ label,
+    .rating label:hover,
+    .rating label:hover ~ label {
+      color: gold;
+    }
+
+    .tabela-container {
+      overflow-x: auto;
+    }
+  </style>
+</head>
+<body>
+
+  <button class="menu-toggle" id="menuToggleBtn">☰</button>
+
+  <div class="sidebar" id="sidebarMenu">
+    <h2>LePan</h2>
+    <ul>
+      <li><a href="../dashboard.html">Dashboard</a></li>
+      <li><a href="relatorio.html">📊 Relatórios</a></li>
+      <li><a href="produtos.html">📦 Produtos</a></li>
+      <li><a href="../lista_clientes.html">👥 Clientes</a></li>
+      <li><a href="../evento.html">📅 Eventos</a></li>
+    </ul>
+  </div>
+
+  <div class="main-content">
+    <div class="container-principal">
+      <h1>Cadastro de Logística</h1>
+
+      <form id="logisticaForm">
+        <input type="hidden" id="logisticaId" />
+        <div class="form-grupo">
+          <label for="nome">Nome</label>
+          <input type="text" id="nome" required />
+        </div>
+        <div class="form-grupo">
+          <label for="prestador">Prestador</label>
+          <input type="text" id="prestador" required />
+        </div>
+        <div class="form-grupo">
+          <label for="tipo">Tipo</label>
+          <input type="text" id="tipo" />
+        </div>
+        <div class="form-grupo">
+          <label for="documento">RG/CPF</label>
+          <input type="text" id="documento" />
+        </div>
+        <div class="form-grupo">
+          <label>Classificação</label>
+          <div class="rating">
+            <input type="radio" id="estrela5" name="classificacao" value="5"><label for="estrela5">★</label>
+            <input type="radio" id="estrela4" name="classificacao" value="4"><label for="estrela4">★</label>
+            <input type="radio" id="estrela3" name="classificacao" value="3"><label for="estrela3">★</label>
+            <input type="radio" id="estrela2" name="classificacao" value="2"><label for="estrela2">★</label>
+            <input type="radio" id="estrela1" name="classificacao" value="1"><label for="estrela1">★</label>
+          </div>
+        </div>
+        <div class="form-grupo">
+          <label for="observacao">Observação</label>
+          <input type="text" id="observacao" />
+        </div>
+        <div class="form-grupo">
+          <label for="evento">Evento</label>
+          <select id="evento"></select>
+        </div>
+        <div class="form-grupo">
+          <label for="valorEvento">Valor (R$)</label>
+          <input type="number" id="valorEvento" step="0.01" />
+        </div>
+        <div class="form-grupo">
+          <label style="visibility:hidden;">Salvar</label>
+          <button type="submit" class="botao">Salvar</button>
+        </div>
+      </form>
+
+      <h2>Logística Cadastrada</h2>
+      <div class="tabela-container">
+        <table>
+          <thead>
+            <tr>
+              <th>Prestador</th>
+              <th>Tipo</th>
+              <th>Editar</th>
+            </tr>
+          </thead>
+          <tbody id="tabelaLogistica"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="logistica.js"></script>
+</body>
+</html>
