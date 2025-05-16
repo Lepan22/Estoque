@@ -7,23 +7,22 @@
   <link rel="stylesheet" href="novo_style.css" />
   <link rel="stylesheet" href="dash_equipe.css" />
   <style>
-    /* Ajustes específicos para alinhar como na imagem */
     #equipeForm {
       display: flex;
       flex-wrap: wrap;
-      gap: 10px;
-      align-items: flex-start;
+      gap: 16px;
+      margin-bottom: 24px;
     }
 
     .form-grupo {
       display: flex;
       flex-direction: column;
-      width: 20%;
-      min-width: 140px;
+      flex: 1 1 22%;
+      min-width: 180px;
     }
 
     .form-grupo.full-width {
-      width: 100%;
+      flex: 1 1 100%;
     }
 
     .botao {
@@ -31,10 +30,8 @@
       align-self: flex-end;
     }
 
-    @media (max-width: 1000px) {
-      .form-grupo {
-        width: 100%;
-      }
+    .tabela-container {
+      overflow-x: auto;
     }
   </style>
 </head>
@@ -84,7 +81,7 @@
           <input type="text" id="observacao" />
         </div>
         <div class="form-grupo">
-          <label style="visibility:hidden;">.</label>
+          <label style="visibility: hidden;">Ação</label>
           <button type="submit" class="botao">Salvar</button>
         </div>
       </form>
