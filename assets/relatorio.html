@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-br">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
@@ -14,7 +14,7 @@
     <h2>LePan</h2>
     <ul>
       <li><a href="../dashboard.html">Dashboard</a></li>
-      <li><a href="relatorio.html" class="active">📊 Relatórios</a></li>
+      <li><a href="relatorio.html">📊 Relatórios</a></li>
       <li><a href="produtos.html">📦 Produtos</a></li>
       <li><a href="../lista_clientes.html">👥 Clientes</a></li>
       <li><a href="../evento.html">📅 Eventos</a></li>
@@ -23,29 +23,20 @@
 
   <div class="main-content">
     <div class="container-principal">
-      <h1>📑 Central de Relatórios</h1>
-      <ul style="list-style: none; padding: 0;">
-        <li><a class="botao" href="relatorio-produtos-eventos.html">📦 Produtos por Evento</a></li>
-        <li><a class="botao" href="relatorio-perdas.html">❌ Perdas por Evento Finalizado</a></li>
-        <li><a class="botao" href="https://lepan22.github.io/Estoque/resumo_eventos.html">📋 Resumo Geral de Eventos</a></li>
-        <li><a class="botao" href="https://lepan22.github.io/Estoque/relatorio_despesas.html">💸 Relatório de Despesas</a></li>
-        <li><a class="botao" href="https://lepan22.github.io/Estoque/relatorio_vendas.html">📊 Quantidade Vendida por Evento</a></li>
-        <li><a class="botao" href="https://lepan22.github.io/Estoque/assets/quantidade_vendida.html">🧮 Quantidade Vendida (Detalhado)</a></li>
-        <li><a class="botao" href="https://lepan22.github.io/Estoque/estimativa_venda.html">📈 Estimativa Produto</a></li>
-        <li><a class="botao" href="https://lepan22.github.io/Estoque/comercial_estimativa.html">📈 Estimativa Comercial</a></li>
-        <li><a class="botao" href="equipe.html">👷 Equipe</a></li>
+      <h1>📋 Central de Relatórios</h1>
+      <ul>
+        <li><a href="produtos_evento.html">📦 Produtos por Evento</a></li>
+        <li><a href="perdas_evento.html">❌ Perdas por Evento Finalizado</a></li>
+        <li><a href="resumo_eventos.html">📊 Resumo Geral de Eventos</a></li>
+        <li><a href="relatorio_despesas.html">📄 Relatório de Despesas</a></li>
+        <li><a href="quantidade_vendida.html">📈 Quantidade Vendida por Evento</a></li>
+        <li><a href="quantidade_detalhada.html">📌 Quantidade Vendida (Detalhado)</a></li>
+        <li><a href="comercial_estimativa.html">📉 Estimativa Produto</a></li>
+        <li><a href="equipe.html">👷 Cadastro de Equipe</a></li>
+        <li><a href="logistica.html">🚚 Cadastro de Logística</a></li>
       </ul>
     </div>
   </div>
 
-  <script>
-    const menuToggleBtn = document.getElementById("menuToggleBtn");
-    const sidebarMenu = document.getElementById("sidebarMenu");
-    if (menuToggleBtn && sidebarMenu) {
-      menuToggleBtn.addEventListener("click", () => {
-        sidebarMenu.classList.toggle("active");
-      });
-    }
-  </script>
 </body>
 </html>
