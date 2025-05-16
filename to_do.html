@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LePan - Checklist de Eventos</title>
+  <link rel="stylesheet" href="assets/novo_style.css">
+  <link rel="stylesheet" href="assets/to_do_custom.css">
+</head>
+<body>
+  <div class="sidebar">
+    <h2>LePan</h2>
+    <ul>
+      <li><a href="index.html">Início</a></li>
+      <li><a href="dashboard.html">Dashboard</a></li>
+      <li><a href="eventos.html">Eventos</a></li>
+      <li><a href="to_do.html" class="active">Checklist</a></li>
+    </ul>
+  </div>
+
+  <div class="main-content">
+    <div class="container-principal">
+      <!-- Cabeçalho -->
+      <h1>Checklist de Eventos da Semana</h1>
+      <div class="semana-atual">
+        <span id="semana-periodo">DD/MM - DD/MM/YYYY</span>
+      </div>
+
+      <!-- KPIs -->
+      <div class="container-kpis-dashboard">
+        <div class="card-kpi-dashboard">
+          <div class="kpi-title">Eventos da Semana</div>
+          <div class="kpi-value" id="kpi-qtd-eventos">0</div>
+        </div>
+        <div class="card-kpi-dashboard">
+          <div class="kpi-title">Valor Estimado Total</div>
+          <div class="kpi-value" id="kpi-valor-estimado">R$ 0,00</div>
+        </div>
+      </div>
+
+      <!-- Lista de Eventos -->
+      <h3>Eventos</h3>
+      <div id="lista-eventos">
+        <!-- Eventos serão inseridos aqui via JavaScript -->
+        <div class="sem-eventos">Carregando eventos...</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal para Adicionar Equipe/Logística -->
+  <div id="modal-adicionar" class="modal">
+    <div class="modal-content">
+      <span class="fechar-modal">&times;</span>
+      <h2 id="modal-titulo">Adicionar Equipe</h2>
+      <div id="modal-evento-nome">Nome do Evento</div>
+      
+      <div id="modal-selecao-container">
+        <!-- Conteúdo dinâmico será inserido aqui -->
+      </div>
+      
+      <div class="modal-acoes">
+        <button id="btn-adicionar-item">Adicionar Item</button>
+        <button id="btn-salvar-modal">Salvar</button>
+        <button id="btn-cancelar-modal">Cancelar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
+  <script src="assets/to_do.js"></script>
+</body>
+</html>
