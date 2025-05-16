@@ -58,13 +58,34 @@ function atualizarTabelaEventosTemp() {
     const valor = eventosSelecionados[nomeEvento].toFixed(2).replace('.', ',');
 
     const linha = document.createElement("tr");
-    linha.innerHTML = `<td>${nomeEvento}</td><td>R$ ${valor}</td>`;
+    linha.innerHTML = `
+      <td>${nomeEvento}</td>
+      <td>R$ ${valor}</td>
+      <td><button onclick="editarValorEvento('${nomeEvento}')">✏️</button></td>
+      <td><button onclick="removerEvento('${nomeEvento}')">❌</button></td>
+    `;
     tabelaEventosTemp.appendChild(linha);
   });
 }
 
+window.editarValorEvento = function(nomeEvento) {
+  const ids = Object.entries(eventosDisponiveis)
+    .find(([id, evento]) => evento.nome === nomeEvento);
+
+  if (!ids) return;
+
+  const [idEvento] = ids;
+  eventoSelect.value = idEvento;
+  document.getElementById("valorEvento").value = eventosSelecionados[nomeEvento];
+};
+
+window.removerEvento = function(nomeEvento) {
+  delete eventosSelecionados[nomeEvento];
+  atualizarTabelaEventosTemp();
+};
+
 adicionarEventoBtn.addEventListener("click", (e) => {
-  e.preventDefault(); // evita submit
+  e.preventDefault();
   const eventoId = eventoSelect.value;
   const nomeEvento = eventosDisponiveis[eventoId]?.nome;
   const valor = parseFloat(document.getElementById("valorEvento").value || 0);
