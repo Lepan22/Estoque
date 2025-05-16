@@ -46,17 +46,16 @@ async function carregarEventos() {
 function atualizarTabelaEventosTemp() {
   tabelaEventosTemp.innerHTML = "";
 
-  const ids = Object.keys(eventosSelecionados);
-  if (ids.length === 0) {
+  const nomes = Object.keys(eventosSelecionados);
+  if (nomes.length === 0) {
     listaEventosAdicionados.style.display = "none";
     return;
   }
 
   listaEventosAdicionados.style.display = "block";
 
-  ids.forEach((eventoId) => {
-    const nomeEvento = eventosDisponiveis[eventoId]?.nome || "Evento";
-    const valor = eventosSelecionados[eventoId].toFixed(2).replace('.', ',');
+  nomes.forEach((nomeEvento) => {
+    const valor = eventosSelecionados[nomeEvento].toFixed(2).replace('.', ',');
 
     const linha = document.createElement("tr");
     linha.innerHTML = `<td>${nomeEvento}</td><td>R$ ${valor}</td>`;
@@ -66,10 +65,12 @@ function atualizarTabelaEventosTemp() {
 
 adicionarEventoBtn.addEventListener("click", () => {
   const eventoId = eventoSelect.value;
+  const nomeEvento = eventosDisponiveis[eventoId]?.nome;
   const valor = parseFloat(document.getElementById("valorEvento").value || 0);
-  if (!eventoId || isNaN(valor) || valor <= 0) return;
 
-  eventosSelecionados[eventoId] = valor;
+  if (!nomeEvento || isNaN(valor) || valor <= 0) return;
+
+  eventosSelecionados[nomeEvento] = valor;
   atualizarTabelaEventosTemp();
 
   document.getElementById("valorEvento").value = "";
