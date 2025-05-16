@@ -70,22 +70,22 @@ async function carregarEventosSemana() {
     const todosEventosSnapshot = await todosEventosRef.once('value');
     const todosEventos = todosEventosSnapshot.val() || {};
     
-    // Calcular a média global de vendaPDV para todos os eventos finalizados
+    // Calcular a média global de valorVenda para todos os eventos
     let valorVendaTotalGlobal = 0;
     let eventosRealizadosGlobal = 0;
     
     Object.values(todosEventos).forEach(evento => {
       const analise = evento.analise || {};
       
-      // Verificar se vendaPDV existe e é um número válido
-      if (analise.vendaPDV !== undefined && analise.vendaPDV !== null) {
-        const vendaPDV = parseFloat(analise.vendaPDV);
-        if (!isNaN(vendaPDV) && vendaPDV > 0) {
-          valorVendaTotalGlobal += vendaPDV;
+      // Verificar se valorVenda existe e é um número válido
+      if (analise.valorVenda !== undefined && analise.valorVenda !== null) {
+        const valorVenda = parseFloat(analise.valorVenda);
+        if (!isNaN(valorVenda) && valorVenda > 0) {
+          valorVendaTotalGlobal += valorVenda;
           eventosRealizadosGlobal++;
           
           // Log para debug
-          console.log(`Evento com vendaPDV: ${evento.nome}, Valor: ${vendaPDV}`);
+          console.log(`Evento com valorVenda: ${evento.nome}, Valor: ${valorVenda}`);
         }
       }
     });
@@ -182,14 +182,7 @@ function atualizarKPIs(mediaVendaGlobal = 0) {
       const valorVenda = parseFloat(analise.valorVenda);
       if (!isNaN(valorVenda)) {
         valorEstimadoTotal += valorVenda;
-      }
-    }
-    
-    // Contar eventos realizados na semana atual (para estatísticas locais)
-    if (analise.vendaPDV !== undefined && analise.vendaPDV !== null) {
-      const vendaPDV = parseFloat(analise.vendaPDV);
-      if (!isNaN(vendaPDV) && vendaPDV > 0) {
-        valorVendaTotal += vendaPDV;
+        valorVendaTotal += valorVenda;
         eventosRealizados++;
       }
     }
@@ -231,16 +224,10 @@ function renderizarEventos() {
     const analise = evento.analise || {};
     
     // Garantir que os valores sejam números válidos
-    let estimativa = 0;
+    let valorVenda = 0;
     if (analise.valorVenda !== undefined && analise.valorVenda !== null) {
-      estimativa = parseFloat(analise.valorVenda);
-      if (isNaN(estimativa)) estimativa = 0;
-    }
-    
-    let venda = 0;
-    if (analise.vendaPDV !== undefined && analise.vendaPDV !== null) {
-      venda = parseFloat(analise.vendaPDV);
-      if (isNaN(venda)) venda = 0;
+      valorVenda = parseFloat(analise.valorVenda);
+      if (isNaN(valorVenda)) valorVenda = 0;
     }
     
     const tr = document.createElement('tr');
@@ -248,8 +235,7 @@ function renderizarEventos() {
       <td class="col-nome">${evento.nome || 'Evento sem nome'}</td>
       <td class="col-data">${formatarData(evento.data)}</td>
       <td class="col-valores">
-        <span class="evento-valor">Estimado: ${formatarMoeda(estimativa)}</span>
-        <span class="evento-valor">Venda: ${formatarMoeda(venda)}</span>
+        <span class="evento-valor">Valor de Venda: ${formatarMoeda(valorVenda)}</span>
       </td>
       <td class="col-pedido">
         <div class="check-item">
