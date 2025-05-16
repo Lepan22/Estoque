@@ -6,6 +6,37 @@
   <title>Cadastro de Equipe</title>
   <link rel="stylesheet" href="novo_style.css" />
   <link rel="stylesheet" href="dash_equipe.css" />
+  <style>
+    /* Ajustes específicos para alinhar como na imagem */
+    #equipeForm {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: flex-start;
+    }
+
+    .form-grupo {
+      display: flex;
+      flex-direction: column;
+      width: 20%;
+      min-width: 140px;
+    }
+
+    .form-grupo.full-width {
+      width: 100%;
+    }
+
+    .botao {
+      height: 38px;
+      align-self: flex-end;
+    }
+
+    @media (max-width: 1000px) {
+      .form-grupo {
+        width: 100%;
+      }
+    }
+  </style>
 </head>
 <body>
 
@@ -28,36 +59,36 @@
 
       <form id="equipeForm">
         <input type="hidden" id="equipeId" />
-        <div class="form-row">
-          <div class="form-grupo">
-            <label for="nome">Nome</label>
-            <input type="text" id="nome" required />
-          </div>
-          <div class="form-grupo">
-            <label for="apelido">Apelido</label>
-            <input type="text" id="apelido" required />
-          </div>
-          <div class="form-grupo">
-            <label for="documento">RG/CPF</label>
-            <input type="text" id="documento" />
-          </div>
-          <div class="form-grupo">
-            <label for="valor">Valor (R$)</label>
-            <input type="number" id="valor" step="0.01" />
-          </div>
-          <div class="form-grupo">
-            <label for="classificacao">Classificação</label>
-            <input type="text" id="classificacao" />
-          </div>
-          <div class="form-grupo full-width">
-            <label for="observacao">Observação</label>
-            <textarea id="observacao"></textarea>
-          </div>
+        <div class="form-grupo">
+          <label for="nome">Nome</label>
+          <input type="text" id="nome" required />
         </div>
-        <button type="submit" class="botao">Salvar</button>
+        <div class="form-grupo">
+          <label for="apelido">Apelido</label>
+          <input type="text" id="apelido" required />
+        </div>
+        <div class="form-grupo">
+          <label for="documento">RG/CPF</label>
+          <input type="text" id="documento" />
+        </div>
+        <div class="form-grupo">
+          <label for="valor">Valor (R$)</label>
+          <input type="number" id="valor" step="0.01" />
+        </div>
+        <div class="form-grupo">
+          <label for="classificacao">Classificação</label>
+          <input type="text" id="classificacao" />
+        </div>
+        <div class="form-grupo">
+          <label for="observacao">Observação</label>
+          <input type="text" id="observacao" />
+        </div>
+        <div class="form-grupo">
+          <label style="visibility:hidden;">.</label>
+          <button type="submit" class="botao">Salvar</button>
+        </div>
       </form>
 
-      <hr />
       <h2>Equipe Cadastrada</h2>
       <div class="tabela-container">
         <table>
