@@ -20,6 +20,10 @@ const equipeForm = document.getElementById("equipeForm");
 const apelidoInput = document.getElementById("apelido");
 const tabelaEquipe = document.getElementById("tabelaEquipe");
 
+function formatarMoeda(valor) {
+  return `R$ ${parseFloat(valor).toFixed(2).replace(".", ",")}`;
+}
+
 equipeForm.addEventListener("submit", async (e) => {
   e.preventDefault();
 
@@ -98,9 +102,9 @@ async function carregarEquipe() {
     linha.innerHTML = `
       <td>${apelido}</td>
       <td>${qtd}</td>
-      <td>${mediaPDV}</td>
-      <td>${mediaDif}</td>
-      <td>${mediaPerda}</td>
+      <td>${formatarMoeda(mediaPDV)}</td>
+      <td>${formatarMoeda(mediaDif)}</td>
+      <td>${formatarMoeda(mediaPerda)}</td>
       <td><button onclick="editarEquipe('${id}')">✏️</button></td>
     `;
     tabelaEquipe.appendChild(linha);
