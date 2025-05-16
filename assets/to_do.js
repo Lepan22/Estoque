@@ -16,7 +16,7 @@ const db = firebase.database();
 // Variáveis globais
 let eventosData = [];
 let equipeData = [];
-let logisticaData = [];
+let logisticaData = {};
 let modalEventoId = null;
 let modalTipo = null;
 
@@ -88,13 +88,18 @@ async function carregarEventosSemana() {
 
 async function carregarEquipe() {
   try {
-    // Aqui você pode carregar a lista de equipe do Firebase
-    // Por enquanto, vamos usar uma lista estática para exemplo
-    equipeData = [
-      { id: 'eq1', nome: 'João Silva', apelido: 'João', rg: '12.345.678-9' },
-      { id: 'eq2', nome: 'Maria Oliveira', apelido: 'Maria', rg: '98.765.432-1' },
-      { id: 'eq3', nome: 'Pedro Santos', apelido: 'Pedro', rg: '45.678.912-3' }
-    ];
+    const equipeRef = db.ref('equipe');
+    const snapshot = await equipeRef.once('value');
+    const equipe = snapshot.val() || {};
+    
+    equipeData = Object.entries(equipe)
+      .map(([id, membro]) => ({ 
+        id, 
+        nome: membro.nome || '', 
+        apelido: membro.apelido || '', 
+        rg: membro.rg || '',
+        valor: membro.valor || 0
+      }));
   } catch (error) {
     console.error('Erro ao carregar equipe:', error);
   }
@@ -102,13 +107,34 @@ async function carregarEquipe() {
 
 async function carregarLogistica() {
   try {
-    // Aqui você pode carregar a lista de logística do Firebase
-    // Por enquanto, vamos usar uma lista estática para exemplo
-    logisticaData = [
-      { id: 'log1', nome: 'Transportadora Rápida', rg: '12.345.678/0001-90' },
-      { id: 'log2', nome: 'Logística Express', rg: '98.765.432/0001-10' },
-      { id: 'log3', nome: 'Entregas Seguras', rg: '45.678.912/0001-30' }
-    ];
+    const logisticaRef = db.ref('logistica');
+    const snapshot = await logisticaRef.once('value');
+    const logistica = snapshot.val() || {};
+    
+    // Estrutura para armazenar dados de logística
+    logisticaData = {};
+    
+    // Processar dados de logística
+    Object.entries(logistica).forEach(([id, item]) => {
+      const prestador = item.prestador || '';
+      const valores = item.valores || {};
+      
+      if (prestador) {
+        if (!logisticaData[id]) {
+          logisticaData[id] = {
+            id,
+            prestador,
+            rg: item.rg || '',
+            valores: {}
+          };
+        }
+        
+        // Armazenar valores para cada tipo
+        Object.entries(valores).forEach(([tipo, valor]) => {
+          logisticaData[id].valores[tipo] = valor;
+        });
+      }
+    });
   } catch (error) {
     console.error('Erro ao carregar logística:', error);
   }
@@ -118,11 +144,24 @@ async function carregarLogistica() {
 function atualizarKPIs() {
   const qtdEventos = eventosData.length;
   let valorEstimadoTotal = 0;
+  let valorVendaTotal = 0;
+  let eventosRealizados = 0;
   
   eventosData.forEach(evento => {
     const analise = evento.analise || {};
-    valorEstimadoTotal += parseFloat(analise.estimativaTotal || 0);
+    
+    // Somar valor estimado (valorVenda) de cada evento
+    valorEstimadoTotal += parseFloat(analise.valorVenda || 0);
+    
+    // Somar vendaPDV para eventos realizados
+    if (analise.vendaPDV) {
+      valorVendaTotal += parseFloat(analise.vendaPDV || 0);
+      eventosRealizados++;
+    }
   });
+  
+  // Calcular média de venda por evento realizado
+  const valorVendaMedia = eventosRealizados > 0 ? valorVendaTotal / eventosRealizados : 0;
   
   document.getElementById('kpi-qtd-eventos').textContent = qtdEventos;
   document.getElementById('kpi-valor-estimado').textContent = formatarMoeda(valorEstimadoTotal);
@@ -139,7 +178,7 @@ function renderizarEventos() {
   
   eventosData.forEach(evento => {
     const analise = evento.analise || {};
-    const estimativa = parseFloat(analise.estimativaTotal || 0);
+    const estimativa = parseFloat(analise.valorVenda || 0);
     const venda = parseFloat(analise.vendaPDV || 0);
     
     const eventoElement = document.createElement('div');
@@ -275,13 +314,23 @@ function adicionarItemSelecao(container, tipo) {
   select.appendChild(optionPadrao);
   
   // Adicionar opções baseadas nos dados
-  const dados = tipo === 'equipe' ? equipeData : logisticaData;
-  dados.forEach(d => {
-    const option = document.createElement('option');
-    option.value = d.id;
-    option.textContent = tipo === 'equipe' ? d.apelido : d.nome;
-    select.appendChild(option);
-  });
+  if (tipo === 'equipe') {
+    // Opções de equipe
+    equipeData.forEach(membro => {
+      const option = document.createElement('option');
+      option.value = membro.id;
+      option.textContent = membro.apelido;
+      select.appendChild(option);
+    });
+  } else {
+    // Opções de logística
+    Object.values(logisticaData).forEach(parceiro => {
+      const option = document.createElement('option');
+      option.value = parceiro.id;
+      option.textContent = parceiro.prestador;
+      select.appendChild(option);
+    });
+  }
   
   item.appendChild(select);
   
@@ -318,7 +367,7 @@ function handleBtnCopiar(event) {
     let textoEquipe = '';
     equipe.forEach((e, index) => {
       if (e.nome) {
-        const membro = equipeData.find(eq => eq.apelido === e.nome);
+        const membro = equipeData.find(eq => eq.id === e.id || eq.apelido === e.nome);
         if (membro) {
           textoEquipe += `${membro.nome}; RG: ${membro.rg}${index < equipe.length - 1 ? '\n' : ''}`;
         } else {
@@ -330,9 +379,9 @@ function handleBtnCopiar(event) {
     let textoLogistica = '';
     logistica.forEach((l, index) => {
       if (l.nome) {
-        const parceiro = logisticaData.find(log => log.nome === l.nome);
+        const parceiro = Object.values(logisticaData).find(log => log.id === l.id || log.prestador === l.nome);
         if (parceiro) {
-          textoLogistica += `${parceiro.nome}; RG: ${parceiro.rg}${index < logistica.length - 1 ? '\n' : ''}`;
+          textoLogistica += `${parceiro.prestador}; RG: ${parceiro.rg}${index < logistica.length - 1 ? '\n' : ''}`;
         } else {
           textoLogistica += `${l.nome}${index < logistica.length - 1 ? '\n' : ''}`;
         }
@@ -372,13 +421,29 @@ function salvarDadosModal() {
   selects.forEach(select => {
     const valor = select.value;
     if (valor) {
-      const dados = modalTipo === 'equipe' ? equipeData : logisticaData;
-      const item = dados.find(d => d.id === valor);
-      if (item) {
-        itens.push({
-          nome: modalTipo === 'equipe' ? item.apelido : item.nome,
-          valor: 0 // Valor padrão, pode ser atualizado posteriormente
-        });
+      if (modalTipo === 'equipe') {
+        // Buscar membro da equipe
+        const membro = equipeData.find(m => m.id === valor);
+        if (membro) {
+          itens.push({
+            id: membro.id,
+            nome: membro.apelido,
+            valor: membro.valor || 0
+          });
+        }
+      } else {
+        // Buscar parceiro de logística
+        const parceiro = logisticaData[valor];
+        if (parceiro) {
+          // Determinar o valor com base no tipo de evento (usando Acervo como padrão)
+          const valorTipo = parceiro.valores && parceiro.valores.Acervo ? parceiro.valores.Acervo : 0;
+          
+          itens.push({
+            id: parceiro.id,
+            nome: parceiro.prestador,
+            valor: valorTipo
+          });
+        }
       }
     }
   });
@@ -421,10 +486,11 @@ document.addEventListener('DOMContentLoaded', () => {
   
   // Carregar dados
   Promise.all([
-    carregarEventosSemana(),
     carregarEquipe(),
     carregarLogistica()
-  ]);
+  ]).then(() => {
+    carregarEventosSemana();
+  });
   
   // Event listeners do modal
   document.querySelector('.fechar-modal').addEventListener('click', fecharModal);
@@ -442,3 +508,4 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 });
+
