@@ -42,11 +42,29 @@
         </div>
       </div>
 
-      <!-- Lista de Eventos -->
+      <!-- Lista de Eventos em formato de tabela -->
       <h3>Eventos</h3>
-      <div id="lista-eventos">
-        <!-- Eventos serão inseridos aqui via JavaScript -->
-        <div class="sem-eventos">Carregando eventos...</div>
+      <div class="eventos-tabela-container">
+        <table class="eventos-tabela">
+          <thead>
+            <tr>
+              <th class="col-nome">Nome do Evento</th>
+              <th class="col-data">Data</th>
+              <th class="col-valores">Valores</th>
+              <th class="col-pedido">Pedido</th>
+              <th class="col-equipe">Equipe</th>
+              <th class="col-logistica">Logística</th>
+              <th class="col-cliente">Cliente</th>
+              <th class="col-acoes">Ações</th>
+            </tr>
+          </thead>
+          <tbody id="lista-eventos">
+            <!-- Eventos serão inseridos aqui via JavaScript -->
+            <tr>
+              <td colspan="8" class="sem-eventos">Carregando eventos...</td>
+            </tr>
+          </tbody>
+        </table>
       </div>
     </div>
   </div>
