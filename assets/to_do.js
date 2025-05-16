@@ -154,8 +154,10 @@ function atualizarKPIs() {
     valorEstimadoTotal += parseFloat(analise.valorVenda || 0);
     
     // Somar vendaPDV para eventos realizados
-    if (analise.vendaPDV) {
-      valorVendaTotal += parseFloat(analise.vendaPDV || 0);
+    // Consideramos um evento como "realizado" se tiver um valor de vendaPDV > 0
+    const vendaPDV = parseFloat(analise.vendaPDV || 0);
+    if (vendaPDV > 0) {
+      valorVendaTotal += vendaPDV;
       eventosRealizados++;
     }
   });
@@ -165,6 +167,14 @@ function atualizarKPIs() {
   
   document.getElementById('kpi-qtd-eventos').textContent = qtdEventos;
   document.getElementById('kpi-valor-estimado').textContent = formatarMoeda(valorEstimadoTotal);
+  
+  // Adicionar KPI de média de venda por evento
+  if (document.getElementById('kpi-media-venda')) {
+    document.getElementById('kpi-media-venda').textContent = formatarMoeda(valorVendaMedia);
+  }
+  
+  // Log para debug
+  console.log(`Eventos realizados: ${eventosRealizados}, Valor total: ${valorVendaTotal}, Média: ${valorVendaMedia}`);
 }
 
 function renderizarEventos() {
@@ -453,8 +463,22 @@ function salvarDadosModal() {
     return;
   }
   
-  // Salvar no Firebase
-  db.ref(`eventos/${modalEventoId}/analise/${modalTipo}`).set(itens)
+  // Verificar se já existem itens para este evento
+  db.ref(`eventos/${modalEventoId}/analise/${modalTipo}`).once('value')
+    .then(snapshot => {
+      let dadosAtuais = snapshot.val() || [];
+      
+      // Se não for um array, converter para array
+      if (!Array.isArray(dadosAtuais)) {
+        dadosAtuais = [];
+      }
+      
+      // Adicionar novos itens aos existentes
+      const dadosAtualizados = [...dadosAtuais, ...itens];
+      
+      // Salvar no Firebase
+      return db.ref(`eventos/${modalEventoId}/analise/${modalTipo}`).set(dadosAtualizados);
+    })
     .then(() => {
       alert(`${modalTipo === 'equipe' ? 'Equipe' : 'Logística'} adicionada com sucesso!`);
       fecharModal();
@@ -466,6 +490,9 @@ function salvarDadosModal() {
       // Atualizar o Firebase para marcar como completo
       const campoCompleto = modalTipo === 'equipe' ? 'equipeCompleta' : 'logisticaCompleta';
       db.ref(`eventos/${modalEventoId}/analise/${campoCompleto}`).set(true);
+      
+      // Recarregar eventos para atualizar a interface
+      carregarEventosSemana();
     })
     .catch(error => {
       console.error(`Erro ao salvar ${modalTipo}:`, error);
@@ -508,4 +535,3 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 });
-
