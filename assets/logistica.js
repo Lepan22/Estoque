@@ -24,7 +24,7 @@ const listaEventosAdicionados = document.getElementById("listaEventosAdicionados
 const adicionarEventoBtn = document.getElementById("adicionarEvento");
 
 let eventosDisponiveis = {};
-let eventosSelecionados = {};
+let eventosSelecionados = {}; // nomeEvento: valor
 
 async function carregarEventos() {
   const eventosSnap = await get(ref(db, "eventos"));
@@ -93,7 +93,15 @@ logisticaForm.addEventListener("submit", async (e) => {
   };
 
   const refBase = ref(db, "logistica");
+
   if (id) {
+    // Se for edição, mantém dados antigos e mescla os novos
+    const snap = await get(child(refBase, id));
+    const antigo = snap.val() || {};
+    const valoresAntigos = antigo.valores || {};
+    const valoresAtualizados = { ...valoresAntigos, ...data.valores };
+    data.valores = valoresAtualizados;
+
     await update(child(refBase, id), data);
   } else {
     await push(refBase, data);
