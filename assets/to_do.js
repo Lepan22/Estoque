@@ -65,11 +65,37 @@ async function carregarEventosSemana() {
   try {
     const semana = obterDatasSemanaAtual();
     
-    const eventosRef = db.ref('eventos');
-    const snapshot = await eventosRef.once('value');
-    const eventos = snapshot.val() || {};
+    // Primeiro, carregar todos os eventos para calcular a média global
+    const todosEventosRef = db.ref('eventos');
+    const todosEventosSnapshot = await todosEventosRef.once('value');
+    const todosEventos = todosEventosSnapshot.val() || {};
     
-    eventosData = Object.entries(eventos)
+    // Calcular a média global de vendaPDV para todos os eventos finalizados
+    let valorVendaTotalGlobal = 0;
+    let eventosRealizadosGlobal = 0;
+    
+    Object.values(todosEventos).forEach(evento => {
+      const analise = evento.analise || {};
+      
+      // Verificar se vendaPDV existe e é um número válido
+      if (analise.vendaPDV !== undefined && analise.vendaPDV !== null) {
+        const vendaPDV = parseFloat(analise.vendaPDV);
+        if (!isNaN(vendaPDV) && vendaPDV > 0) {
+          valorVendaTotalGlobal += vendaPDV;
+          eventosRealizadosGlobal++;
+          
+          // Log para debug
+          console.log(`Evento com vendaPDV: ${evento.nome}, Valor: ${vendaPDV}`);
+        }
+      }
+    });
+    
+    // Calcular média global
+    const mediaVendaGlobal = eventosRealizadosGlobal > 0 ? valorVendaTotalGlobal / eventosRealizadosGlobal : 0;
+    console.log(`GLOBAL: Eventos realizados: ${eventosRealizadosGlobal}, Valor total: ${valorVendaTotalGlobal}, Média: ${mediaVendaGlobal}`);
+    
+    // Agora filtrar apenas os eventos da semana atual
+    eventosData = Object.entries(todosEventos)
       .map(([id, evento]) => ({ id, ...evento }))
       .filter(evento => {
         if (!evento.data) return false;
@@ -78,7 +104,8 @@ async function carregarEventosSemana() {
       })
       .sort((a, b) => new Date(a.data) - new Date(b.data));
     
-    atualizarKPIs();
+    // Atualizar KPIs com a média global
+    atualizarKPIs(mediaVendaGlobal);
     renderizarEventos();
   } catch (error) {
     console.error('Erro ao carregar eventos:', error);
@@ -141,7 +168,7 @@ async function carregarLogistica() {
 }
 
 // Funções de atualização da interface
-function atualizarKPIs() {
+function atualizarKPIs(mediaVendaGlobal = 0) {
   const qtdEventos = eventosData.length;
   let valorEstimadoTotal = 0;
   let valorVendaTotal = 0;
@@ -151,19 +178,25 @@ function atualizarKPIs() {
     const analise = evento.analise || {};
     
     // Somar valor estimado (valorVenda) de cada evento
-    valorEstimadoTotal += parseFloat(analise.valorVenda || 0);
+    if (analise.valorVenda !== undefined && analise.valorVenda !== null) {
+      const valorVenda = parseFloat(analise.valorVenda);
+      if (!isNaN(valorVenda)) {
+        valorEstimadoTotal += valorVenda;
+      }
+    }
     
-    // Somar vendaPDV para eventos realizados
-    // Consideramos um evento como "realizado" se tiver um valor de vendaPDV > 0
-    const vendaPDV = parseFloat(analise.vendaPDV || 0);
-    if (vendaPDV > 0) {
-      valorVendaTotal += vendaPDV;
-      eventosRealizados++;
+    // Contar eventos realizados na semana atual (para estatísticas locais)
+    if (analise.vendaPDV !== undefined && analise.vendaPDV !== null) {
+      const vendaPDV = parseFloat(analise.vendaPDV);
+      if (!isNaN(vendaPDV) && vendaPDV > 0) {
+        valorVendaTotal += vendaPDV;
+        eventosRealizados++;
+      }
     }
   });
   
-  // Calcular média de venda por evento realizado
-  const valorVendaMedia = eventosRealizados > 0 ? valorVendaTotal / eventosRealizados : 0;
+  // Calcular média de venda por evento realizado (usando a média global se não houver eventos realizados na semana)
+  const valorVendaMedia = eventosRealizados > 0 ? valorVendaTotal / eventosRealizados : mediaVendaGlobal;
   
   document.getElementById('kpi-qtd-eventos').textContent = qtdEventos;
   document.getElementById('kpi-valor-estimado').textContent = formatarMoeda(valorEstimadoTotal);
@@ -174,7 +207,8 @@ function atualizarKPIs() {
   }
   
   // Log para debug
-  console.log(`Eventos realizados: ${eventosRealizados}, Valor total: ${valorVendaTotal}, Média: ${valorVendaMedia}`);
+  console.log(`SEMANA: Eventos realizados: ${eventosRealizados}, Valor total: ${valorVendaTotal}, Média local: ${valorVendaMedia}`);
+  console.log(`Usando média global: ${mediaVendaGlobal}`);
 }
 
 function renderizarEventos() {
@@ -188,8 +222,19 @@ function renderizarEventos() {
   
   eventosData.forEach(evento => {
     const analise = evento.analise || {};
-    const estimativa = parseFloat(analise.valorVenda || 0);
-    const venda = parseFloat(analise.vendaPDV || 0);
+    
+    // Garantir que os valores sejam números válidos
+    let estimativa = 0;
+    if (analise.valorVenda !== undefined && analise.valorVenda !== null) {
+      estimativa = parseFloat(analise.valorVenda);
+      if (isNaN(estimativa)) estimativa = 0;
+    }
+    
+    let venda = 0;
+    if (analise.vendaPDV !== undefined && analise.vendaPDV !== null) {
+      venda = parseFloat(analise.vendaPDV);
+      if (isNaN(venda)) venda = 0;
+    }
     
     const eventoElement = document.createElement('div');
     eventoElement.className = 'evento-item';
