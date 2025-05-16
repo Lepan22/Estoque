@@ -1,0 +1,237 @@
+/* Estilos complementares para o checklist de eventos */
+
+/* Ajustes para a semana atual */
+.semana-atual {
+  margin-bottom: 20px;
+  color: var(--cor-secundaria, #6c757d);
+  font-size: 0.9rem;
+}
+
+/* Estilos para a lista de eventos */
+.sem-eventos {
+  text-align: center;
+  padding: 20px 0;
+  color: var(--cor-secundaria, #6c757d);
+  background-color: #f9f9f9;
+  border-radius: var(--borda-radius-padrao, 6px);
+  margin-top: 15px;
+}
+
+.evento-item {
+  border: 1px solid #dee2e6;
+  border-radius: var(--borda-radius-padrao, 6px);
+  margin-bottom: 15px;
+  overflow: hidden;
+  background-color: #ffffff;
+}
+
+.evento-header {
+  background-color: #f8f9fa;
+  padding: 10px 15px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid #dee2e6;
+}
+
+.evento-header h3 {
+  margin: 0;
+  font-size: 1rem;
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.evento-data {
+  font-size: 0.85rem;
+  color: var(--cor-secundaria, #6c757d);
+}
+
+.evento-detalhes {
+  padding: 15px;
+}
+
+.evento-valores {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 15px;
+  font-size: 0.9rem;
+}
+
+.evento-checklist {
+  margin-bottom: 15px;
+}
+
+.check-item {
+  display: flex;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.check-item label {
+  margin-left: 8px;
+  margin-right: 8px;
+  margin-bottom: 0;
+  font-size: 0.9rem;
+}
+
+.btn-adicionar {
+  background-color: var(--cor-info, #17a2b8);
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 4px 8px;
+  font-size: 0.75rem;
+  cursor: pointer;
+  margin-left: auto;
+}
+
+.evento-acoes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.btn-copiar {
+  background-color: var(--cor-secundaria, #6c757d);
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 6px 10px;
+  font-size: 0.85rem;
+  cursor: pointer;
+  flex: 1;
+  min-width: 150px;
+}
+
+/* Modal */
+.modal {
+  display: none;
+  position: fixed;
+  z-index: 1000;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+}
+
+.modal-content {
+  background-color: white;
+  margin: 10% auto;
+  padding: 20px;
+  border-radius: var(--borda-radius-padrao, 6px);
+  max-width: 500px;
+  width: 90%;
+  position: relative;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.fechar-modal {
+  position: absolute;
+  top: 10px;
+  right: 15px;
+  font-size: 1.5rem;
+  cursor: pointer;
+  color: #aaa;
+}
+
+.fechar-modal:hover {
+  color: #333;
+}
+
+#modal-titulo {
+  margin-top: 0;
+  font-size: 1.2rem;
+  margin-bottom: 15px;
+}
+
+#modal-evento-nome {
+  margin-bottom: 15px;
+  font-weight: bold;
+  font-size: 0.95rem;
+}
+
+#modal-selecao-container {
+  margin-bottom: 20px;
+}
+
+.selecao-item {
+  display: flex;
+  align-items: center;
+  margin-bottom: 10px;
+  gap: 10px;
+}
+
+.selecao-item select {
+  flex: 1;
+  padding: 6px 8px;
+  border: 1px solid #ced4da;
+  border-radius: 4px;
+  font-size: 0.9rem;
+}
+
+.btn-remover-item {
+  background-color: var(--cor-perigo, #dc3545);
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 4px 8px;
+  font-size: 0.75rem;
+  cursor: pointer;
+}
+
+.modal-acoes {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.modal-acoes button {
+  padding: 6px 12px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.85rem;
+}
+
+#btn-adicionar-item {
+  background-color: var(--cor-info, #17a2b8);
+  color: white;
+  margin-right: auto;
+}
+
+#btn-salvar-modal {
+  background-color: var(--cor-sucesso, #28a745);
+  color: white;
+}
+
+#btn-cancelar-modal {
+  background-color: var(--cor-secundaria, #6c757d);
+  color: white;
+}
+
+/* Responsividade */
+@media (max-width: 768px) {
+  .evento-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .evento-data {
+    margin-top: 5px;
+  }
+  
+  .evento-valores {
+    flex-direction: column;
+    gap: 5px;
+  }
+  
+  .check-item {
+    flex-wrap: wrap;
+  }
+  
+  .btn-adicionar {
+    margin-left: 28px;
+    margin-top: 5px;
+  }
+}
