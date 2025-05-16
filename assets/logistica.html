@@ -51,6 +51,29 @@
       color: gold;
     }
 
+    .eventos-adicionados {
+      margin-top: 10px;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      padding: 10px;
+      background: #f9f9f9;
+    }
+
+    .eventos-adicionados table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    .eventos-adicionados th,
+    .eventos-adicionados td {
+      padding: 6px 10px;
+      border-bottom: 1px solid #eee;
+    }
+
+    .eventos-adicionados tr:last-child td {
+      border-bottom: none;
+    }
+
     .tabela-container {
       overflow-x: auto;
     }
@@ -107,6 +130,7 @@
           <label for="observacao">Observação</label>
           <input type="text" id="observacao" />
         </div>
+
         <div class="form-grupo">
           <label for="evento">Evento</label>
           <select id="evento"></select>
@@ -115,6 +139,24 @@
           <label for="valorEvento">Valor (R$)</label>
           <input type="number" id="valorEvento" step="0.01" />
         </div>
+        <div class="form-grupo">
+          <label style="visibility:hidden;">Adicionar</label>
+          <button type="button" class="botao" id="adicionarEvento">➕ Evento</button>
+        </div>
+
+        <div class="form-grupo full-width eventos-adicionados" id="listaEventosAdicionados" style="display: none;">
+          <label>Eventos adicionados:</label>
+          <table>
+            <thead>
+              <tr>
+                <th>Evento</th>
+                <th>Valor</th>
+              </tr>
+            </thead>
+            <tbody id="tabelaEventosTemp"></tbody>
+          </table>
+        </div>
+
         <div class="form-grupo">
           <label style="visibility:hidden;">Salvar</label>
           <button type="submit" class="botao">Salvar</button>
