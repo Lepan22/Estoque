@@ -1,8 +1,15 @@
 /* Estilo exclusivo para equipe.html */
 
+.container-principal {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
 #equipeForm {
-  padding: 10px;
-  margin-bottom: 20px;
+  width: 100%;
+  max-width: 500px;
+  padding: 16px;
   background: #f9f9f9;
   border-radius: 6px;
   box-shadow: 0 1px 3px rgba(0,0,0,0.1);
@@ -15,7 +22,7 @@
 }
 
 .form-grupo {
-  flex: 1 1 45%;
+  flex: 1 1 48%;
   min-width: 200px;
 }
 
@@ -48,6 +55,7 @@ th, td {
   padding: 8px 10px;
   text-align: left;
   border-bottom: 1px solid #eee;
+  white-space: nowrap;
 }
 
 tbody tr:hover {
