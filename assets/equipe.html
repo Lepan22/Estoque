@@ -3,11 +3,11 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Cadastro de Logística</title>
+  <title>Cadastro de Equipe</title>
   <link rel="stylesheet" href="novo_style.css" />
   <link rel="stylesheet" href="dash_equipe.css" />
   <style>
-    #logisticaForm {
+    #equipeForm {
       display: flex;
       flex-wrap: wrap;
       gap: 16px;
@@ -28,50 +28,6 @@
     .botao {
       height: 38px;
       align-self: flex-end;
-    }
-
-    .rating {
-      display: flex;
-      gap: 2px;
-      font-size: 18px;
-    }
-
-    .rating input {
-      display: none;
-    }
-
-    .rating label {
-      cursor: pointer;
-      color: #ccc;
-    }
-
-    .rating input:checked ~ label,
-    .rating label:hover,
-    .rating label:hover ~ label {
-      color: gold;
-    }
-
-    .eventos-adicionados {
-      margin-top: 10px;
-      border: 1px solid #ddd;
-      border-radius: 6px;
-      padding: 10px;
-      background: #f9f9f9;
-    }
-
-    .eventos-adicionados table {
-      width: 100%;
-      border-collapse: collapse;
-    }
-
-    .eventos-adicionados th,
-    .eventos-adicionados td {
-      padding: 6px 10px;
-      border-bottom: 1px solid #eee;
-    }
-
-    .eventos-adicionados tr:last-child td {
-      border-bottom: none;
     }
 
     .tabela-container {
@@ -96,89 +52,59 @@
 
   <div class="main-content">
     <div class="container-principal">
-      <h1>Cadastro de Logística</h1>
+      <h1>Cadastro de Equipe</h1>
 
-      <form id="logisticaForm">
-        <input type="hidden" id="logisticaId" />
+      <form id="equipeForm">
+        <input type="hidden" id="equipeId" />
         <div class="form-grupo">
           <label for="nome">Nome</label>
           <input type="text" id="nome" required />
         </div>
         <div class="form-grupo">
-          <label for="prestador">Prestador</label>
-          <input type="text" id="prestador" required />
-        </div>
-        <div class="form-grupo">
-          <label for="tipo">Tipo</label>
-          <input type="text" id="tipo" />
+          <label for="apelido">Apelido</label>
+          <input type="text" id="apelido" required />
         </div>
         <div class="form-grupo">
           <label for="documento">RG/CPF</label>
           <input type="text" id="documento" />
         </div>
         <div class="form-grupo">
-          <label>Classificação</label>
-          <div class="rating">
-            <input type="radio" id="estrela5" name="classificacao" value="5"><label for="estrela5">★</label>
-            <input type="radio" id="estrela4" name="classificacao" value="4"><label for="estrela4">★</label>
-            <input type="radio" id="estrela3" name="classificacao" value="3"><label for="estrela3">★</label>
-            <input type="radio" id="estrela2" name="classificacao" value="2"><label for="estrela2">★</label>
-            <input type="radio" id="estrela1" name="classificacao" value="1"><label for="estrela1">★</label>
-          </div>
+          <label for="valor">Valor (R$)</label>
+          <input type="number" id="valor" step="0.01" />
+        </div>
+        <div class="form-grupo">
+          <label for="classificacao">Classificação</label>
+          <input type="text" id="classificacao" />
         </div>
         <div class="form-grupo">
           <label for="observacao">Observação</label>
           <input type="text" id="observacao" />
         </div>
-
         <div class="form-grupo">
-          <label for="evento">Evento</label>
-          <select id="evento"></select>
-        </div>
-        <div class="form-grupo">
-          <label for="valorEvento">Valor (R$)</label>
-          <input type="number" id="valorEvento" step="0.01" />
-        </div>
-        <div class="form-grupo">
-          <label style="visibility:hidden;">Adicionar</label>
-          <button id="adicionarEvento" type="button" class="botao">➕ Evento</button>
-        </div>
-
-        <div class="form-grupo full-width eventos-adicionados" id="listaEventosAdicionados" style="display: none;">
-          <label>Eventos adicionados:</label>
-          <table>
-            <thead>
-              <tr>
-                <th>Evento</th>
-                <th>Valor</th>
-              </tr>
-            </thead>
-            <tbody id="tabelaEventosTemp"></tbody>
-          </table>
-        </div>
-
-        <div class="form-grupo">
-          <label style="visibility:hidden;">Salvar</label>
+          <label style="visibility: hidden;">Ação</label>
           <button type="submit" class="botao">Salvar</button>
         </div>
       </form>
 
-      <h2>Logística Cadastrada</h2>
+      <h2>Equipe Cadastrada</h2>
       <div class="tabela-container">
         <table>
           <thead>
             <tr>
-              <th>Prestador</th>
-              <th>Tipo</th>
+              <th>Apelido</th>
+              <th>Qtd Eventos</th>
+              <th>Média PDV</th>
+              <th>Média Diferença</th>
+              <th>Média Perda</th>
               <th>Editar</th>
             </tr>
           </thead>
-          <tbody id="tabelaLogistica"></tbody>
+          <tbody id="tabelaEquipe"></tbody>
         </table>
       </div>
     </div>
   </div>
 
-  <script type="module" src="logistica.js"></script>
+  <script type="module" src="equipe.js"></script>
 </body>
 </html>
