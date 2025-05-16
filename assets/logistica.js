@@ -19,6 +19,12 @@ const db = getDatabase(app);
 const logisticaForm = document.getElementById("logisticaForm");
 const tabelaLogistica = document.getElementById("tabelaLogistica");
 const eventoSelect = document.getElementById("evento");
+const tabelaEventosTemp = document.getElementById("tabelaEventosTemp");
+const listaEventosAdicionados = document.getElementById("listaEventosAdicionados");
+const adicionarEventoBtn = document.getElementById("adicionarEvento");
+
+let eventosDisponiveis = {};
+let eventosSelecionados = {};
 
 async function carregarEventos() {
   const eventosSnap = await get(ref(db, "eventos"));
@@ -26,6 +32,8 @@ async function carregarEventos() {
   eventoSelect.innerHTML = "";
 
   if (!eventos) return;
+
+  eventosDisponiveis = eventos;
 
   Object.entries(eventos).forEach(([id, evento]) => {
     const option = document.createElement("option");
@@ -35,34 +43,56 @@ async function carregarEventos() {
   });
 }
 
+function atualizarTabelaEventosTemp() {
+  tabelaEventosTemp.innerHTML = "";
+
+  const ids = Object.keys(eventosSelecionados);
+  if (ids.length === 0) {
+    listaEventosAdicionados.style.display = "none";
+    return;
+  }
+
+  listaEventosAdicionados.style.display = "block";
+
+  ids.forEach((eventoId) => {
+    const nomeEvento = eventosDisponiveis[eventoId]?.nome || "Evento";
+    const valor = eventosSelecionados[eventoId].toFixed(2).replace('.', ',');
+
+    const linha = document.createElement("tr");
+    linha.innerHTML = `<td>${nomeEvento}</td><td>R$ ${valor}</td>`;
+    tabelaEventosTemp.appendChild(linha);
+  });
+}
+
+adicionarEventoBtn.addEventListener("click", () => {
+  const eventoId = eventoSelect.value;
+  const valor = parseFloat(document.getElementById("valorEvento").value || 0);
+  if (!eventoId || isNaN(valor) || valor <= 0) return;
+
+  eventosSelecionados[eventoId] = valor;
+  atualizarTabelaEventosTemp();
+
+  document.getElementById("valorEvento").value = "";
+});
+
 logisticaForm.addEventListener("submit", async (e) => {
   e.preventDefault();
 
   const id = document.getElementById("logisticaId").value || null;
   const classificacao = document.querySelector("input[name='classificacao']:checked")?.value || "";
-  const prestador = document.getElementById("prestador").value;
 
   const data = {
     nome: document.getElementById("nome").value,
-    prestador,
+    prestador: document.getElementById("prestador").value,
     tipo: document.getElementById("tipo").value,
     documento: document.getElementById("documento").value,
     classificacao,
     observacao: document.getElementById("observacao").value,
-    valores: {
-      [eventoSelect.value]: parseFloat(document.getElementById("valorEvento").value || 0)
-    }
+    valores: { ...eventosSelecionados }
   };
 
   const refBase = ref(db, "logistica");
   if (id) {
-    const atual = await get(child(refBase, id));
-    const dadosAntigos = atual.val() || {};
-    const novosValores = {
-      ...dadosAntigos.valores,
-      ...data.valores
-    };
-    data.valores = novosValores;
     await update(child(refBase, id), data);
   } else {
     await push(refBase, data);
@@ -70,6 +100,8 @@ logisticaForm.addEventListener("submit", async (e) => {
 
   alert("Cadastro salvo com sucesso!");
   logisticaForm.reset();
+  eventosSelecionados = {};
+  atualizarTabelaEventosTemp();
   carregarLogistica();
 });
 
@@ -107,9 +139,8 @@ window.editarLogistica = async function(id) {
     if (estrela) estrela.checked = true;
   }
 
-  const eventoId = eventoSelect.value;
-  const valor = item.valores?.[eventoId] || 0;
-  document.getElementById("valorEvento").value = valor;
+  eventosSelecionados = { ...(item.valores || {}) };
+  atualizarTabelaEventosTemp();
 };
 
 carregarEventos();
