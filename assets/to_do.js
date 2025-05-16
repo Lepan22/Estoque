@@ -213,10 +213,17 @@ function atualizarKPIs(mediaVendaGlobal = 0) {
 
 function renderizarEventos() {
   const container = document.getElementById('lista-eventos');
-  container.innerHTML = '';
+  
+  // Limpar conteúdo atual
+  if (container.tagName === 'TBODY') {
+    container.innerHTML = '';
+  } else {
+    container.innerHTML = '<tr><td colspan="8" class="sem-eventos">Carregando eventos...</td></tr>';
+    return;
+  }
   
   if (eventosData.length === 0) {
-    container.innerHTML = '<div class="sem-eventos">Nenhum evento encontrado para esta semana.</div>';
+    container.innerHTML = '<tr><td colspan="8" class="sem-eventos">Nenhum evento encontrado para esta semana.</td></tr>';
     return;
   }
   
@@ -236,46 +243,49 @@ function renderizarEventos() {
       if (isNaN(venda)) venda = 0;
     }
     
-    const eventoElement = document.createElement('div');
-    eventoElement.className = 'evento-item';
-    eventoElement.innerHTML = `
-      <div class="evento-header">
-        <h3>${evento.nome || 'Evento sem nome'}</h3>
-        <span class="evento-data">${formatarData(evento.data)}</span>
-      </div>
-      <div class="evento-detalhes">
-        <div class="evento-valores">
-          <div>Estimado: ${formatarMoeda(estimativa)}</div>
-          <div>Venda: ${formatarMoeda(venda)}</div>
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td class="col-nome">${evento.nome || 'Evento sem nome'}</td>
+      <td class="col-data">${formatarData(evento.data)}</td>
+      <td class="col-valores">
+        <span class="evento-valor">Estimado: ${formatarMoeda(estimativa)}</span>
+        <span class="evento-valor">Venda: ${formatarMoeda(venda)}</span>
+      </td>
+      <td class="col-pedido">
+        <div class="check-item">
+          <input type="checkbox" id="pedido-${evento.id}" class="check-pedido" ${analise.pedidoCompleto ? 'checked' : ''}>
+          <label for="pedido-${evento.id}">Pedido</label>
         </div>
-        <div class="evento-checklist">
-          <div class="check-item">
-            <input type="checkbox" id="pedido-${evento.id}" class="check-pedido" ${analise.pedidoCompleto ? 'checked' : ''}>
-            <label for="pedido-${evento.id}">Pedido</label>
-          </div>
-          <div class="check-item">
-            <input type="checkbox" id="equipe-${evento.id}" class="check-equipe" ${analise.equipeCompleta ? 'checked' : ''}>
-            <label for="equipe-${evento.id}">Equipe</label>
-            <button class="btn-adicionar" data-tipo="equipe" data-evento-id="${evento.id}">Adicionar</button>
-          </div>
-          <div class="check-item">
-            <input type="checkbox" id="logistica-${evento.id}" class="check-logistica" ${analise.logisticaCompleta ? 'checked' : ''}>
-            <label for="logistica-${evento.id}">Logística</label>
-            <button class="btn-adicionar" data-tipo="logistica" data-evento-id="${evento.id}">Adicionar</button>
-          </div>
-          <div class="check-item">
-            <input type="checkbox" id="cliente-${evento.id}" class="check-cliente" ${analise.clienteConfirmado ? 'checked' : ''}>
-            <label for="cliente-${evento.id}">Cliente</label>
-          </div>
+      </td>
+      <td class="col-equipe">
+        <div class="check-item">
+          <input type="checkbox" id="equipe-${evento.id}" class="check-equipe" ${analise.equipeCompleta ? 'checked' : ''}>
+          <label for="equipe-${evento.id}">Equipe</label>
+          <button class="btn-adicionar" data-tipo="equipe" data-evento-id="${evento.id}">+</button>
         </div>
+      </td>
+      <td class="col-logistica">
+        <div class="check-item">
+          <input type="checkbox" id="logistica-${evento.id}" class="check-logistica" ${analise.logisticaCompleta ? 'checked' : ''}>
+          <label for="logistica-${evento.id}">Logística</label>
+          <button class="btn-adicionar" data-tipo="logistica" data-evento-id="${evento.id}">+</button>
+        </div>
+      </td>
+      <td class="col-cliente">
+        <div class="check-item">
+          <input type="checkbox" id="cliente-${evento.id}" class="check-cliente" ${analise.clienteConfirmado ? 'checked' : ''}>
+          <label for="cliente-${evento.id}">Cliente</label>
+        </div>
+      </td>
+      <td class="col-acoes">
         <div class="evento-acoes">
-          <button class="btn-copiar" data-tipo="equipe-logistica" data-evento-id="${evento.id}">Copiar Equipe/Logística</button>
-          <button class="btn-copiar" data-tipo="cliente-endereco" data-evento-id="${evento.id}">Copiar Cliente/Endereço</button>
+          <button class="btn-copiar" data-tipo="equipe-logistica" data-evento-id="${evento.id}">Copiar Equipe/Log</button>
+          <button class="btn-copiar" data-tipo="cliente-endereco" data-evento-id="${evento.id}">Copiar Cliente</button>
         </div>
-      </div>
+      </td>
     `;
     
-    container.appendChild(eventoElement);
+    container.appendChild(tr);
   });
   
   // Adicionar event listeners
